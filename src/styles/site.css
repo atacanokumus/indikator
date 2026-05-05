@@ -1,0 +1,350 @@
+@import "tailwindcss";
+
+:root {
+  --bg-primary: #f5f7fa;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f0f4f8;
+  --text-primary: #1a1a2e;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --brand-teal: #004d61;
+  --brand-teal-light: #006d87;
+  --brand-gold: #c4a066;
+  --brand-gold-light: #d4b07a;
+  --signal-al: #059669;
+  --signal-al-bg: #ecfdf5;
+  --signal-al-border: #a7f3d0;
+  --signal-sat: #dc2626;
+  --signal-sat-bg: #fef2f2;
+  --signal-sat-border: #fecaca;
+  --signal-bekle: #d97706;
+  --signal-bekle-bg: #fffbeb;
+  --signal-bekle-border: #fde68a;
+  --signal-gozlemle: #2563eb;
+  --signal-gozlemle-bg: #eff6ff;
+  --signal-gozlemle-border: #bfdbfe;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.1);
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+/* Font utilities */
+.font-mono-data {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Signal badge styles */
+.signal-al {
+  background: var(--signal-al-bg);
+  color: var(--signal-al);
+  border: 1.5px solid var(--signal-al-border);
+}
+
+.signal-sat {
+  background: var(--signal-sat-bg);
+  color: var(--signal-sat);
+  border: 1.5px solid var(--signal-sat-border);
+}
+
+.signal-bekle {
+  background: var(--signal-bekle-bg);
+  color: var(--signal-bekle);
+  border: 1.5px solid var(--signal-bekle-border);
+}
+
+.signal-gozlemle {
+  background: var(--signal-gozlemle-bg);
+  color: var(--signal-gozlemle);
+  border: 1.5px solid var(--signal-gozlemle-border);
+}
+
+/* Card styles */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* Staggered card animations */
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+
+.stagger-2 {
+  animation-delay: 0.1s;
+}
+
+.stagger-3 {
+  animation-delay: 0.15s;
+}
+
+.stagger-4 {
+  animation-delay: 0.2s;
+}
+
+.stagger-5 {
+  animation-delay: 0.25s;
+}
+
+.stagger-6 {
+  animation-delay: 0.3s;
+}
+
+/* Navigation link */
+.nav-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  color: var(--brand-teal);
+}
+
+.nav-link.active {
+  color: var(--brand-teal);
+  font-weight: 700;
+}
+
+/* Header & Navigation */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    padding: 0 12px;
+    height: 56px;
+  }
+
+  .nav-logo span {
+    font-size: 16px !important;
+  }
+
+  .nav-logo div {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .nav-logo svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .nav-links {
+    gap: 12px;
+  }
+
+  .nav-link {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .nav-links {
+    gap: 8px;
+  }
+
+  .nav-logo span {
+    display: none;
+    /* Only show logo icon on extremely small screens if needed, or just let it wrap */
+  }
+
+  /* Or keep it and just make gaps even smaller */
+  .nav-logo span {
+    display: inline-block;
+    font-size: 14px !important;
+  }
+}
+
+/* Tooltip */
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip-content {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.tooltip-container:hover .tooltip-content {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* Background Decorations */
+@keyframes gridMove {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(40px);
+  }
+}
+
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes lineScroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.bg-grid-animate {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  mask-image: radial-gradient(circle at center, black, transparent 80%);
+  animation: gridMove 4s linear infinite;
+  opacity: 0.15;
+}
+
+.bg-glow {
+  background: radial-gradient(circle at 10% 20%, rgba(0, 77, 97, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(196, 160, 102, 0.05) 0%, transparent 40%);
+}
+
+.chart-line {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--brand-teal), transparent);
+  opacity: 0.1;
+  width: 200%;
+  animation: lineScroll 20s linear infinite;
+}
+
+/* Responsive typography */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.75rem !important;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+  }
+}
