@@ -9,6 +9,8 @@ import { NewsTicker } from "@/components/NewsTicker";
 import { normalizeAsset } from "@/lib/asset-utils";
 import Link from "next/link";
 import { useSyncTimer } from "@/hooks/useSyncTimer";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function Dashboard() {
   const [analyses, setAnalyses] = useState<VideoAnalysis[]>([]);
@@ -16,6 +18,7 @@ export default function Dashboard() {
   const [prices, setPrices] = useState<Record<string, { price: number; currency: string }>>({});
   const [isComplianceOpen, setIsComplianceOpen] = useState(false);
   const [news, setNews] = useState<any[]>([]);
+  const [syncStatus, setSyncStatus] = useState<any>(null);
 
   const { minutesSinceLastSync, minutesUntilNextSync, isInitializing } = useSyncTimer(() => {
     console.log("Timer expired! Reloading live data...");
@@ -26,6 +29,16 @@ export default function Dashboard() {
   useEffect(() => {
     loadData();
     fetchNewsData();
+
+    // Sync status listener
+    if (db) {
+      const unsub = onSnapshot(doc(db, "system_status", "sync_state"), (docSnap) => {
+        if (docSnap.exists()) {
+          setSyncStatus(docSnap.data());
+        }
+      });
+      return () => unsub();
+    }
   }, []);
 
   const fetchNewsData = async () => {
@@ -114,25 +127,28 @@ export default function Dashboard() {
           display: "inline-flex",
           alignItems: "center",
           gap: 6,
-          background: "var(--signal-al-bg)",
-          color: "var(--signal-al)",
+          background: syncStatus?.isAnalyzing ? "var(--signal-bekle-bg)" : "var(--signal-al-bg)",
+          color: syncStatus?.isAnalyzing ? "var(--signal-bekle)" : "var(--signal-al)",
           padding: "6px 14px",
           borderRadius: "var(--radius-full)",
           fontSize: 13,
           fontWeight: 600,
           marginBottom: 20,
-          border: "1px solid var(--signal-al-border)",
+          border: syncStatus?.isAnalyzing ? "1px solid var(--signal-bekle-border)" : "1px solid var(--signal-al-border)",
         }}>
           <span style={{
-            width: 8, height: 8, borderRadius: "50%", background: "var(--signal-al)",
+            width: 8, height: 8, borderRadius: "50%", 
+            background: syncStatus?.isAnalyzing ? "var(--signal-bekle)" : "var(--signal-al)",
             display: "inline-block",
-            boxShadow: "0 0 8px var(--signal-al)",
+            boxShadow: syncStatus?.isAnalyzing ? "0 0 8px var(--signal-bekle)" : "0 0 8px var(--signal-al)",
             animation: "pulse 2s infinite"
           }} />
-          {isInitializing ? (
+          {syncStatus?.isAnalyzing ? (
+            `Şu an aktif analizlenen: ${syncStatus.currentChannel} - ${syncStatus.currentVideo}`
+          ) : isInitializing ? (
             "Canlı veriler güncelleniyor..."
           ) : (
-            `Sinyaller ${minutesSinceLastSync} dk önce güncellendi. Sonraki tarama ${minutesUntilNextSync} dk içinde.`
+            `Şu an aktif analizlenen bir kanal bulunmamaktadır. Sonraki tarama ${minutesUntilNextSync} dk içinde.`
           )}
         </div>
 

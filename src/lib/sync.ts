@@ -37,6 +37,8 @@ export const syncVideo = async (videoId: string, channelId: string, channelTitle
     }
 };
 
+import { setSyncStatus } from "./system-status";
+
 const processVideo = async (
     video: { id: string, title: string, thumbnail: string, publishedAt: string },
     channelId: string,
@@ -53,6 +55,13 @@ const processVideo = async (
         return { success: false, findings: 0 };
     }
 
+    // Durumu veritabanına yaz
+    await setSyncStatus({
+        isAnalyzing: true,
+        currentChannel: channelTitle,
+        currentVideo: video.title
+    });
+
     try {
         let analysisResults: any[] | null = null;
 
@@ -64,10 +73,7 @@ const processVideo = async (
         // YÖNTEM 1: Transkript ile hızlı analiz (~5-8 saniye toplam)
         try {
             addLog(`[SYNC] Trying transcript extraction (fast path)...`);
-            const transcript = await Promise.race([
-                getVideoTranscript(video.id),
-                new Promise<string>((_, reject) => setTimeout(() => reject(new Error('Transcript timeout')), 15000))
-            ]) as string;
+            const transcript = await getVideoTranscript(video.id);
 
             if (transcript && transcript.length > 100) {
                 addLog(`[SYNC] Transcript found (${transcript.length} chars). Analyzing with Gemini text...`);
@@ -84,14 +90,12 @@ const processVideo = async (
         if (!analysisResults || analysisResults.length === 0) {
             try {
                 addLog(`[SYNC] Analyzing via Gemini video URL (slow path)...`);
-                analysisResults = await Promise.race([
-                    analyzeVideoByUrl(video.id),
-                    new Promise<any[]>((_, reject) => setTimeout(() => reject(new Error('Video analysis timeout (45s)')), 45000))
-                ]) as any[];
+                analysisResults = await analyzeVideoByUrl(video.id) as any[];
                 addLog(`[AI] Video URL analysis: ${analysisResults?.length || 0} results`);
             } catch (videoErr: any) {
                 addLog(`[ERROR] Video URL analysis failed: ${videoErr.message}`);
-                return { success: false, findings: 0 };
+                // ERROR: Eğer burada fail olursa empty array olarak kaydetmemiz lazım yoksa loopa girer
+                analysisResults = [];
             }
         }
 

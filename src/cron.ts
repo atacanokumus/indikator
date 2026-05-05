@@ -5,6 +5,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 import { getChannels } from "./lib/firestore";
 import { syncChannel } from "./lib/sync";
 import { Evaluator } from "./services/evaluator";
+import { setSyncStatus } from "./lib/system-status";
 
 const TURKEY_UTC_OFFSET = 3; // UTC+3
 const TARGET_HOUR = 0; // Gece 12 (00:00 TR saati)
@@ -49,6 +50,8 @@ const runDailyScan = async () => {
     } catch (error) {
         console.error("[CRON] Kritik Hata:", error);
         process.exitCode = 1;
+    } finally {
+        await setSyncStatus({ isAnalyzing: false });
     }
 };
 
