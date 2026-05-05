@@ -107,21 +107,22 @@ const processVideo = async (
                 result.isEvaluated = false;
                 result.status = 'PENDING';
             }
-
-            await saveAnalysis({
-                videoId: video.id,
-                videoTitle: video.title,
-                channelId: channelId,
-                channelTitle: channelTitle,
-                channelThumbnail: channelThumbnail || "",
-                thumbnail: video.thumbnail,
-                publishedAt: video.publishedAt,
-                analyzedAt: Timestamp.now(),
-                results: analysisResults
-            });
-            return { success: true, findings: analysisResults.length };
         }
-        return { success: true, findings: 0 };
+
+        // HER ZAMAN KAYDET (bulgu olmasa bile) - aksi takdirde aynı videoyu sonsuza kadar analiz eder
+        await saveAnalysis({
+            videoId: video.id,
+            videoTitle: video.title,
+            channelId: channelId,
+            channelTitle: channelTitle,
+            channelThumbnail: channelThumbnail || "",
+            thumbnail: video.thumbnail,
+            publishedAt: video.publishedAt,
+            analyzedAt: Timestamp.now(),
+            results: analysisResults || []
+        });
+        
+        return { success: true, findings: analysisResults?.length || 0 };
     } catch (err: any) {
         addLog(`[ERROR] ${video.id} failed: ${err.message}`);
         return { success: false, findings: 0 };
