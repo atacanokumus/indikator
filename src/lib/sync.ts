@@ -1,9 +1,10 @@
 import { getChannelVideos } from "@/services/youtube";
-import { getVideoTranscript } from "@/services/youtube";
-import { analyzeTranscript, analyzeVideoByUrl } from "@/lib/gemini";
+import { getVideoTranscript, downloadAudioLocally } from "@/services/youtube";
+import { analyzeTranscript, analyzeAudioFileLocally } from "@/lib/gemini";
 import { saveAnalysis, checkVideoAnalysisExists } from "@/lib/firestore";
 import { Timestamp } from "firebase/firestore";
 import { PriceService } from "@/services/price-service";
+import * as fs from "fs";
 
 
 export const syncVideo = async (videoId: string, channelId: string, channelTitle: string, channelThumbnail?: string) => {
@@ -86,16 +87,34 @@ const processVideo = async (
             addLog(`[SYNC] Transcript failed: ${transcriptErr.message}. Trying video URL...`);
         }
 
-        // YÖNTEM 2: Gemini Video URL analizi (yavaş fallback, ~30-50 saniye)
+        // YÖNTEM 2: Local Audio Download + Gemini File API (Autonomous Fallback)
         if (!analysisResults || analysisResults.length === 0) {
+            let audioPath: string | null = null;
             try {
-                addLog(`[SYNC] Analyzing via Gemini video URL (slow path)...`);
-                analysisResults = await analyzeVideoByUrl(video.id) as any[];
-                addLog(`[AI] Video URL analysis: ${analysisResults?.length || 0} results`);
+                addLog(`[SYNC] Transcript failed. Falling back to autonomous audio download & File API...`);
+                
+                // 1. Indir (Geçici)
+                audioPath = await downloadAudioLocally(video.id);
+                
+                // 2. Yükle & Analiz Et & Sil (Gemini üzerinden)
+                addLog(`[SYNC] Audio downloaded. Analyzing via Gemini File API...`);
+                analysisResults = await analyzeAudioFileLocally(audioPath) as any[];
+                
+                addLog(`[AI] Audio analysis: ${analysisResults?.length || 0} results`);
             } catch (videoErr: any) {
-                addLog(`[ERROR] Video URL analysis failed: ${videoErr.message}`);
+                addLog(`[ERROR] Audio File analysis failed: ${videoErr.message}`);
                 // ERROR: Eğer burada fail olursa empty array olarak kaydetmemiz lazım yoksa loopa girer
                 analysisResults = [];
+            } finally {
+                // 3. Yerel Dosyayı Sil
+                if (audioPath && fs.existsSync(audioPath)) {
+                    try {
+                        fs.unlinkSync(audioPath);
+                        addLog(`[SYNC] Cleaned up local audio file: ${audioPath}`);
+                    } catch (cleanupErr: any) {
+                        console.warn(`[SYNC] Failed to clean up local audio file:`, cleanupErr.message);
+                    }
+                }
             }
         }
 
@@ -111,22 +130,25 @@ const processVideo = async (
                 result.isEvaluated = false;
                 result.status = 'PENDING';
             }
+
+            await saveAnalysis({
+                videoId: video.id,
+                videoTitle: video.title,
+                channelId: channelId,
+                channelTitle: channelTitle,
+                channelThumbnail: channelThumbnail || "",
+                thumbnail: video.thumbnail,
+                publishedAt: video.publishedAt,
+                analyzedAt: Timestamp.now(),
+                results: analysisResults
+            });
+            
+            return { success: true, findings: analysisResults.length };
         }
 
-        // HER ZAMAN KAYDET (bulgu olmasa bile) - aksi takdirde aynı videoyu sonsuza kadar analiz eder
-        await saveAnalysis({
-            videoId: video.id,
-            videoTitle: video.title,
-            channelId: channelId,
-            channelTitle: channelTitle,
-            channelThumbnail: channelThumbnail || "",
-            thumbnail: video.thumbnail,
-            publishedAt: video.publishedAt,
-            analyzedAt: Timestamp.now(),
-            results: analysisResults || []
-        });
-        
-        return { success: true, findings: analysisResults?.length || 0 };
+        // Sonuç bulunamadıysa kaydetme — bir sonraki turda tekrar denenecek
+        addLog(`[SYNC] No findings for ${video.id}. Will retry next run.`);
+        return { success: false, findings: 0 };
     } catch (err: any) {
         addLog(`[ERROR] ${video.id} failed: ${err.message}`);
         return { success: false, findings: 0 };
@@ -144,8 +166,8 @@ export const syncChannel = async (channelId: string, channelTitle: string, chann
     try {
         addLog(`[SYNC] Started for ${channelTitle}`);
         const allVideos = await getChannelVideos(channelId, addLog);
-        const videos = allVideos.slice(0, 5); // Son 5 video
-        addLog(`[SYNC] Total videos to check (capped at 5): ${videos.length}`);
+        const videos = allVideos.slice(0, 15); // Son 15 video
+        addLog(`[SYNC] Total videos to check (capped at 15): ${videos.length}`);
 
         let analyzedCount = 0;
         let totalFindings = 0;

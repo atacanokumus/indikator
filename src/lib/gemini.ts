@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleAIFileManager } from "@google/generative-ai/server";
 
 let _model: any = null;
 
@@ -9,7 +10,7 @@ export const getModel = () => {
       console.warn("[GEMINI] GEMINI_API_KEY is not set!");
     }
     const genAI = new GoogleGenerativeAI(apiKey);
-    _model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    _model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
   }
   return _model;
 };
@@ -46,68 +47,28 @@ const FINANCIAL_ANALYSIS_PROMPT = `
 `;
 
 export const analyzeTranscript = async (transcript: string) => {
-  const prompt = `${FINANCIAL_ANALYSIS_PROMPT}\n\n    Transkript:\n    ${transcript}`;
-
-  const result = await getModel().generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
-
-  // JSON temizleme (bazı modeller markdown block ekleyebilir)
-  const jsonMatch = text.match(/\[[\s\S]*\]/);
-  return jsonMatch ? JSON.parse(jsonMatch[0]) : [];
-};
-
-/**
- * YouTube videosunu doğrudan URL üzerinden Gemini'ye gönderip finansal analiz yapar.
- * Ses indirmeye, yt-dlp'ye, Firebase Storage'a gerek yoktur.
- * Vercel Free plan'ın 60 saniyelik limitine rahat sığar.
- * 
- * @param videoId - YouTube video ID
- */
-export const analyzeVideoByUrl = async (videoId: string) => {
-  console.log(`[GEMINI] Analyzing YouTube video by URL: ${videoId}...`);
-
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 10;
   let attempt = 0;
 
   while (attempt < MAX_RETRIES) {
     try {
-      const result = await getModel().generateContent([
-        {
-          fileData: {
-            fileUri: `https://www.youtube.com/watch?v=${videoId}`,
-            mimeType: "video/mp4",
-          },
-        },
-        {
-          text: `Bu video bir YouTube ekonomi/finans videosudur.\n\n${FINANCIAL_ANALYSIS_PROMPT}`,
-        },
-      ]);
-
+      const prompt = `${FINANCIAL_ANALYSIS_PROMPT}\n\n    Transkript:\n    ${transcript}`;
+      const result = await getModel().generateContent(prompt);
       const response = await result.response;
       const text = response.text();
-
-      console.log(`[GEMINI] Video analysis response length: ${text.length} chars`);
-
-      // JSON temizleme
       const jsonMatch = text.match(/\[[\s\S]*\]/);
       return jsonMatch ? JSON.parse(jsonMatch[0]) : [];
     } catch (error: any) {
       attempt++;
       const isRetryable = error.message && (
+        error.message.includes("429") ||
         error.message.includes("exceeded your current quota") ||
         error.message.includes("503") ||
-        error.message.includes("Service Unavailable") ||
-        error.message.includes("Deadline expired") ||
         error.message.includes("RESOURCE_EXHAUSTED")
       );
       if (isRetryable && attempt < MAX_RETRIES) {
-        let waitTime = 15000;
-        const retryMatch = error.message.match(/Please retry in ([\d\.]+)s/);
-        if (retryMatch && retryMatch[1]) {
-          waitTime = Math.ceil(parseFloat(retryMatch[1]) * 1000) + 2000;
-        }
-        console.warn(`[GEMINI] Retryable error. Waiting ${waitTime / 1000}s before attempt ${attempt + 1}/${MAX_RETRIES}...`);
+        const waitTime = 60000; // Kota yenilenene kadar 60s bekle
+        console.warn(`[GEMINI] Transcript: Quota/rate limit. Waiting ${waitTime/1000}s (attempt ${attempt}/${MAX_RETRIES})...`);
         await new Promise(r => setTimeout(r, waitTime));
       } else {
         throw error;
@@ -118,19 +79,103 @@ export const analyzeVideoByUrl = async (videoId: string) => {
 };
 
 /**
- * Ses dosyasını doğrudan Gemini'ye gönderip finansal analiz yapar. (Legacy - artık kullanılmıyor)
+ * Ses dosyasını (örneğin yt-dlp ile indirilmiş) yerel sistemden Gemini'ye yükler, analiz eder ve sonra siler.
+ * Otonom fallback sistemidir. Cloud timeout (503) sorunlarını aşar.
  */
-export const analyzeAudio = async (audioBuffer: Buffer, mimeType: string = "audio/mpeg") => {
-  console.log(`[GEMINI] [LEGACY] analyzeAudio called, redirecting to transcript-based approach is recommended.`);
+export const analyzeAudioFileLocally = async (filePath: string) => {
+  console.log(`[GEMINI FILE] Initiating local audio analysis pipeline for ${filePath}...`);
+  const apiKey = process.env.GEMINI_API_KEY || "";
+  const fileManager = new GoogleAIFileManager(apiKey);
 
-  const audioBase64 = audioBuffer.toString("base64");
-  const result = await getModel().generateContent([
-    { inlineData: { mimeType, data: audioBase64 } },
-    { text: `Bu ses dosyası bir YouTube ekonomi/finans videosundan alınmıştır.\n\n${FINANCIAL_ANALYSIS_PROMPT}` },
-  ]);
-  const response = await result.response;
-  const text = response.text();
-  const jsonMatch = text.match(/\[[\s\S]*\]/);
-  return jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+  const MAX_RETRIES = 10;
+  let attempt = 0;
+
+  while (attempt < MAX_RETRIES) {
+    let fileUri = "";
+    let fileId = "";
+    
+    try {
+      // 1. Upload
+      console.log(`[GEMINI FILE] Uploading audio...`);
+      const uploadResponse = await fileManager.uploadFile(filePath, {
+        mimeType: "audio/mp4",
+        displayName: "audio_extract",
+      });
+      fileUri = uploadResponse.file.uri;
+      fileId = uploadResponse.file.name;
+      console.log(`[GEMINI FILE] Uploaded successfully. URI: ${fileUri}`);
+
+      // 2. Wait for processing (ACTIVE state)
+      let fileState = uploadResponse.file.state;
+      while (fileState === "PROCESSING") {
+        console.log(`[GEMINI FILE] Waiting for audio processing...`);
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        const fileData = await fileManager.getFile(fileId);
+        fileState = fileData.state;
+      }
+
+      if (fileState === "FAILED") {
+        throw new Error("Gemini File processing failed.");
+      }
+
+      // 3. Analyze
+      console.log(`[GEMINI FILE] Audio is ACTIVE. Starting analysis...`);
+      const result = await getModel().generateContent([
+        {
+          fileData: {
+            fileUri: fileUri,
+            mimeType: "audio/mp4",
+          },
+        },
+        {
+          text: `Bu ses dosyası bir YouTube ekonomi/finans videosundan alınmıştır.\n\n${FINANCIAL_ANALYSIS_PROMPT}`,
+        },
+      ]);
+
+      const response = await result.response;
+      const text = response.text();
+      console.log(`[GEMINI FILE] Analysis complete (${text.length} chars).`);
+
+      // 4. Delete
+      console.log(`[GEMINI FILE] Cleaning up file ${fileId} from Gemini...`);
+      await fileManager.deleteFile(fileId);
+
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      return jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+    } catch (error: any) {
+      // Always try to clean up if we have a fileId before retrying
+      if (fileId) {
+        try {
+          console.log(`[GEMINI FILE] Cleanup on error for ${fileId}...`);
+          await fileManager.deleteFile(fileId);
+        } catch (cleanupError) {
+          console.warn(`[GEMINI FILE] Cleanup failed: ${cleanupError}`);
+        }
+      }
+
+      attempt++;
+      const isRetryable = error.message && (
+        error.message.includes("429") ||
+        error.message.includes("exceeded your current quota") ||
+        error.message.includes("503") ||
+        error.message.includes("Service Unavailable") ||
+        error.message.includes("Deadline expired") ||
+        error.message.includes("RESOURCE_EXHAUSTED")
+      );
+
+      if (isRetryable && attempt < MAX_RETRIES) {
+        let waitTime = 60000;
+        const retryMatch = error.message.match(/Please retry in ([\d\.]+)s/);
+        if (retryMatch && retryMatch[1]) {
+          waitTime = Math.max(60000, Math.ceil(parseFloat(retryMatch[1]) * 1000) + 2000);
+        }
+        console.warn(`[GEMINI FILE] Retryable error. Waiting ${waitTime / 1000}s before attempt ${attempt + 1}/${MAX_RETRIES}...`);
+        await new Promise(r => setTimeout(r, waitTime));
+      } else {
+        throw error;
+      }
+    }
+  }
+  return [];
 };
 

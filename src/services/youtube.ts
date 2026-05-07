@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import * as https from 'https';
+import os from 'os';
 import { YoutubeTranscript } from 'youtube-transcript';
 import Parser from 'rss-parser';
 
@@ -182,6 +183,28 @@ export const getVideoTranscript = async (videoId: string): Promise<string> => {
     }
 };
 
+export const downloadAudioLocally = async (videoId: string): Promise<string> => {
+    console.log(`[YOUTUBE AUDIO] Initiating autonomous audio download for ${videoId}`);
+    const binPath = await getOrDownloadYtDlp();
+    const tmpDir = os.tmpdir();
+    const outputPath = path.join(tmpDir, `${videoId}.m4a`);
+
+    try {
+        await execFileAsync(binPath, [
+            "https://www.youtube.com/watch?v=" + videoId,
+            "-f", "bestaudio[ext=m4a]/bestaudio",
+            "--extract-audio",
+            "--audio-format", "m4a",
+            "--output", outputPath
+        ]);
+        console.log(`[YOUTUBE AUDIO] Successfully downloaded audio to ${outputPath}`);
+        return outputPath;
+    } catch (e: any) {
+        console.error(`[YOUTUBE AUDIO] Failed to download audio for ${videoId}:`, e.message);
+        throw e;
+    }
+};
+
 export const getVideoInfo = async (videoId: string): Promise<VideoInfo | null> => {
     try {
         const response = await fetch(`https://www.youtube.com/watch?v=${videoId}`);
@@ -233,7 +256,7 @@ export const getChannelVideos = async (channelId: string, log?: (m: string) => v
         const feed = await parser.parseURL(rssUrl);
         log?.(`[RSS] Successfully parsed feed: ${feed.title}, total items: ${feed.items.length}`);
 
-        return feed.items.slice(0, 5).map((item: CustomItem) => {
+        return feed.items.map((item: CustomItem) => {
             const videoId = item.id.replace('yt:video:', '');
 
             return {
