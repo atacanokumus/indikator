@@ -56,7 +56,7 @@ export default function Dashboard() {
     try {
       // Load analyses and stored prices in parallel
       const [data, storedPrices] = await Promise.all([
-        getLatestAnalysesFiltered(7),
+        getLatestAnalysesFiltered(),
         import('@/lib/firestore').then(m => m.getStoredPrices())
       ]);
 

@@ -9,7 +9,7 @@ export const getModel = () => {
       console.warn("[GEMINI] GEMINI_API_KEY is not set!");
     }
     const genAI = new GoogleGenerativeAI(apiKey);
-    _model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    _model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
   }
   return _model;
 };
@@ -94,13 +94,20 @@ export const analyzeVideoByUrl = async (videoId: string) => {
       return jsonMatch ? JSON.parse(jsonMatch[0]) : [];
     } catch (error: any) {
       attempt++;
-      if (error.message && error.message.includes("exceeded your current quota") && attempt < MAX_RETRIES) {
-        let waitTime = 30000;
+      const isRetryable = error.message && (
+        error.message.includes("exceeded your current quota") ||
+        error.message.includes("503") ||
+        error.message.includes("Service Unavailable") ||
+        error.message.includes("Deadline expired") ||
+        error.message.includes("RESOURCE_EXHAUSTED")
+      );
+      if (isRetryable && attempt < MAX_RETRIES) {
+        let waitTime = 15000;
         const retryMatch = error.message.match(/Please retry in ([\d\.]+)s/);
         if (retryMatch && retryMatch[1]) {
           waitTime = Math.ceil(parseFloat(retryMatch[1]) * 1000) + 2000;
         }
-        console.warn(`[GEMINI] 429 Rate Limit. Waiting ${waitTime / 1000}s before attempt ${attempt + 1}...`);
+        console.warn(`[GEMINI] Retryable error. Waiting ${waitTime / 1000}s before attempt ${attempt + 1}/${MAX_RETRIES}...`);
         await new Promise(r => setTimeout(r, waitTime));
       } else {
         throw error;

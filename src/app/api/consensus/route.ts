@@ -5,7 +5,7 @@ import { normalizeAsset } from '@/lib/asset-utils';
 export async function GET() {
     try {
         const [analyses, channels] = await Promise.all([
-            getLatestAnalysesFiltered(7), // Son 7 gün, kanal başına son video
+            getLatestAnalysesFiltered(), // Tüm analizler, emtia bazında son sinyal
             getChannels()
         ]);
 

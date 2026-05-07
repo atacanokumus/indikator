@@ -79,36 +79,60 @@ export const getLatestAnalyses = async (n = 100) => {
 };
 
 /**
- * Son N gün içindeki analizleri getirir, her kanal (analist) için sadece en son videoyu tutar.
- * Bu, eski "AL" sinyallerinin yeni "SAT" sinyalleriyle çakışmasını engeller.
- * 
- * @param maxAgeDays - Kaç günlük pencere (varsayılan: 7)
+ * Tüm analizleri getirir. Her analist + emtia çifti için sadece en son sinyali tutar.
+ * Örnek: Selçuk Geçer Video A'da altın, Video B'de bitcoin konuştuysa ikisi de görünür.
+ * Ama Video C'de tekrar altın konuştuysa, Video A'daki altın sinyali Video C'ninki ile değiştirilir.
  */
-export const getLatestAnalysesFiltered = async (maxAgeDays: number = 7): Promise<VideoAnalysis[]> => {
+export const getLatestAnalysesFiltered = async (_maxAgeDays?: number): Promise<VideoAnalysis[]> => {
     try {
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - maxAgeDays);
-        const cutoffStr = cutoffDate.toISOString();
-
         const q = query(
             collection(db!, "analyses"),
-            where("publishedAt", ">=", cutoffStr),
             orderBy("publishedAt", "desc")
         );
         const snapshot = await getDocs(q);
         const allAnalyses = snapshot.docs.map(doc => doc.data() as VideoAnalysis);
 
-        // Her kanal için sadece en son videoyu tut
-        const channelLatest = new Map<string, VideoAnalysis>();
+        // Her (analist, emtia) çifti için en son sinyali tut
+        // Anahtar: "channelId::normalizedAsset"
+        const latestSignals = new Map<string, { analysis: VideoAnalysis; result: Analysis; publishedAt: string }>();
+
         for (const analysis of allAnalyses) {
-            const existing = channelLatest.get(analysis.channelId);
-            if (!existing || new Date(analysis.publishedAt) > new Date(existing.publishedAt)) {
-                channelLatest.set(analysis.channelId, analysis);
+            // Boş sonuçları atla
+            if (!analysis.results || analysis.results.length === 0) continue;
+
+            for (const result of analysis.results) {
+                const key = `${analysis.channelId}::${(result.asset || '').toLowerCase().trim()}`;
+                const existing = latestSignals.get(key);
+                if (!existing || new Date(analysis.publishedAt) > new Date(existing.publishedAt)) {
+                    latestSignals.set(key, { analysis, result, publishedAt: analysis.publishedAt });
+                }
             }
         }
 
-        return Array.from(channelLatest.values())
-            .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+        // Sonuçları VideoAnalysis[] formatına geri dönüştür
+        // Her videoId için filtrelenmiş sonuçları topla
+        const videoMap = new Map<string, VideoAnalysis>();
+        const videoResults = new Map<string, Analysis[]>();
+
+        for (const { analysis, result } of latestSignals.values()) {
+            const vid = analysis.videoId;
+            if (!videoMap.has(vid)) {
+                videoMap.set(vid, { ...analysis, results: [] });
+                videoResults.set(vid, []);
+            }
+            videoResults.get(vid)!.push(result);
+        }
+
+        // Sonuçları birleştir
+        const finalAnalyses: VideoAnalysis[] = [];
+        for (const [vid, analysis] of videoMap.entries()) {
+            analysis.results = videoResults.get(vid) || [];
+            if (analysis.results.length > 0) {
+                finalAnalyses.push(analysis);
+            }
+        }
+
+        return finalAnalyses.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
     } catch (error: any) {
         console.error("Firestore Latest Per Channel Error:", error);
         return [];
