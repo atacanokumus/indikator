@@ -12,6 +12,13 @@ function callbackUrl(): string {
     return `${base.replace(/\/$/, "")}/api/youtube/webhook`;
 }
 
+/**
+ * Google'ın hub'ı zaman zaman "503 Transient error" döndürüyor (kendi tarafındaki
+ * geçici sorun; bizim istek biçimimizle ilgisi yok). Bu yüzden her kanal için
+ * üstel geri çekilmeyle birkaç kez deniyoruz.
+ */
+const MAX_TRIES = 4;
+
 export async function subscribeChannel(channelId: string, mode: "subscribe" | "unsubscribe" = "subscribe") {
     const secret = process.env.WEBSUB_SECRET;
     if (!secret) throw new Error("WEBSUB_SECRET tanımlı değil");
@@ -25,24 +32,43 @@ export async function subscribeChannel(channelId: string, mode: "subscribe" | "u
         "hub.lease_seconds": "432000", // 5 gün
     });
 
-    const res = await fetch(HUB, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-    });
+    let status = 0;
+    let body = "";
 
-    const ok = res.status === 202 || res.status === 204;
+    for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
+        if (attempt > 0) {
+            const wait = 5000 * Math.pow(2, attempt - 1); // 5s, 10s, 20s
+            console.log(`[WEBSUB] ${channelId}: hub ${status} döndü, ${wait / 1000} sn sonra tekrar...`);
+            await new Promise((r) => setTimeout(r, wait));
+        }
+        try {
+            const res = await fetch(HUB, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: params.toString(),
+                signal: AbortSignal.timeout(30_000),
+            });
+            status = res.status;
+            if (status === 202 || status === 204) break;
+            body = (await res.text()).slice(0, 200);
+            // 4xx bizim hatamızdır, tekrar denemek anlamsız
+            if (status >= 400 && status < 500) break;
+        } catch (err) {
+            status = 0;
+            body = (err as Error).message;
+        }
+    }
+
+    const ok = status === 202 || status === 204;
     await setDocData("pubsub_subs", channelId, {
         channelId,
         mode,
         lastAttemptAt: new Date().toISOString(),
-        lastStatus: res.status,
+        lastStatus: status,
         ok,
     });
 
-    if (!ok) {
-        throw new Error(`Hub ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    }
+    if (!ok) throw new Error(`Hub ${status}: ${body}`);
     return true;
 }
 
