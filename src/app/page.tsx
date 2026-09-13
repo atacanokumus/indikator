@@ -1,303 +1,212 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { getLatestAnalysesFiltered, VideoAnalysis, Channel } from "@/lib/firestore";
-import { SignalCards } from "@/components/SignalCards";
-import { ComplianceModal } from "@/components/ComplianceModal";
-import { OnboardingModal } from "@/components/OnboardingModal";
-import { NewsTicker } from "@/components/NewsTicker";
-import { normalizeAsset } from "@/lib/asset-utils";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { useSyncTimer } from "@/hooks/useSyncTimer";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { AdSlot } from "@/components/AdSlot";
+import { NewsTicker } from "@/components/NewsTicker";
+import { SignalExplorer } from "@/components/SignalExplorer";
+import { SpotlightCard } from "@/components/SpotlightCard";
+import { assetLabel, relativeTime, SPOTLIGHT_ASSETS } from "@/lib/display";
+import { getHomeSnapshot } from "@/server/read";
 
-export default function Dashboard() {
-  const [analyses, setAnalyses] = useState<VideoAnalysis[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [prices, setPrices] = useState<Record<string, { price: number; currency: string }>>({});
-  const [isComplianceOpen, setIsComplianceOpen] = useState(false);
-  const [news, setNews] = useState<any[]>([]);
-  const [syncStatus, setSyncStatus] = useState<any>(null);
+export const revalidate = 60;
 
-  const { minutesSinceLastSync, minutesUntilNextSync, isInitializing } = useSyncTimer(() => {
-    console.log("Timer expired! Reloading live data...");
-    loadData();
-    fetchNewsData();
-  });
+export const metadata: Metadata = {
+    title: "Ekonomistler ne diyor? Altın, dolar, borsa ve kripto sinyalleri",
+    description:
+        "YouTube'daki ekonomi yorumcularının son videolarını yapay zeka ile analiz ediyoruz. Altın, dolar, BIST 100 ve Bitcoin için kimin ne dediğini tek ekranda görün.",
+    alternates: { canonical: "/" },
+};
 
-  useEffect(() => {
-    loadData();
-    fetchNewsData();
+export default async function HomePage() {
+    const snapshot = await getHomeSnapshot();
+    const { consensus } = snapshot;
 
-    // Sync status listener
-    if (db) {
-      const unsub = onSnapshot(doc(db, "system_status", "sync_state"), (docSnap) => {
-        if (docSnap.exists()) {
-          setSyncStatus(docSnap.data());
-        }
-      });
-      return () => unsub();
-    }
-  }, []);
+    const byAsset = new Map(consensus.map((c) => [c.asset, c]));
+    const spotlight = SPOTLIGHT_ASSETS.map((a) => byAsset.get(a)).filter(Boolean) as typeof consensus;
+    // Öne çıkanlar boşsa en çok konuşulan 4 varlıkla doldur
+    const hero = spotlight.length >= 3 ? spotlight : consensus.slice(0, 4);
 
-  const fetchNewsData = async () => {
-    try {
-      const res = await fetch('/api/news');
-      const data = await res.json();
-      setNews(data);
-    } catch (err) {
-      console.error("Haber yükleme hatası:", err);
-    }
-  };
+    const hasData = consensus.length > 0;
 
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      // Load analyses and stored prices in parallel
-      const [data, storedPrices] = await Promise.all([
-        getLatestAnalysesFiltered(),
-        import('@/lib/firestore').then(m => m.getStoredPrices())
-      ]);
+    return (
+        <>
+            {/* ---------------- Giriş ---------------- */}
+            <section className="hero-band"><div className="wrap" style={{ paddingBlock: "46px 10px" }}>
+                <div style={{ maxWidth: 660 }}>
+                    <p className="eyebrow" style={{ marginBottom: 12 }}>
+                        {hasData
+                            ? `${snapshot.analystCount} yorumcu · son ${snapshot.windowDays} gün · ${snapshot.videoCount} video`
+                            : "Yapay zeka destekli sinyal takibi"}
+                    </p>
+                    <h1 className="h1">
+                        Ekonomistler <span style={{ color: "var(--brand)" }}>ne diyor?</span>
+                    </h1>
+                    <p className="lead" style={{ marginTop: 14 }}>
+                        YouTube&apos;daki ekonomi yorumcularının son videolarını okuyup,
+                        hangi varlıkta <strong>AL</strong>, <strong>SAT</strong> ya da <strong>BEKLE</strong>
+                        {" "}dediklerini tek ekranda topluyoruz. Video izlemeden, saniyeler içinde.
+                    </p>
 
-      setAnalyses(data);
-      setPrices(storedPrices);
-
-      if (data.length > 0) {
-        // Still fetch live prices to refresh the data
-        const originalAssets = data.flatMap((v) => v.results.map((r) => r.asset));
-        const normalizedAssets = originalAssets.map((a) => normalizeAsset(a));
-        const uniqueAssets = Array.from(new Set([...originalAssets, ...normalizedAssets]));
-        fetchPrices(uniqueAssets);
-      }
-    } catch (err) {
-      console.error("Veri yükleme hatası:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPrices = async (assets: string[]) => {
-    if (assets.length === 0) return;
-    try {
-      const resp = await fetch("/api/prices", {
-        method: "POST",
-        body: JSON.stringify({ assets }),
-      });
-      const data = await resp.json();
-      if (data.success) {
-        setPrices(prev => ({ ...prev, ...data.prices }));
-      }
-    } catch (err) {
-      console.error("Fiyat yükleme hatası:", err);
-    }
-  };
-
-  return (
-    <main style={{ minHeight: "100vh", background: "var(--bg-primary)" }}>
-      {/* Navigation */}
-      <nav className="navbar">
-        <Link href="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <img
-            src="/logo-main.png"
-            alt="Ecotube Logo"
-            style={{
-              height: 40,
-              width: "auto",
-              objectFit: "contain"
-            }}
-          />
-        </Link>
-
-        <div className="nav-links">
-          <Link href="/" className="nav-link active">Sinyaller</Link>
-          <Link href="/forecasts" className="nav-link">Konsensüs</Link>
-          <Link href="/economists" className="nav-link">Analistler</Link>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section style={{
-        padding: "60px 24px 40px",
-        textAlign: "center",
-        maxWidth: 720,
-        margin: "0 auto",
-      }}>
-        <div style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          background: syncStatus?.isAnalyzing ? "var(--signal-bekle-bg)" : "var(--signal-al-bg)",
-          color: syncStatus?.isAnalyzing ? "var(--signal-bekle)" : "var(--signal-al)",
-          padding: "6px 14px",
-          borderRadius: "var(--radius-full)",
-          fontSize: 13,
-          fontWeight: 600,
-          marginBottom: 20,
-          border: syncStatus?.isAnalyzing ? "1px solid var(--signal-bekle-border)" : "1px solid var(--signal-al-border)",
-        }}>
-          <span style={{
-            width: 8, height: 8, borderRadius: "50%", 
-            background: syncStatus?.isAnalyzing ? "var(--signal-bekle)" : "var(--signal-al)",
-            display: "inline-block",
-            boxShadow: syncStatus?.isAnalyzing ? "0 0 8px var(--signal-bekle)" : "0 0 8px var(--signal-al)",
-            animation: "pulse 2s infinite"
-          }} />
-          {syncStatus?.isAnalyzing ? (
-            `Şu an aktif analizlenen: ${syncStatus.currentChannel} - ${syncStatus.currentVideo}`
-          ) : isInitializing ? (
-            "Canlı veriler güncelleniyor..."
-          ) : (
-            `Şu an aktif analizlenen bir kanal bulunmamaktadır. Sonraki tarama ${minutesUntilNextSync} dk içinde.`
-          )}
-        </div>
-
-        <h1 style={{
-          fontSize: "clamp(2rem, 5vw, 2.75rem)",
-          fontWeight: 900,
-          color: "var(--text-primary)",
-          lineHeight: 1.15,
-          letterSpacing: "-0.03em",
-          margin: "0 0 16px",
-        }}>
-          Ekonomistler<br />
-          <span style={{ color: "var(--brand-teal)" }}>Ne Diyor?</span>
-        </h1>
-
-        <p style={{
-          fontSize: 17,
-          color: "var(--text-secondary)",
-          lineHeight: 1.6,
-          maxWidth: 520,
-          margin: "0 auto",
-        }}>
-          YouTube ekonomistlerinin son videolarını yapay zeka ile analiz ediyor,
-          size <strong>AL</strong>, <strong>SAT</strong> ve <strong>BEKLE</strong> sinyallerini sunuyoruz.
-        </p>
-      </section>
-
-      {/* News Ticker Section */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
-        <NewsTicker />
-      </section>
-
-      {/* Signal Cards */}
-      <section style={{
-        maxWidth: 1200,
-        margin: "0 auto",
-        padding: "0 24px 40px",
-      }}>
-        {loading && analyses.length === 0 ? (
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-            gap: 16,
-            width: "100%",
-            paddingTop: 48
-          }}>
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="card" style={{ padding: "24px", height: "180px", display: "flex", flexDirection: "column", justifyContent: "space-between", borderColor: "var(--border-light)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ width: "40%", height: "24px", background: "var(--bg-surface)", borderRadius: "4px", animation: "pulse 1.5s infinite" }} />
-                  <div style={{ width: "20%", height: "36px", background: "var(--bg-surface)", borderRadius: "8px", animation: "pulse 1.5s infinite" }} />
+                    {snapshot.lastVideoAt && (
+                        <p className="tiny row gap-6" style={{ marginTop: 14 }}>
+                            <span className="pulse-dot" style={{ color: "var(--al)" }} />
+                            Son analiz edilen video: {relativeTime(snapshot.lastVideoAt)}
+                        </p>
+                    )}
                 </div>
-                <div style={{ width: "100%", height: "8px", background: "var(--bg-surface)", borderRadius: "4px", animation: "pulse 1.5s infinite" }} />
-                <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 12, borderTop: "1px solid var(--border-light)" }}>
-                  <div style={{ width: "30%", height: "16px", background: "var(--bg-surface)", borderRadius: "4px", animation: "pulse 1.5s infinite" }} />
-                  <div style={{ width: "20%", height: "16px", background: "var(--bg-surface)", borderRadius: "4px", animation: "pulse 1.5s infinite" }} />
-                </div>
-              </div>
-            ))}
-            <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
-          </div>
-        ) : (
-          <>
-            <SignalCards data={analyses} prices={prices} news={news} />
-            {analyses.length === 0 && !loading && (
-              <div style={{
-                textAlign: "center",
-                padding: "60px 24px",
-                color: "var(--text-secondary)",
-                fontSize: 16,
-              }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
-                <div style={{ fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>
-                  Son 7 günde sinyal bulunamadı
-                </div>
-                <div>Analistlerin yeni videoları yayınlanınca sinyaller otomatik olarak güncellenecektir.</div>
-              </div>
+            </div></section>
+
+            {/* ---------------- Hemen cevap: öne çıkan varlıklar ---------------- */}
+            {hero.length > 0 && (
+                <section className="wrap section-tight" aria-labelledby="one-cikanlar">
+                    <h2 id="one-cikanlar" className="sr-only">Öne çıkan varlıklar</h2>
+                    <div className="grid-spot">
+                        {hero.map((item) => <SpotlightCard key={item.asset} item={item} />)}
+                    </div>
+                </section>
             )}
-          </>
-        )}
-      </section>
 
-      {/* Disclaimer */}
-      <section style={{
-        maxWidth: 1200,
-        margin: "0 auto",
-        padding: "0 24px 60px",
-      }}>
-        <div style={{
-          background: "var(--bg-surface)",
-          border: "1px solid var(--border)",
-          borderRadius: "var(--radius)",
-          padding: "24px 28px",
-          display: "flex",
-          flexDirection: "column" as const,
-          gap: 12,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--signal-bekle)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-              <line x1="12" y1="9" x2="12" y2="13" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--signal-bekle)" }}>Yasal Uyarı</span>
-          </div>
-          <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7, margin: 0 }}>
-            Bu platformda yer alan bilgiler <strong>yatırım danışmanlığı</strong> kapsamında değildir.
-            ECOTUBE, YouTube üzerindeki finansal içerikleri yapay zeka ile özetleyen bir araştırma aracıdır.
-            Gösterilen sinyaller kesinlik ifade etmez. Yatırım kararlarınızı profesyonel danışmanlık alarak veriniz.
-          </p>
-          <button
-            onClick={() => setIsComplianceOpen(true)}
-            style={{
-              alignSelf: "flex-start",
-              fontSize: 13,
-              fontWeight: 600,
-              color: "var(--brand-teal)",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-              textDecoration: "underline",
-              textUnderlineOffset: 3,
-            }}
-          >
-            Detaylı Yasal Bilgi →
-          </button>
-        </div>
-      </section>
+            <NewsTicker />
+            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_TOP} />
 
-      {/* Footer */}
-      <footer style={{
-        borderTop: "1px solid var(--border)",
-        padding: "24px",
-        textAlign: "center",
-        color: "var(--text-muted)",
-        fontSize: 13,
-      }}>
-        © 2026 ECOTUBE · Akıllı Analiz & Sinyal Üretimi · <Link href="/privacy" style={{ color: "var(--text-muted)", textDecoration: "underline" }}>Gizlilik Politikası</Link>
-      </footer>
+            {/* ---------------- Tüm sinyaller ---------------- */}
+            <section className="wrap section" aria-labelledby="tum-sinyaller">
+                <div className="between wrapflex" style={{ marginBottom: 18 }}>
+                    <div>
+                        <h2 id="tum-sinyaller" className="h2">Tüm varlıklar</h2>
+                        <p className="small" style={{ margin: "4px 0 0" }}>
+                            Her varlık için analistlerin en güncel görüşleri ve ağırlıklı konsensüs.
+                        </p>
+                    </div>
+                    <Link href="/konsensus" className="btn btn-ghost">Konsensüs tablosu →</Link>
+                </div>
 
-      <ComplianceModal
-        isOpen={isComplianceOpen}
-        onClose={() => setIsComplianceOpen(false)}
-        initialTab="spk"
-      />
+                {hasData ? (
+                    <SignalExplorer items={consensus} />
+                ) : (
+                    <div className="card card-pad stack gap-8" style={{ textAlign: "center", paddingBlock: 56 }}>
+                        <strong>Henüz sinyal yok</strong>
+                        <span className="small">
+                            Takip edilen kanallar yeni video yayınladığı anda analiz edilir ve burada görünür.
+                        </span>
+                    </div>
+                )}
+            </section>
 
-      {/* Welcome Guide for First Time Users */}
-      <OnboardingModal />
-    </main>
-  );
+            {/* ---------------- Nasıl çalışır (SEO + AdSense için gerçek içerik) ---------------- */}
+            <section className="wrap section" aria-labelledby="nasil-calisir">
+                <h2 id="nasil-calisir" className="h2" style={{ marginBottom: 18 }}>Nasıl çalışıyor?</h2>
+                <div className="grid-spot" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+                    {[
+                        {
+                            t: "1 · Video yayınlanır",
+                            d: "Takip ettiğimiz ekonomi kanallarından biri video yüklediği anda YouTube bize bildirim gönderir.",
+                        },
+                        {
+                            t: "2 · Yapay zeka dinler",
+                            d: "Videonun transkripti (yoksa sesi) yapay zeka ile okunur; konuşmacının hangi varlık için ne dediği çıkarılır.",
+                        },
+                        {
+                            t: "3 · Sinyal üretilir",
+                            d: "Her varlık için AL / SAT / BEKLE etiketi, gerekçesi ve o anki fiyatı kaydedilir.",
+                        },
+                        {
+                            t: "4 · Konsensüs hesaplanır",
+                            d: "Birden fazla yorumcunun görüşü, güncellik ve geçmiş isabet oranına göre ağırlıklandırılıp birleştirilir.",
+                        },
+                    ].map((s) => (
+                        <div key={s.t} className="card card-pad stack gap-8">
+                            <strong className="h3">{s.t}</strong>
+                            <p className="small" style={{ margin: 0 }}>{s.d}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* ---------------- Sık sorulanlar ---------------- */}
+            <section className="wrap section" aria-labelledby="sss">
+                <h2 id="sss" className="h2" style={{ marginBottom: 18 }}>Sık sorulan sorular</h2>
+                <div className="stack gap-12" style={{ maxWidth: 760 }}>
+                    {FAQ.map((f) => (
+                        <details key={f.q} className="card card-pad">
+                            <summary style={{ cursor: "pointer", fontWeight: 700 }}>{f.q}</summary>
+                            <p className="small" style={{ marginBottom: 0, marginTop: 10 }}>{f.a}</p>
+                        </details>
+                    ))}
+                </div>
+            </section>
+
+            {/* ---------------- Yasal uyarı ---------------- */}
+            <section className="wrap section-tight">
+                <div className="card card-pad stack gap-8" style={{ borderColor: "var(--bekle-border)", background: "var(--bekle-bg)" }}>
+                    <span className="row gap-6" style={{ color: "var(--bekle)", fontWeight: 750, fontSize: 13 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+                            <path d="M12 9v4M12 17h.01" />
+                        </svg>
+                        Yasal uyarı
+                    </span>
+                    <p className="small" style={{ margin: 0, color: "var(--text)" }}>
+                        Bu sitedeki içerikler <strong>yatırım danışmanlığı değildir</strong>. ECOTUBE, kamuya açık
+                        YouTube videolarını özetleyen bir araştırma aracıdır; sinyaller yorumcuların kendi
+                        ifadelerinin yapay zeka ile çıkarılmış özetidir ve hata içerebilir. Yatırım kararlarınızı
+                        kendi araştırmanıza ve yetkili kuruluşlardan alacağınız danışmanlığa dayandırın.
+                    </p>
+                </div>
+            </section>
+
+            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />
+
+            <FaqJsonLd />
+            {hasData && <ItemListJsonLd items={hero.map((h) => assetLabel(h.asset))} />}
+        </>
+    );
 }
+
+/* ------------------------------------------------------------------ */
+
+const FAQ = [
+    {
+        q: "Sinyaller nereden geliyor?",
+        a: "Takip listemizdeki YouTube ekonomi kanallarının videolarından. Videonun transkripti yapay zekaya okutulur ve konuşmacının bir varlık için net görüş bildirdiği yerler işaretlenir. Sinyal bize değil, videodaki yorumcuya aittir.",
+    },
+    {
+        q: "Ne sıklıkla güncelleniyor?",
+        a: "Takip edilen bir kanal video yayınladığı anda YouTube bize bildirim gönderir ve video birkaç dakika içinde analiz edilir. Ayrıca gün boyunca düzenli kontroller yapılır, böylece kaçan video kalmaz.",
+    },
+    {
+        q: "Konsensüs nasıl hesaplanıyor?",
+        a: "Bir varlık için her yorumcunun yalnızca en güncel görüşü alınır. Görüşler, ne kadar yeni olduklarına ve yorumcunun geçmiş isabet oranına göre ağırlıklandırılıp birleştirilir.",
+    },
+    {
+        q: "Analistlerin başarı oranı neye göre ölçülüyor?",
+        a: "Her sinyal kaydedilirken varlığın o anki fiyatı da saklanır. Sinyalin vadesi dolduğunda (kısa 7 gün, orta 30 gün, uzun 180 gün) fiyat tekrar ölçülür ve sinyalin yönü tutup tutmadığına bakılır.",
+    },
+    {
+        q: "Bu bir yatırım tavsiyesi mi?",
+        a: "Hayır. ECOTUBE yatırım danışmanlığı hizmeti vermez; başkalarının kamuya açık yorumlarını derleyen bir araştırma aracıdır.",
+    },
+];
+
+function FaqJsonLd() {
+    const json = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: FAQ.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+    };
+    return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }} />;
+}
+
+function ItemListJsonLd({ items }: { items: string[] }) {
+    const json = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        name: "Öne çıkan varlıklar",
+        itemListElement: items.map((name, i) => ({ "@type": "ListItem", position: i + 1, name })),
+    };
+    return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }} />;
+}
+

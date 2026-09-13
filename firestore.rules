@@ -1,0 +1,25 @@
+rules_version = '2';
+
+// ECOTUBE Firestore güvenlik kuralları
+// Mantık: Tarayıcı sadece OKUR. Tüm yazma işlemleri sunucu tarafında
+// firebase-admin (servis hesabı) ile yapılır ve bu kuralları bypass eder.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Herkese açık okunabilir veri (sitenin gösterdiği içerik)
+    match /analyses/{doc}      { allow read: if true; allow write: if false; }
+    match /channels/{doc}      { allow read: if true; allow write: if false; }
+    match /prices/{doc}        { allow read: if true; allow write: if false; }
+    match /system_status/{doc} { allow read: if true; allow write: if false; }
+    match /snapshots/{doc}     { allow read: if true; allow write: if false; }
+    match /news_cache/{doc}    { allow read: if true; allow write: if false; }
+
+    // Gizli koleksiyonlar: tarayıcıdan asla erişilemez
+    match /settings/{doc}       { allow read, write: if false; }
+    match /failed_videos/{doc}  { allow read, write: if false; }
+    match /pubsub_subs/{doc}    { allow read, write: if false; }
+
+    // Kural tanımlanmamış her şey kapalı
+    match /{document=**} { allow read, write: if false; }
+  }
+}

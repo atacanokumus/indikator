@@ -40,3 +40,17 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .firebase/
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# local debug artifacts
+*.vtt
+*-player-script.js
+transcript-fail-*.png
+transcript-final-fail-*.png
+youtube_debug*
+youtube_cookies*
+test-debug-*.txt

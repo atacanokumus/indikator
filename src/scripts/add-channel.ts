@@ -1,53 +1,42 @@
-import { db } from "../lib/firebase";
-import { doc, setDoc, Timestamp } from "firebase/firestore";
+/**
+ * Takip listesine kanal ekler ve anlık bildirim aboneliğini başlatır.
+ *   npx tsx src/scripts/add-channel.ts UCxxxxxxxxxxxx
+ */
+import "./_env";
 import Parser from "rss-parser";
+import { addChannel } from "@/server/repo";
+import { subscribeChannel } from "@/server/websub";
 
 const parser = new Parser();
 
-async function addYouTubeChannel(channelId: string) {
-    if (!channelId) {
-        console.error("Lütfen bir YouTube Channel ID belirtin. Örn: UCqU4fCu2zSL8gamk2CgvjCQ");
+async function main() {
+    const channelId = process.argv[2];
+    if (!channelId?.startsWith("UC")) {
+        console.error("UC ile başlayan bir YouTube Channel ID verin.");
         process.exit(1);
     }
 
-    console.log(`[ADMIN] Kanal bilgileri çekiliyor: ${channelId}...`);
+    const feed = await parser.parseURL(
+        `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`
+    );
+    if (!feed?.title) throw new Error("Kanal RSS üzerinden bulunamadı.");
+
+    await addChannel({
+        id: channelId,
+        title: feed.title,
+        totalScore: 100,
+        predictionCount: 0,
+        successCount: 0,
+        weight: 1,
+    });
+    console.log(`✓ Eklendi: ${feed.title}`);
 
     try {
-        const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
-        const feed = await parser.parseURL(rssUrl);
-
-        if (!feed || !feed.title) {
-            throw new Error("Kanal başlığı RSS üzerinden alınamadı.");
-        }
-
-        const channelTitle = feed.title;
-        console.log(`[ADMIN] Kanal Bulundu: ${channelTitle}`);
-
-        const channelData = {
-            id: channelId,
-            title: channelTitle,
-            addedAt: Timestamp.now(),
-            totalScore: 0,
-            predictionCount: 0,
-            successRate: 0,
-            weight: 1
-        };
-
-        await setDoc(doc(db!, "channels", channelId), channelData);
-
-        console.log("--------------------------------------------------");
-        console.log(`BAŞARILI: ${channelTitle} sisteme eklendi!`);
-        console.log(`Artık cron job bir sonraki taramada bu kanalı otomatik olarak inceleyecektir.`);
-        console.log("--------------------------------------------------");
-
-    } catch (error: any) {
-        console.error(`[HATA] Kanal eklenemedi: ${error.message}`);
-        if (error.message.includes("404")) {
-            console.error("İpucu: Channel ID hatalı olabilir. Lütfen 'UC' ile başlayan ID'yi kullandığınızdan emin olun.");
-        }
-        process.exit(1);
+        await subscribeChannel(channelId);
+        console.log("✓ Anlık bildirim aboneliği istendi.");
+    } catch (err) {
+        console.warn(`! Abonelik kurulamadı (yedek tarama devrede): ${(err as Error).message}`);
     }
 }
 
-const targetChannelId = process.argv[2];
-addYouTubeChannel(targetChannelId).then(() => process.exit(0));
+main().then(() => process.exit(0)).catch((e) => { console.error(e.message); process.exit(1); });

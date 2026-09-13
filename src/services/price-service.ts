@@ -27,7 +27,7 @@ export class PriceService {
         if (result) {
             priceCache[normalized] = result;
             // Background update to Firestore (non-blocking)
-            import('@/lib/firestore').then(m => m.updateStoredPrice(normalized, result.price, result.currency)).catch(() => { });
+            import('@/server/repo').then(m => m.updateStoredPrice(normalized, result.price, result.currency)).catch(() => { });
         }
         return result;
     }
@@ -57,11 +57,14 @@ export class PriceService {
         if (normalized === 'GÜMÜŞ') return this.getSilverPrice();
         if (normalized === 'XU100' || normalized.includes('BORSA İSTANBUL')) return this.getYahooFinancePrice('XU100.IS');
 
-        // 3. Borsa İstanbul & Global Stocks
-        if (normalized.length >= 2 && normalized.length <= 10) {
-            if (normalized.includes('.') || normalized.includes('=')) {
-                return this.getYahooFinancePrice(normalized);
-            }
+        // Yahoo sembolü doğrudan verilmişse (GC=F, BTC-USD, XU100.IS ...)
+        if (normalized.includes('=') || normalized.includes('.') || normalized.includes('-')) {
+            return this.getYahooFinancePrice(normalized);
+        }
+
+        // BIST hisseleri: tam 4-5 HARF. Böylece "FED", "TAHVİL", "FAİZ" gibi
+        // kelimeler yanlışlıkla hisse kodu sanılıp saçma fiyat döndürmez.
+        if (/^[A-Z]{4,5}$/.test(normalized)) {
             return this.getYahooFinancePrice(`${normalized}.IS`);
         }
 
@@ -82,7 +85,7 @@ export class PriceService {
                 };
             }
             throw new Error('Data presence failure');
-        } catch (e) {
+        } catch {
             // Fallback to Yahoo if Coingecko fails or returns empty
             const symbol = id === 'bitcoin' ? 'BTC-USD' : id === 'ethereum' ? 'ETH-USD' : id === 'solana' ? 'SOL-USD' : null;
             if (symbol) return this.getYahooFinancePrice(symbol);
@@ -103,7 +106,7 @@ export class PriceService {
                     timestamp: Date.now()
                 };
             }
-        } catch (e) { }
+        } catch { }
 
         // Fallback to Yahoo
         return this.getYahooFinancePrice('USDTRY=X');
@@ -126,7 +129,7 @@ export class PriceService {
                     timestamp: Date.now()
                 };
             }
-        } catch (e) { }
+        } catch { }
 
         // Fallback: Yahoo Gold Futures (GC=F)
         const gc = await this.getYahooFinancePrice('GC=F');
@@ -160,7 +163,7 @@ export class PriceService {
                     timestamp: Date.now()
                 };
             }
-        } catch (e) { }
+        } catch { }
         return null;
     }
 
@@ -178,7 +181,7 @@ export class PriceService {
                     timestamp: Date.now()
                 };
             }
-        } catch (e) {
+        } catch {
             // console.error(`PriceService (Yahoo) Error for ${symbol}:`, e);
         }
         return null;

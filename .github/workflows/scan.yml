@@ -1,0 +1,57 @@
+name: Yedek Tarama ve Bakım
+
+# Anlık bildirim (push) birincil yöntemdir; bu iş akışı güvenlik ağıdır:
+# push kaçarsa veya abonelik düşerse videoları yine de yakalar.
+#
+# NOT: Depo GİZLİ ise GitHub Actions ayda 2000 dakika ücretsizdir; 3 saatlik
+# aralık bu limitin çok altında kalır. Depoyu HERKESE AÇIK yaparsanız dakika
+# sınırı kalkar ve aralığı "*/15 * * * *" yapabilirsiniz.
+on:
+  schedule:
+    - cron: "10 */3 * * *"  # 3 saatte bir: kaçan video kontrolü
+    - cron: "20 3 * * *"    # her gün 06:20 TR: derin tarama + abonelik yenileme
+  workflow_dispatch:
+    inputs:
+      deep:
+        description: "Derin tarama yap"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ecotube-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      WEBSUB_SECRET: ${{ secrets.WEBSUB_SECRET }}
+      PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
+      IS_DEEP: ${{ (github.event.schedule == '20 3 * * *' || inputs.deep) && 'yes' || 'no' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+
+      - name: Kanalları tara
+        run: |
+          if [ "$IS_DEEP" = "yes" ]; then
+            npx tsx src/scripts/scan-all.ts --deep
+          else
+            npx tsx src/scripts/scan-all.ts
+          fi
+
+      - name: Fiyatları güncelle
+        run: npx tsx src/scripts/sync-prices.ts
+
+      - name: Push aboneliklerini yenile
+        if: env.IS_DEEP == 'yes'
+        run: npx tsx src/scripts/resubscribe.ts

@@ -1,105 +1,84 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getChannels, addChannel, deleteChannel } from "@/lib/firestore";
-import { Timestamp } from "firebase/firestore";
+import Parser from "rss-parser";
 import { decodeHtml } from "@/lib/utils";
-import { AdminService } from "@/services/admin-service";
+import { verifyAdminSecret } from "@/server/auth";
+import { addChannel, deleteChannel, getChannels } from "@/server/repo";
+import { subscribeChannel } from "@/server/websub";
 
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+export const runtime = "nodejs";
+export const revalidate = 300;
 
-async function resolveChannelUrl(url: string) {
-    let handle = "";
-    if (url.includes("@")) {
-        handle = "@" + url.split("@")[1].split("/")[0].split("?")[0];
-    } else if (url.includes("/channel/")) {
-        const id = url.split("/channel/")[1].split("/")[0].split("?")[0];
-        return { id };
-    } else if (url.includes("/user/")) {
-        const username = url.split("/user/")[1].split("/")[0].split("?")[0];
-        // Need to search by forUsername
-        const resp = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet&forUsername=${username}&key=${YOUTUBE_API_KEY}`);
-        const data = await resp.json();
-        if (data.items?.length > 0) return {
-            id: data.items[0].id,
-            title: decodeHtml(data.items[0].snippet.title),
-            thumbnail: data.items[0].snippet.thumbnails?.default?.url
-        };
-    }
+const parser = new Parser();
 
-    if (handle) {
-        // Search by handle (using search or channels list with forHandle if supported, but search is more reliable for general handles)
-        const resp = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${handle}&type=channel&maxResults=1&key=${YOUTUBE_API_KEY}`);
-        const data = await resp.json();
-        if (data.items?.length > 0) {
-            return {
-                id: data.items[0].snippet.channelId,
-                title: decodeHtml(data.items[0].snippet.channelTitle),
-                thumbnail: data.items[0].snippet.thumbnails?.default?.url
-            };
-        }
-    }
+/** Kanal ID'sini çözer. YouTube Data API kotası tüketmemek için önce RSS dener. */
+async function resolveChannel(input: string) {
+    const direct = input.match(/(UC[A-Za-z0-9_-]{22})/)?.[1];
+    if (direct) return await fromRss(direct);
 
-    // Fallback search for general strings if it's not a clear URL
-    const query = url.replace("https://www.youtube.com/", "").replace("youtube.com/", "");
-    const resp = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=channel&maxResults=1&key=${YOUTUBE_API_KEY}`);
-    const data = await resp.json();
-    if (data.items?.length > 0) {
-        return {
-            id: data.items[0].snippet.channelId,
-            title: decodeHtml(data.items[0].snippet.channelTitle),
-            thumbnail: data.items[0].snippet.thumbnails?.default?.url
-        };
-    }
+    // @handle → kanal sayfasından ID ayıkla (API anahtarı gerektirmez)
+    const handle = input.match(/@([A-Za-z0-9._-]+)/)?.[1];
+    const url = handle ? `https://www.youtube.com/@${handle}` : input;
+    const res = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0", "Accept-Language": "tr-TR,tr;q=0.9" },
+    });
+    if (!res.ok) throw new Error("Kanal sayfası açılamadı.");
+    const html = await res.text();
+    const id =
+        html.match(/"channelId":"(UC[A-Za-z0-9_-]{22})"/)?.[1] ||
+        html.match(/channel\/(UC[A-Za-z0-9_-]{22})/)?.[1];
+    if (!id) throw new Error("Kanal ID'si bulunamadı. Kanal linkini kontrol edin.");
+    return await fromRss(id);
+}
 
-    return null;
+async function fromRss(channelId: string) {
+    const feed = await parser.parseURL(
+        `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`
+    );
+    if (!feed?.title) throw new Error("Kanal bulunamadı.");
+    return { id: channelId, title: decodeHtml(feed.title) };
 }
 
 export async function GET() {
     try {
         const channels = await getChannels();
         return NextResponse.json({ success: true, channels });
-    } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
     }
 }
 
 export async function POST(req: NextRequest) {
     try {
         const { url, secret } = await req.json();
+        if (!verifyAdminSecret(secret)) {
+            return NextResponse.json({ success: false, error: "Yetkisiz erişim." }, { status: 401 });
+        }
+        if (!url) throw new Error("Kanal linki gerekli.");
 
-        // Security check
-        const isValid = await AdminService.verifySecret(secret);
-        if (!isValid) return NextResponse.json({ success: false, error: "Yetkisiz erişim. Lütfen admin girişi yapın." }, { status: 401 });
+        const resolved = await resolveChannel(String(url));
+        const channel = {
+            id: resolved.id,
+            title: resolved.title,
+            thumbnail: "",
+            totalScore: 100,
+            predictionCount: 0,
+            successCount: 0,
+            weight: 1,
+        };
+        await addChannel(channel);
 
-        if (!url) throw new Error("URL gerekli");
-
-        const resolved = await resolveChannelUrl(url);
-        if (!resolved || !resolved.id) throw new Error("Kanal bulunamadı. Lütfen geçerli bir YouTube kanal linki girin.");
-
-        // If title wasn't found in resolve, fetch it now
-        let title = resolved.title;
-        let thumbnail = (resolved as any).thumbnail;
-        if (!title || !thumbnail) {
-            const resp = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${resolved.id}&key=${YOUTUBE_API_KEY}`);
-            const data = await resp.json();
-            if (data.items?.length > 0) {
-                title = title || decodeHtml(data.items[0].snippet.title);
-                thumbnail = thumbnail || data.items[0].snippet.thumbnails?.default?.url;
-            }
+        let subscribed = true;
+        let subscribeError: string | undefined;
+        try {
+            await subscribeChannel(resolved.id);
+        } catch (err) {
+            subscribed = false;
+            subscribeError = (err as Error).message;
         }
 
-        const channelData = {
-            id: resolved.id,
-            title: title || "Bilinmeyen Kanal",
-            thumbnail: thumbnail,
-            handle: url.includes("@") ? "@" + url.split("@")[1].split("/")[0] : undefined,
-            addedAt: Timestamp.now()
-        };
-
-        await addChannel(channelData);
-        return NextResponse.json({ success: true, channel: channelData });
-    } catch (error: any) {
-        console.error("API POST Error:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        return NextResponse.json({ success: true, channel, subscribed, subscribeError });
+    } catch (error) {
+        return NextResponse.json({ success: false, error: (error as Error).message }, { status: 400 });
     }
 }
 
@@ -107,17 +86,14 @@ export async function DELETE(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get("id");
-        const secret = searchParams.get("secret");
-
-        // Security check
-        const isValid = await AdminService.verifySecret(secret || "");
-        if (!isValid) return NextResponse.json({ success: false, error: "Yetkisiz erişim. Lütfen admin girişi yapın." }, { status: 401 });
-
-        if (!id) throw new Error("ID gerekli");
-
+        if (!verifyAdminSecret(searchParams.get("secret"))) {
+            return NextResponse.json({ success: false, error: "Yetkisiz erişim." }, { status: 401 });
+        }
+        if (!id) throw new Error("ID gerekli.");
         await deleteChannel(id);
+        await subscribeChannel(id, "unsubscribe").catch(() => { });
         return NextResponse.json({ success: true });
-    } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error) {
+        return NextResponse.json({ success: false, error: (error as Error).message }, { status: 400 });
     }
 }

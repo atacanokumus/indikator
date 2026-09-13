@@ -1,0 +1,45 @@
+name: Anlık Video Analizi
+
+# YouTube bir video yayınladığı anda sitemize push bildirimi gönderir;
+# /api/youtube/webhook de bu iş akışını tetikler. Gecikme: ~1-2 dakika.
+on:
+  repository_dispatch:
+    types: [new-video]
+  workflow_dispatch:
+    inputs:
+      videoId:
+        description: "YouTube video ID"
+        required: true
+      channelId:
+        description: "YouTube kanal ID"
+        required: true
+
+concurrency:
+  group: analyze-${{ github.event.client_payload.videoId || inputs.videoId }}
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+
+      # ÖNEMLİ: video başlığı dışarıdan gelen veridir. Kabuk komutuna doğrudan
+      # gömülürse komut enjeksiyonu olur; bu yüzden ortam değişkeni ile geçiyoruz.
+      - name: Videoyu analiz et
+        env:
+          VIDEO_ID: ${{ github.event.client_payload.videoId || inputs.videoId }}
+          CHANNEL_ID: ${{ github.event.client_payload.channelId || inputs.channelId }}
+          VIDEO_TITLE: ${{ github.event.client_payload.title }}
+          PUBLISHED_AT: ${{ github.event.client_payload.publishedAt }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: npx tsx src/scripts/analyze-one.ts "$VIDEO_ID" "$CHANNEL_ID" "$VIDEO_TITLE" "$PUBLISHED_AT"

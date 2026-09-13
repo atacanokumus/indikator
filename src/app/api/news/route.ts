@@ -1,20 +1,17 @@
-import { NextResponse } from 'next/server';
-import { fetchLatestNews, analyzeNewsItem } from '@/services/news-service';
+import { NextResponse } from "next/server";
+import { getNews } from "@/services/news-service";
+
+export const runtime = "nodejs";
+export const revalidate = 300;
 
 export async function GET() {
     try {
-        const rawNews = await fetchLatestNews();
-
-        // For now, let's analyze only the top 5 to avoid long wait times/rate limits
-        const newsToAnalyze = rawNews.slice(0, 10);
-
-        const analyzedNews = await Promise.all(
-            newsToAnalyze.map(item => analyzeNewsItem(item))
-        );
-
-        return NextResponse.json(analyzedNews);
+        const news = await getNews();
+        return NextResponse.json(news, {
+            headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=1800" },
+        });
     } catch (error) {
-        console.error('API /api/news error:', error);
-        return NextResponse.json({ error: 'Failed to fetch news' }, { status: 500 });
+        console.error("[API] /api/news:", (error as Error).message);
+        return NextResponse.json([], { status: 200 });
     }
 }

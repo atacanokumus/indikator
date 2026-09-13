@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 56" role="img" aria-label="ECOTUBE">
+  <rect x="0" y="4" width="48" height="48" rx="13" fill="#0d4d5c"/>
+  <path d="M18 19.4Q18 17.1 20 18.2l12.6 8.1q1.8 1.2 0 2.3L20 36.7q-2 1.1-2-1.2Z" fill="#fff"/>
+  <circle cx="35.5" cy="17.5" r="6" fill="#c9973f"/>
+  <path d="M35.5 20.4V14.8M33 17.1l2.5-2.6 2.5 2.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="60" y="37" font-family="Inter,system-ui,sans-serif" font-size="30" font-weight="800" letter-spacing="-1.2" fill="#0d4d5c">eco<tspan fill="#c9973f">tube</tspan></text>
+</svg>
