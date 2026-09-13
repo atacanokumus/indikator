@@ -6,7 +6,8 @@
  * sayısıyla çarpan bir tasarımdı. Artık analiz sonrası sunucuda tek bir özet
  * doküman üretiyoruz; ziyaretçi 1 doküman okuyor.
  */
-import { normalizeAsset } from "@/lib/asset-utils";
+import { isClassAsset, normalizeAsset } from "@/lib/asset-utils";
+import { ASSET_LABEL } from "@/lib/display";
 import type { AssetConsensus, HomeSnapshot, Recommendation, VideoAnalysis } from "@/lib/types";
 import { toIso } from "@/lib/types";
 import { getAnalysesSince, getChannels, getStoredPrices, setDocData } from "./repo";
@@ -42,7 +43,8 @@ export async function buildHomeSnapshot(): Promise<HomeSnapshot> {
 
         for (const r of video.results || []) {
             const asset = normalizeAsset(r.asset);
-            if (!asset || asset === "BİLİNMEYEN") continue;
+            // Boş dönen isimler gürültüdür ("Küresel Piyasalar", "Faiz" vb.)
+            if (!asset) continue;
 
             if (!byAsset.has(asset)) byAsset.set(asset, new Map());
             const perChannel = byAsset.get(asset)!;
@@ -105,6 +107,17 @@ export async function buildHomeSnapshot(): Promise<HomeSnapshot> {
             signals: signals.slice(0, 12),
         });
     }
+
+    // Serbest metin artıklarını ele: yapay zeka bazen varlık yerine cümle
+    // döndürüyor ("Manipülatif sığ hisseler", "Kredi (tüketici/ticari)").
+    // Tanıdığımız bir kod değilse ve tek analist söylediyse listeye alma.
+    const cleaned = consensus.filter((c) => {
+        if (ASSET_LABEL[c.asset] || isClassAsset(c.asset)) return true;
+        if (c.analystCount >= 2) return true;
+        return /^[A-Z0-9.=/-]{2,10}$/.test(c.asset); // sade borsa kodu
+    });
+    consensus.length = 0;
+    consensus.push(...cleaned);
 
     // Sıralama: önce çok konuşulan, sonra güncel
     consensus.sort(

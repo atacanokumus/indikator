@@ -48,9 +48,20 @@ Kurallar:
 - SADECE konuşmacının açık bir yönlü görüş belirttiği varlıkları listele.
 - Konuşmacı kararsızsa veya "izliyorum, bekliyorum" diyorsa GÖZLEMLE kullan.
 - Gerekçe, konuşmacının KENDİ argümanı olmalı; kendi yorumunu ekleme.
-- Varlık adını sade yaz: "ALTIN", "BTC", "DOLAR", "THYAO", "BIST100".
 - Genel piyasa yorumu, siyaset veya makro tahmin varlık sinyali DEĞİLDİR; bunları listeleme.
-- Hiçbir net sinyal yoksa boş dizi döndür. Uydurma sinyal üretme.`;
+- Hiçbir net sinyal yoksa boş dizi döndür. Uydurma sinyal üretme.
+
+Varlık adı yazım kuralı — MUTLAKA aşağıdaki sade adlardan birini kullan.
+Parantez, açıklama, sembol veya ek kelime EKLEME. ("Ons Altın (XAU/USD)" değil, "Altın")
+  Kıymetli maden: Altın, Gümüş, Platin, Paladyum, Bakır
+  Enerji/emtia:   Petrol, Brent Petrol, Doğalgaz, Buğday, Şeker, Kakao, Uranyum
+  Döviz:          Dolar, Euro, Sterlin, Euro/Dolar, Dolar/Yen, Dolar Endeksi, Türk Lirası
+  Kripto:         Bitcoin, Ethereum, Solana, XRP  (belirsizse: Kripto Paralar)
+  Endeks:         BIST 100, Nasdaq, S&P 500, Dow Jones, Nikkei
+  BIST hissesi:   dört harfli kodu yaz — THYAO, ASELS, TUPRS, TCELL…
+  ABD hissesi:    sembolü yaz — NVDA, TSLA, AAPL, GOOGL…
+  Sınıf:          Banka Hisseleri, ABD Hisseleri, Konut, Mevduat, Tahvil, Eurobond
+Listede olmayan bir varlık için sade Türkçe adını ya da borsa kodunu yaz.`;
 
 /* ------------------------------------------------------------------ */
 

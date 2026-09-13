@@ -6,10 +6,11 @@
  * bypass eder. Böylece tarayıcıya açık olan client SDK'ya hiçbir yazma
  * yetkisi vermemiz gerekmez (bkz. firestore.rules).
  *
- * Servis hesabı yoksa client SDK'ya düşer ve yüksek sesle uyarır — bu sadece
- * geçiş dönemi içindir, canlıda servis hesabı ZORUNLUDUR.
+ * NOT: Burada `server-only` paketi KULLANILMAZ. O paket Next.js dışında
+ * (tsx/node ile çalışan GitHub Actions script'lerinde) hata fırlatır; bu modül
+ * ise hem Next.js sunucusunda hem de o script'lerde çalışmak zorundadır.
+ * Tarayıcıya sızmasını, hiçbir istemci bileşeninin import etmemesi engeller.
  */
-import "server-only";
 import { cert, getApp, getApps, initializeApp, type App } from "firebase-admin/app";
 import { getFirestore, type Firestore, FieldValue } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";

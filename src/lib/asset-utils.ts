@@ -1,147 +1,175 @@
-export const ASSET_MAP: Record<string, string> = {
-    // Gold
-    "ALTIN": "ALTIN",
-    "ONS ALTIN": "ALTIN",
-    "GRAM ALTIN": "ALTIN",
-    "XAUUSD": "ALTIN",
-    "ALTIN/USD": "ALTIN",
-    "GLD": "ALTIN",
-    "HESAP ALTIN": "ALTIN",
-    "HAS ALTIN": "ALTIN",
-    "ÇEYREK": "ALTIN",
+/**
+ * Varlık adı normalleştirme.
+ *
+ * Yapay zeka varlık adlarını serbest metin olarak döndürüyor: veritabanında
+ * "Dolar/TL", "USD/TRY", "Dolar (USD)", "Döviz Kurları (USD/TL)" gibi 420
+ * farklı yazım tespit edildi. Bunlar tek varlığa indirgenmezse konsensüs
+ * bölünür ve aynı varlık ana sayfada birden çok kez görünür.
+ *
+ * Yöntem: önce Türkçe duyarlı sadeleştirme (küçük harf + aksan giderme +
+ * noktalama temizliği), sonra tam eşleşme, sonra sırayla anahtar kelime.
+ * Sıra önemlidir — en spesifik kural en üstte olmalı.
+ */
 
-    // Silver
-    "GÜMÜŞ": "GÜMÜŞ",
-    "GUMUS": "GÜMÜŞ",
-    "XAGUSD": "GÜMÜŞ",
-    "ONS GÜMÜŞ": "GÜMÜŞ",
-    "GRAM GÜMÜŞ": "GÜMÜŞ",
-    "SILVER": "GÜMÜŞ",
+/** "Ons Altın (XAU/USD)" -> "ons altin xau/usd" */
+function fold(raw: string): string {
+    const tr: Record<string, string> = { "ç": "c", "ğ": "g", "ı": "i", "ö": "o", "ş": "s", "ü": "u", "â": "a", "î": "i", "û": "u" };
+    return raw
+        .toLocaleLowerCase("tr")
+        .replace(/[çğıöşüâîû]/g, (m) => tr[m] ?? m)
+        .replace(/[^a-z0-9/&+.\- ]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
 
-    // Platinum / Palladium / Petrol
-    "PLATİN": "PL=F",
-    "PALADYUM": "PA=F",
-    "PETROL": "CL=F",
-    "BRENT": "BZ=F",
-    "DOĞALGAZ": "NG=F",
-    "BAKIR": "HG=F",
+/** Fiyatı olmayan ama kullanıcı için anlamlı varlık sınıfları. */
+export const CLASS_ASSETS = new Set([
+    "KRIPTO", "BANKA-HISSE", "ABD-HISSE", "AVRUPA-HISSE", "KONUT",
+    "MEVDUAT", "TAHVIL", "EUROBOND", "TRY",
+]);
 
-    // Bitcoin / Crypto
-    "BTC": "BTC",
-    "BITCOIN": "BTC",
-    "BTCUSD": "BTC",
-    "BTC/USD": "BTC",
-    "BTC/USDT": "BTC",
-    "ETH": "ETH",
-    "ETHEREUM": "ETH",
-    "SOL": "SOL",
-    "SOLANA": "SOL",
-    "XRP": "XRP",
-    "DOGE": "DOGE",
-    "AVAX": "AVAX",
+/** Hiçbir şey ifade etmeyen, listede gürültü yaratan ifadeler. */
+const NOISE = [
+    "kuresel piyasalar", "riskli varliklar", "yabanci piyasalar", "borsalar",
+    "hisse senetleri genel", "turkiye ekonomi politikasi", "halka arzlar",
+    "piyasalar", "genel piyasa", "tum piyasalar", "ekonomi", "enflasyon",
+    "faiz", "faiz orani", "merkez bankasi", "politika faizi",
+];
 
-    // Currency
-    "DOLAR": "USD/TRY",
-    "USD/TRY": "USD/TRY",
-    "USDT": "USD/TRY",
-    "USD": "USD/TRY",
-    "EURO": "EUR/TRY",
-    "EUR": "EUR/TRY",
-    "EUR/TRY": "EUR/TRY",
-    "EUR/USD": "EUR/USD",
-    "EURUSD": "EUR/USD",
-    "GBP/TRY": "GBP/TRY",
-    "STERLIN": "GBP/TRY",
+/**
+ * Sırayla denenen anahtar kelimeler. İlk eşleşen kazanır.
+ * En spesifik ifadeler en üstte olmalı: "brent" -> BZ=F, "petrol" -> CL=F.
+ */
+const RULES: [RegExp, string][] = [
+    // --- gürültü (en başta elenir) ---
+    [/^(kuresel piyasalar|riskli varliklar|yabanci piyasalar|borsalar|piyasalar)$/, "__NOISE__"],
+    [/\brasyo(su)?\b|\boran(i)?\b(?!.*tahvil)/, "__NOISE__"],
 
-    // Stocks / BIST
-    "BIST100": "XU100",
-    "BORSAMIZ": "XU100",
-    "BIST": "XU100",
-    "BORSA": "XU100",
-    "XU100": "XU100",
-    "THYAO": "THYAO",
-    "ASELS": "ASELS",
-    "ASELSAN": "ASELS",
-    "GARAN": "GARAN",
-    "AKBNK": "AKBNK",
-    "EREGL": "EREGL",
-    "EREĞLİ": "EREGL",
-    "SASA": "SASA",
-    "HEKTS": "HEKTS",
-    "HEKTAŞ": "HEKTS",
-    "SISE": "SISE",
-    "ŞİŞECAM": "SISE",
-    "KCHOL": "KCHOL",
-    "KOÇ HOLDİNG": "KCHOL",
-    "SAHOL": "SAHOL",
-    "SABANCI HOLDİNG": "SAHOL",
-    "TUPRS": "TUPRS",
-    "TÜPRAŞ": "TUPRS",
-    "BIMAS": "BIMAS",
-    "BİMAS": "BIMAS",
-    "PEGASUS": "PGSUS",
-    "PGSUS": "PGSUS",
-    "FROTO": "FROTO",
-    "FORD OTOSAN": "FROTO",
-    "TOASO": "TOASO",
-    "TOFAŞ": "TOASO",
-    "ARCLK": "ARCLK",
-    "ARÇELİK": "ARCLK",
-    "TCELL": "TCELL",
-    "TURKCELL": "TCELL",
-    "YKBNK": "YKBNK",
-    "YAPI KREDİ": "YKBNK",
-    "ISCTR": "ISCTR",
-    "İŞ BANKASI": "ISCTR",
-    "HALKB": "HALKB",
-    "HALK BANKASI": "HALKB",
-    "VAKBN": "VAKBN",
-    "VAKIFBANK": "VAKBN",
-    "PETKM": "PETKM",
-    "PETKİM": "PETKM",
-    "KRDMD": "KRDMD",
-    "KARDEMİR": "KRDMD",
-    "ODAS": "ODAS",
-    "ODAŞ": "ODAS",
-    "TKFEN": "TKFEN",
-    "TEKFEN": "TKFEN",
-    "ENKAI": "ENKAI",
-    "ENKA": "ENKAI",
-};
+    // --- kıymetli madenler ---
+    [/\balti?n\b|\bxau\b|\bgold\b|darphane/, "ALTIN"],
+    [/\bgumus\b|\bxag\b|\bsilver\b/, "GÜMÜŞ"],
+    [/\bplatin\b|\bxpt\b/, "PL=F"],
+    [/\bpaladyum\b|\bxpd\b/, "PA=F"],
 
-export function normalizeAsset(name: string): string {
-    if (!name) return "BİLİNMEYEN";
-    let upper = name.toUpperCase().trim();
+    // --- enerji ve emtia (brent, petrolden ÖNCE) ---
+    [/\bbrent\b/, "BZ=F"],
+    [/\bpetrol\b|\bcrude\b|\boil\b|\bwti\b/, "CL=F"],
+    [/\bdogal ?gaz\b|\bnatural ?gas\b/, "NG=F"],
+    [/\bbakir\b|\bcopper\b/, "HG=F"],
+    [/\buranyum\b|\buranium\b/, "URA"],
+    [/\bbugday\b|\bwheat\b/, "ZW=F"],
+    [/\bsoya\b/, "ZS=F"],
+    [/\bmisir\b|\bcorn\b/, "ZC=F"],
+    [/\bseker\b|\bsugar\b/, "SB=F"],
+    [/\bkakao\b|\bcocoa\b/, "CC=F"],
+    [/\bpirinc\b|\brice\b/, "ZR=F"],
+    [/\bkahve\b|\bcoffee\b/, "KC=F"],
 
-    // Clean up common suffix/prefix words
-    upper = upper.replace(/ ANALİZİ/g, '').replace(/ ANALİZ/g, '').replace(/ YORUMU/g, '').replace(/ YORUM/g, '').trim();
+    // --- kripto ---
+    [/\bbitcoin\b|\bbtc\b/, "BTC"],
+    [/\bethereum\b|\beth\b/, "ETH"],
+    [/\bsolana\b|\bsol\b/, "SOL"],
+    [/\bripple\b|\bxrp\b/, "XRP"],
+    [/\bavalanche\b|\bavax\b/, "AVAX"],
+    [/\bdogecoin\b|\bdoge\b/, "DOGE"],
+    [/\bkripto\b|\baltcoin\b/, "KRIPTO"],
 
-    // Check Map first for direct matches
-    if (ASSET_MAP[upper]) return ASSET_MAP[upper];
+    // --- döviz (çiftler önce, tek para birimi sonra) ---
+    [/eur ?[/\-] ?usd|euro ?[/\-] ?dolar|eur ?usd parite|parite/, "EUR/USD"],
+    [/usd ?[/\-] ?jpy|dolar ?[/\-] ?yen|japon yeni|\bjpy\b/, "USD/JPY"],
+    [/eur ?[/\-] ?tl|eur ?[/\-] ?try|euro ?[/\-] ?tl|\beuro\b|\beur\b/, "EUR/TRY"],
+    [/gbp ?[/\-] ?tl|gbp ?[/\-] ?try|sterlin|\bgbp\b/, "GBP/TRY"],
+    [/dolar endeksi|\bdxy\b/, "DXY"],
+    [/\bdolar\b|\busd\b|\bdoviz\b|amerikan dolari|abd dolari/, "USD/TRY"],
+    [/turk lirasi|\btry\b(?! ?[/\-])|\btl\b(?! ?[/\-])/, "TRY"],
 
-    // Partial Match for Gold & Silver
-    if (upper.includes("ALTIN") || upper.includes("XAU") || upper.includes("GOLD")) return "ALTIN";
-    if (upper.includes("GÜMÜŞ") || upper.includes("GUMUS") || upper.includes("XAG") || upper.includes("SILVER")) return "GÜMÜŞ";
-    if (upper.includes("BİST") || upper.includes("BIST")) return "XU100";
+    // --- endeksler ---
+    [/borsa istanbul|\bbist\b|\bxu ?100\b|^borsa$|turkiye hisse|turk hisse/, "XU100"],
+    [/nasdaq|\bixic\b/, "NASDAQ"],
+    [/s&p ?500|\bspx\b|\bgspc\b/, "SP500"],
+    [/dow jones|\bdjia\b/, "DJI"],
+    [/nikkei|japon hisse/, "NIKKEI"],
+    [/\bdax\b|avrupa hisse|alman hisse/, "AVRUPA-HISSE"],
 
-    // Crypto Name to Symbol conversions
-    if (upper.includes("BITCOIN")) return "BTC";
-    if (upper.includes("ETHEREUM")) return "ETH";
-    if (upper.includes("SOLANA")) return "SOL";
+    // --- ABD hisseleri ---
+    [/nvidia|\bnvda\b/, "NVDA"],
+    [/\btesla\b|\btsla\b/, "TSLA"],
+    [/\bapple\b|\baapl\b/, "AAPL"],
+    [/\bamazon\b|\bamzn\b/, "AMZN"],
+    [/\bgoogle\b|alphabet|\bgoogl\b/, "GOOGL"],
+    [/microsoft|\bmsft\b/, "MSFT"],
+    [/\bmeta\b|facebook/, "META"],
+    [/\bpfizer\b|\bpfe\b/, "PFE"],
+    [/novo nordisk|\bnvo\b/, "NVO"],
+    [/occidental|\boxy\b/, "OXY"],
+    [/lockheed|\blmt\b/, "LMT"],
+    [/molina|\bmoh\b/, "MOH"],
+    [/\bnike\b|\bnke\b/, "NKE"],
+    [/alibaba|\bbaba\b/, "BABA"],
+    [/\bspacex\b/, "SPACEX"],
+    [/\bpsq\b/, "PSQ"],
+    [/abd hisse|amerikan hisse|abd borsa|amerikan borsa|teknoloji.*hisse|yapay zeka.*hisse/, "ABD-HISSE"],
 
-    // Clean up currency pairs only if they are at the end (X/TRY or XTRY)
-    let cleaned = upper;
-    if (upper.endsWith("/USDT")) cleaned = upper.slice(0, -5);
-    else if (upper.endsWith("/USD")) cleaned = upper.slice(0, -4);
-    else if (upper.endsWith("/TRY")) cleaned = upper.slice(0, -4);
-    else if (upper.endsWith("USDT")) cleaned = upper.slice(0, -4);
-    else if (upper.endsWith("USD")) cleaned = upper.slice(0, -3);
-    else if (upper.endsWith("TRY")) cleaned = upper.slice(0, -3);
+    // --- BIST hisseleri ---
+    [/\bthyao\b|turk hava yollari|\bthy\b/, "THYAO"],
+    [/\basels\b|aselsan/, "ASELS"],
+    [/\bgaran\b|garanti bankasi/, "GARAN"],
+    [/\bakbnk\b|\bakbank\b/, "AKBNK"],
+    [/\beregl\b|eregli/, "EREGL"],
+    [/\bsasa\b/, "SASA"],
+    [/\bhekts\b|hektas/, "HEKTS"],
+    [/\bsise\b|sisecam/, "SISE"],
+    [/\bkchol\b|koc holding/, "KCHOL"],
+    [/\bsahol\b|sabanci holding/, "SAHOL"],
+    [/\btuprs\b|tupras/, "TUPRS"],
+    [/\bbimas\b|\bbim\b/, "BIMAS"],
+    [/\bpgsus\b|pegasus/, "PGSUS"],
+    [/\bfroto\b|ford otosan/, "FROTO"],
+    [/\btoaso\b|tofas/, "TOASO"],
+    [/\barclk\b|arcelik/, "ARCLK"],
+    [/\btcell\b|turkcell/, "TCELL"],
+    [/\bykbnk\b|yapi kredi/, "YKBNK"],
+    [/\bisctr\b|is bankasi/, "ISCTR"],
+    [/\bhalkb\b|halk bankasi/, "HALKB"],
+    [/\bvakbn\b|vakifbank/, "VAKBN"],
+    [/\bpetkm\b|petkim/, "PETKM"],
+    [/\bkrdmd\b|kardemir/, "KRDMD"],
+    [/\bodas\b/, "ODAS"],
+    [/\btkfen\b|tekfen/, "TKFEN"],
+    [/\benkai\b|\benka\b/, "ENKAI"],
+    [/\bulker\b/, "ULKER"],
+    [/\btursg\b|turkiye sigorta/, "TURSG"],
+    [/banka(cilik)? (hisse|endeks|sektor)|bist banka/, "BANKA-HISSE"],
 
-    if (cleaned !== upper && cleaned.length > 0 && cleaned !== "EUR" && cleaned !== "USD") {
-        if (ASSET_MAP[cleaned]) return ASSET_MAP[cleaned];
-        return cleaned;
+    // --- sabit getirili ve diğer ---
+    [/eurobond/, "EUROBOND"],
+    [/tahvil|bono|\bbond\b/, "TAHVIL"],
+    [/mevduat|para (piyasasi )?fon|likit fon/, "MEVDUAT"],
+    [/konut|gayrimenkul|emlak/, "KONUT"],
+];
+
+/** Dört-beş harfli BIST kodu mu? (FED, FAİZ gibi kelimeleri elemek için) */
+const BIST_CODE = /^[A-Z]{4,5}$/;
+
+export function normalizeAsset(raw: string): string {
+    if (!raw) return "";
+    const folded = fold(raw);
+    if (!folded) return "";
+    if (NOISE.includes(folded)) return "";
+
+    for (const [pattern, canonical] of RULES) {
+        if (pattern.test(folded)) {
+            return canonical === "__NOISE__" ? "" : canonical;
+        }
     }
 
+    // Kural yoksa: büyük harfe çevir. 4-5 harfliyse BIST kodu kabul edilir.
+    const upper = raw.toLocaleUpperCase("tr").replace(/\s+/g, " ").trim();
+    if (BIST_CODE.test(upper)) return upper;
     return upper;
+}
+
+/** Fiyatı olamayacak, sınıf/kategori niteliğindeki varlıklar. */
+export function isClassAsset(canonical: string): boolean {
+    return CLASS_ASSETS.has(canonical);
 }

@@ -1,4 +1,4 @@
-import { normalizeAsset } from '@/lib/asset-utils';
+import { CLASS_ASSETS, normalizeAsset } from '@/lib/asset-utils';
 
 export interface PriceInfo {
     price: number;
@@ -41,6 +41,27 @@ export class PriceService {
     }
 
     private static async fetchPriceForAsset(normalized: string): Promise<PriceInfo | null> {
+
+        // Fiyatı olmayan sınıf/kategori varlıkları (Kripto paralar, Banka hisseleri…)
+        if (CLASS_ASSETS.has(normalized)) return null;
+
+        // Yahoo endeks sembolleri
+        const INDEX: Record<string, string> = {
+            'NASDAQ': '^IXIC',
+            'SP500': '^GSPC',
+            'DJI': '^DJI',
+            'NIKKEI': '^N225',
+            'DXY': 'DX-Y.NYB',
+            'USD/JPY': 'JPY=X',
+        };
+        if (INDEX[normalized]) return this.getYahooFinancePrice(INDEX[normalized]);
+
+        // ABD hisseleri ve ETF'ler (Yahoo'da sembol son eki yok)
+        const US_TICKERS = new Set([
+            'NVDA', 'TSLA', 'AAPL', 'AMZN', 'GOOGL', 'MSFT', 'META',
+            'PFE', 'NVO', 'OXY', 'LMT', 'MOH', 'NKE', 'BABA', 'PSQ', 'URA',
+        ]);
+        if (US_TICKERS.has(normalized)) return this.getYahooFinancePrice(normalized);
 
         // 0. Handle Normalized Keys from ECOTUBE ASSET_MAP
         if (normalized === 'ALTIN') return this.getGoldPrice();

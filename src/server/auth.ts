@@ -10,7 +10,6 @@
  * doğrulama sabit zamanlı karşılaştırma ile sunucuda yapılır.
  * Hash üretmek için: npx tsx src/scripts/set-admin-password.ts "şifre"
  */
-import "server-only";
 import { scryptSync, timingSafeEqual } from "crypto";
 
 export function verifyAdminSecret(provided: unknown): boolean {
