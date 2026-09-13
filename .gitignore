@@ -54,3 +54,10 @@ transcript-final-fail-*.png
 youtube_debug*
 youtube_cookies*
 test-debug-*.txt
+
+# kimlik bilgileri — asla commit edilmez
+firebase-key.json
+*serviceaccount*.json
+*service-account*.json
+*-adminsdk-*.json
+vercel-env.txt
