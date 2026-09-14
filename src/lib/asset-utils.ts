@@ -53,6 +53,15 @@ const RULES: [RegExp, string][] = [
     [/^(the )?(market|markets|economy|stock market|equities|stocks)$/, "__NOISE__"],
     [/^(inflation|recession|interest rates?|the fed|federal reserve|cpi|gdp|liquidity)$/, "__NOISE__"],
     [/\brasyo(su)?\b|\boran(i)?\b(?!.*tahvil)/, "__NOISE__"],
+    // Yarı iletken bellek türleri varlık değil, sektör konusudur.
+    [/^(dram|nand|hbm)$/, "__NOISE__"],
+
+    // --- aynı şirketin farklı yazımları (ticker'a indirger) ---
+    [/^oracle$/, "ORCL"],
+    [/^vakif ?bank(asi)?$/, "VAKBN"],
+    [/^tubork$/, "TUBORG"],
+    [/^curve( finance| dao)?$/, "CRV"],
+    [/^zcash$/, "ZEC"],
 
     // --- kıymetli madenler ---
     [/\balti?n\b|\bxau\b|\bgold\b|darphane|bullion/, "ALTIN"],
