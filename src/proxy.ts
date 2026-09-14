@@ -31,7 +31,17 @@ function shouldRedirect(host: string): boolean {
 
 export default function proxy(request: NextRequest) {
     const host = request.headers.get("host") ?? "";
-    if (shouldRedirect(host)) {
+
+    /**
+     * YouTube push bildirimleri yönlendirilmez. Alan adı taşınırken mevcut
+     * abonelikler bir süre eski adrese POST etmeye devam ediyor ve hub'ın
+     * 308'i izleyeceğinin garantisi yok; izlemezse o kanalların anlık
+     * güncellemesi sessizce durur. Abonelikler yeni adrese taşınana kadar
+     * bu uç her iki adreste de doğrudan çalışmalı.
+     */
+    const isWebhook = request.nextUrl.pathname.startsWith("/api/youtube/webhook");
+
+    if (!isWebhook && shouldRedirect(host)) {
         const url = new URL(request.url);
         url.host = CANONICAL_HOST;
         url.protocol = "https:";
