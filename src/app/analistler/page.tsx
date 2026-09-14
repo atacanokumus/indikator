@@ -8,7 +8,7 @@ export const revalidate = 300;
 export const metadata: Metadata = {
     title: "Analistler",
     description:
-        "ECOTUBE'un takip ettiği YouTube ekonomi yorumcuları ve geçmiş sinyallerinin isabet performansı.",
+        "Analist Ne Diyor'un takip ettiği YouTube ekonomi yorumcuları ve geçmiş sinyallerinin isabet performansı.",
     alternates: { canonical: "/analistler" },
 };
 

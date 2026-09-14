@@ -35,7 +35,7 @@ export function LegalNotice({
             <p className="small" style={{ margin: 0 }}>
                 Gösterilen yön etiketleri, YouTube&apos;da kamuya açık olarak yayınlanmış videolarda
                 konuşan kişilerin <strong>kendi ifadelerinin</strong> yapay zeka ile çıkarılmış özetidir.
-                ECOTUBE bu görüşlere katılmaz, onaylamaz veya bir alım-satım önerisi olarak sunmaz.
+                Analist Ne Diyor bu görüşlere katılmaz, onaylamaz veya bir alım-satım önerisi olarak sunmaz.
                 Yapay zeka hata yapabilir; her sinyalin yanındaki bağlantıdan kaynağı teyit edin.
             </p>
 
@@ -47,7 +47,7 @@ export function LegalNotice({
             )}
 
             <p className="small" style={{ margin: 0 }}>
-                <strong>Çıkar çatışması beyanı.</strong> ECOTUBE, adı geçen hiçbir yorumcuyla ticari
+                <strong>Çıkar çatışması beyanı.</strong> Analist Ne Diyor, adı geçen hiçbir yorumcuyla ticari
                 ilişkisi olmayan bağımsız bir araştırma aracıdır; hiçbir ihraççıda pay sahipliği,
                 yönetim ilişkisi veya finansal menfaati yoktur. Site gelirini yalnızca görüntülenen
                 reklamlardan elde eder; reklam verenlerin içerik üzerinde etkisi yoktur.

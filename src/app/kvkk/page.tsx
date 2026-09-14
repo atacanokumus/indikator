@@ -3,11 +3,11 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
     title: "KVKK Aydınlatma Metni",
-    description: "ECOTUBE kişisel verilerin işlenmesine ilişkin aydınlatma metni.",
+    description: "Analist Ne Diyor kişisel verilerin işlenmesine ilişkin aydınlatma metni.",
     alternates: { canonical: "/kvkk" },
 };
 
-const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@ecotube.com.tr";
+const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@analistnediyor.com";
 
 export default function KvkkPage() {
     return (
@@ -21,7 +21,7 @@ export default function KvkkPage() {
 
             <h2 className="h2" style={{ marginTop: 30 }}>Veri sorumlusu</h2>
             <p className="small">
-                ECOTUBE. İletişim: <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
+                Analist Ne Diyor. İletişim: <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
             </p>
 
             <h2 className="h2" style={{ marginTop: 30 }}>1. Site ziyaretçileri</h2>

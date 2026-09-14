@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Script from "next/script";
 
-const KEY = "ecotube-cookie-consent";
+const KEY = "and-cookie-consent";
 
 /**
  * Reklam betiğini yalnızca ziyaretçi çerez onayı verdikten SONRA yükler.
@@ -18,8 +18,8 @@ export function AdsenseLoader({ client }: { client: string }) {
         };
         read();
         const onConsent = (e: Event) => setAllowed((e as CustomEvent).detail === "kabul");
-        window.addEventListener("ecotube-consent", onConsent);
-        return () => window.removeEventListener("ecotube-consent", onConsent);
+        window.addEventListener("and-consent", onConsent);
+        return () => window.removeEventListener("and-consent", onConsent);
     }, []);
 
     if (!allowed) return null;

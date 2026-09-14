@@ -11,11 +11,11 @@ Gelen tüm yanıtları saklayın.
 
 ---
 
-**Konu:** ECOTUBE — kanalınızın yer aldığı bir araştırma sitesi hakkında
+**Konu:** Analist Ne Diyor — kanalınızın yer aldığı bir araştırma sitesi hakkında
 
 Merhaba,
 
-Adım Atacan Okumuş. ECOTUBE adında küçük bir site yaptım: YouTube'daki ekonomi
+Adım Atacan Okumuş. Analist Ne Diyor adında küçük bir site yaptım: YouTube'daki ekonomi
 yorumcularının videolarında hangi varlık için hangi yönde konuştuklarını derleyip
 tek ekranda gösteriyor. Kanalınız da takip ettiğim kanallar arasında.
 

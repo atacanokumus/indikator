@@ -18,7 +18,7 @@ on:
         default: false
 
 concurrency:
-  group: ecotube-scan
+  group: analistnediyor-scan
   cancel-in-progress: false
 
 jobs:

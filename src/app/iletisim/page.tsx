@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: "İletişim",
-    description: "ECOTUBE ile iletişime geçin: öneri, hata bildirimi, içerik kaldırma talepleri.",
+    description: "Analist Ne Diyor ile iletişime geçin: öneri, hata bildirimi, içerik kaldırma talepleri.",
     alternates: { canonical: "/iletisim" },
 };
 
-const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@ecotube.com.tr";
+const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@analistnediyor.com";
 
 export default function IletisimPage() {
     return (

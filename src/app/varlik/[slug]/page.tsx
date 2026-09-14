@@ -98,7 +98,7 @@ export default async function VarlikPage({ params }: { params: Promise<{ slug: s
 
                     <p className="legal-strip">
                         Bu bir yatırım tavsiyesi değildir. Yukarıdaki sayı, {name} hakkında konuşan
-                        yorumcuların söylediklerinin sayımıdır; ECOTUBE&apos;un görüşü değildir.
+                        yorumcuların söylediklerinin sayımıdır; Analist Ne Diyor&apos;un görüşü değildir.
                     </p>
                 </div>
             </section>

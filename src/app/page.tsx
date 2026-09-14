@@ -11,7 +11,7 @@ import { getHomeSnapshot } from "@/server/read";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-    title: "Ekonomistler ne diyor? Altın, dolar, borsa ve kripto sinyalleri",
+    title: "Altın, dolar, borsa ve kriptoda analistler ne diyor?",
     description:
         "YouTube'daki ekonomi yorumcularının son videolarını yapay zeka ile analiz ediyoruz. Altın, dolar, BIST 100 ve Bitcoin için kimin ne dediğini tek ekranda görün.",
     alternates: { canonical: "/" },
@@ -166,7 +166,7 @@ const FAQ = [
     },
     {
         q: "Sayım nasıl yapılıyor?",
-        a: "Bir varlık için her yorumcunun yalnızca en güncel görüşü sayılır; aynı kişi iki kez sayılmaz. Sonuç bir ortalama veya puan değil, düz bir sayımdır: kaç kişi hangi yönde konuşmuş. ECOTUBE bu sayıya kendi görüşünü katmaz.",
+        a: "Bir varlık için her yorumcunun yalnızca en güncel görüşü sayılır; aynı kişi iki kez sayılmaz. Sonuç bir ortalama veya puan değil, düz bir sayımdır: kaç kişi hangi yönde konuşmuş. Analist Ne Diyor bu sayıya kendi görüşünü katmaz.",
     },
     {
         q: "Analistlerin başarı oranı neye göre ölçülüyor?",
@@ -174,7 +174,7 @@ const FAQ = [
     },
     {
         q: "Bu bir yatırım tavsiyesi mi?",
-        a: "Hayır. ECOTUBE size ne yapmanız gerektiğini söylemez, size başkalarının ne dediğini sayarak gösterir. Yatırım danışmanlığı, yetkili kuruluşların kişiye özel sunduğu bir hizmettir; buradaki içerik kişiye özel değildir ve genel niteliktedir.",
+        a: "Hayır. Analist Ne Diyor size ne yapmanız gerektiğini söylemez, size başkalarının ne dediğini sayarak gösterir. Yatırım danışmanlığı, yetkili kuruluşların kişiye özel sunduğu bir hizmettir; buradaki içerik kişiye özel değildir ve genel niteliktedir.",
     },
 ];
 

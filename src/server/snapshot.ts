@@ -6,7 +6,7 @@
  * sayısıyla çarpan bir tasarımdı. Artık analiz sonrası sunucuda tek bir özet
  * doküman üretiyoruz; ziyaretçi 1 doküman okuyor.
  *
- * HUKUKİ NOT: Bu dosya bilinçli olarak ECOTUBE adına yatırım tavsiyesi ÜRETMEZ.
+ * HUKUKİ NOT: Bu dosya bilinçli olarak Analist Ne Diyor adına yatırım tavsiyesi ÜRETMEZ.
  * Eskiden her varlık için ağırlıklı bir puan hesaplayıp "AL/SAT" tavsiyesi
  * basıyorduk; bu, siteyi III-37.1 sayılı Tebliğ anlamında "genel yatırım
  * tavsiyesi sunan" konuma sokuyordu. Artık yalnızca SAYIM yapılıyor: hangi

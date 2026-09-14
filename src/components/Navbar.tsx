@@ -18,7 +18,7 @@ export function Navbar() {
     return (
         <header className="navbar">
             <nav className="wrap navbar-inner" aria-label="Ana menü">
-                <Link href="/" aria-label="ECOTUBE ana sayfa" style={{ textDecoration: "none" }}>
+                <Link href="/" aria-label="Analist Ne Diyor ana sayfa" style={{ textDecoration: "none" }}>
                     <Logo />
                 </Link>
                 <div className="row gap-8">

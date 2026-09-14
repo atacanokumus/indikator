@@ -5,7 +5,7 @@ import { AdSlot } from "@/components/AdSlot";
 export const metadata: Metadata = {
     title: "Sözlük — ekonomi yorumlarında geçen terimler",
     description:
-        "Ons altın ile gram altın farkı, konsensüs nasıl okunur, vade ne demek, BIST 100 nedir? ECOTUBE'da geçen terimlerin sade karşılıkları.",
+        "Ons altın ile gram altın farkı, konsensüs nasıl okunur, vade ne demek, BIST 100 nedir? Analist Ne Diyor'da geçen terimlerin sade karşılıkları.",
     alternates: { canonical: "/sozluk" },
 };
 
@@ -23,7 +23,7 @@ interface Term {
 const GROUPS: { title: string; intro: string; terms: Term[] }[] = [
     {
         title: "Bu sitede geçen kavramlar",
-        intro: "Önce ECOTUBE'un kendi diline dair dört madde; sayfalardaki sayıları bunlarsız okumak zor.",
+        intro: "Önce Analist Ne Diyor'un kendi diline dair dört madde; sayfalardaki sayıları bunlarsız okumak zor.",
         terms: [
             {
                 term: "Konsensüs (sayım)",
@@ -36,7 +36,7 @@ const GROUPS: { title: string; intro: string; terms: Term[] }[] = [
             {
                 term: "Vade (kısa, orta, uzun)",
                 body:
-                    "Bir görüşün hangi zaman aralığı için söylendiği. ECOTUBE'da kısa vade 7 gün, orta vade " +
+                    "Bir görüşün hangi zaman aralığı için söylendiği. Analist Ne Diyor'da kısa vade 7 gün, orta vade " +
                     "30 gün, uzun vade 180 gün olarak alınır. İsabet karnesindeki ölçüm de bu sürelere göre " +
                     "yapılır: kısa vadeli bir görüş 7 gün sonraki fiyata bakılarak değerlendirilir.",
             },

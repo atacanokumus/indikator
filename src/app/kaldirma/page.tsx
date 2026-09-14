@@ -4,11 +4,11 @@ import Link from "next/link";
 export const metadata: Metadata = {
     title: "İçerik kaldırma ve düzeltme talebi",
     description:
-        "ECOTUBE'da adı geçen yorumcular ve hak sahipleri için içerik kaldırma, düzeltme ve itiraz prosedürü.",
+        "Analist Ne Diyor'da adı geçen yorumcular ve hak sahipleri için içerik kaldırma, düzeltme ve itiraz prosedürü.",
     alternates: { canonical: "/kaldirma" },
 };
 
-const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@ecotube.com.tr";
+const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@analistnediyor.com";
 
 export default function KaldirmaPage() {
     return (
@@ -17,7 +17,7 @@ export default function KaldirmaPage() {
                 İçerik kaldırma ve düzeltme
             </h1>
             <p className="lead" style={{ marginTop: 16 }}>
-                ECOTUBE&apos;da adınız veya kanalınız geçiyorsa, içeriğin kaldırılmasını ya da
+                Analist Ne Diyor&apos;da adınız veya kanalınız geçiyorsa, içeriğin kaldırılmasını ya da
                 düzeltilmesini her zaman isteyebilirsiniz. Gerekçe belirtmek zorunda değilsiniz.
             </p>
 
@@ -63,7 +63,7 @@ export default function KaldirmaPage() {
 
             <h2 className="h2" style={{ marginTop: 34 }}>Telif hakkı</h2>
             <p className="small">
-                ECOTUBE videolarınızı yeniden yayınlamaz, indirilebilir hale getirmez ve altyazı
+                Analist Ne Diyor videolarınızı yeniden yayınlamaz, indirilebilir hale getirmez ve altyazı
                 metnini saklamaz. Yalnızca konuşmanızda hangi varlık için hangi yönde görüş
                 bildirdiğinizi kaydeder ve izleyiciyi videonuza yönlendirir. Buna rağmen kullanımın
                 haklarınızı ihlal ettiğini düşünüyorsanız yukarıdaki adresten yazın; itirazınızı

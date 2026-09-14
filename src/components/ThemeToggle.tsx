@@ -28,7 +28,7 @@ export function ThemeToggle() {
     const toggle = () => {
         const next: Mode = isDark ? "light" : "dark";
         document.documentElement.dataset.theme = next;
-        try { localStorage.setItem("ecotube-theme", next); } catch { /* gizli sekme */ }
+        try { localStorage.setItem("and-theme", next); } catch { /* gizli sekme */ }
         force((n) => n + 1);
     };
 

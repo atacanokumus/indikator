@@ -10,11 +10,11 @@ import Link from "next/link";
  * istemek gereksiz sürtünmedir. Onay verilene kadar reklam betiği yüklenmez
  * (bkz. layout.tsx), böylece "önce onay, sonra çerez" sırası korunur.
  */
-const KEY = "ecotube-cookie-consent";
+const KEY = "and-cookie-consent";
 
 function subscribe(cb: () => void) {
-    window.addEventListener("ecotube-consent", cb);
-    return () => window.removeEventListener("ecotube-consent", cb);
+    window.addEventListener("and-consent", cb);
+    return () => window.removeEventListener("and-consent", cb);
 }
 
 function readStored(): string {
@@ -29,7 +29,7 @@ export function CookieConsent() {
 
     const choose = (value: "kabul" | "reddedildi") => {
         try { localStorage.setItem(KEY, value); } catch { /* gizli sekme */ }
-        window.dispatchEvent(new CustomEvent("ecotube-consent", { detail: value }));
+        window.dispatchEvent(new CustomEvent("and-consent", { detail: value }));
         force((n) => n + 1);
     };
 

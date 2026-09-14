@@ -1,4 +1,4 @@
-# ECOTUBE
+# Analist Ne Diyor
 
 YouTube ekonomi yorumcularının videolarını yapay zeka ile okuyup, hangi varlıkta
 **AL / SAT / BEKLE** dediklerini tek ekranda toplayan Next.js uygulaması.
@@ -111,7 +111,7 @@ hiçbir yerde saklanmaz.
    `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
 
 4. **GitHub variables** (aynı sayfa → Variables):
-   `PUBLIC_SITE_URL` (ör. `https://ecotube.com.tr`), `GEMINI_MODEL`
+   `PUBLIC_SITE_URL` (ör. `https://analistnediyor.com`), `GEMINI_MODEL`
 
 5. **Abonelikleri başlatın** — siteyi canlıya aldıktan SONRA:
    ```bash

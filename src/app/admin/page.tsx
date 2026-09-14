@@ -21,7 +21,7 @@ export default function AdminPage() {
 
     useEffect(() => {
         // Oturum sadece sekme ömrü boyunca; kalıcı saklama yok.
-        const s = sessionStorage.getItem("ecotube-admin");
+        const s = sessionStorage.getItem("and-admin");
         if (s) { setSecret(s); setAuthed(true); }
     }, []);
 
@@ -38,7 +38,7 @@ export default function AdminPage() {
             });
             const data = await res.json();
             if (data.success) {
-                sessionStorage.setItem("ecotube-admin", secret);
+                sessionStorage.setItem("and-admin", secret);
                 setAuthed(true);
             } else {
                 setMessage({ kind: "err", text: data.error || "Giriş başarısız." });
@@ -136,7 +136,7 @@ export default function AdminPage() {
                 <h1 className="h2">Yönetim</h1>
                 <button
                     className="chip"
-                    onClick={() => { sessionStorage.removeItem("ecotube-admin"); setAuthed(false); setSecret(""); }}
+                    onClick={() => { sessionStorage.removeItem("and-admin"); setAuthed(false); setSecret(""); }}
                 >
                     Çıkış
                 </button>

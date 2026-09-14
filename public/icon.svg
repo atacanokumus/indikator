@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="ECOTUBE">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Analist Ne Diyor">
   <rect width="48" height="48" rx="13" fill="#0d4d5c"/>
-  <path d="M18 15.4Q18 13.1 20 14.2l12.6 8.1q1.8 1.2 0 2.3L20 32.7q-2 1.1-2-1.2Z" fill="#fff"/>
-  <circle cx="35.5" cy="13.5" r="6" fill="#c9973f"/>
-  <path d="M35.5 16.4V10.8M33 13.1l2.5-2.6 2.5 2.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M16.4 12.6q0-2.4 2-1.2l18.2 11.4q1.9 1.2 0 2.4L18.4 36.6q-2 1.2-2-1.2Z" fill="#fff"/>
+  <path d="M22 30.6V19.4M19 22.4l3-3 3 3" stroke="#16a34a" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M29.2 20.2v6.6M27.2 24.9l2 2 2-2" stroke="#dc2626" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

@@ -8,7 +8,7 @@ export const revalidate = 300;
 export const metadata: Metadata = {
     title: "Metodoloji — sayım nasıl yapılıyor",
     description:
-        "ECOTUBE'un video seçiminden yön etiketine, sayımdan isabet ölçümüne kadar tüm yöntemi.",
+        "Analist Ne Diyor'un video seçiminden yön etiketine, sayımdan isabet ölçümüne kadar tüm yöntemi.",
     alternates: { canonical: "/metodoloji" },
 };
 
@@ -63,7 +63,7 @@ export default async function MetodolojiPage() {
                     4&apos;ü alım yönünde&rdquo; cümlesi tam olarak bunu söyler.
                 </p>
                 <p className="small" style={{ marginTop: 10 }}>
-                    ECOTUBE bu sayıma kendi görüşünü katmaz, yorumcuları ağırlıklandırmaz ve bir
+                    Analist Ne Diyor bu sayıma kendi görüşünü katmaz, yorumcuları ağırlıklandırmaz ve bir
                     sonuç önermez. Sayım penceresi son <strong>{snapshot.windowDays} gündür</strong>;
                     daha eski görüşler sayıma girmez ama geçmiş olarak gösterilir.
                 </p>

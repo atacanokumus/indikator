@@ -8,7 +8,7 @@ const HUB = "https://pubsubhubbub.appspot.com/subscribe";
 
 function callbackUrl(): string {
     const base = process.env.PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
-    if (!base) throw new Error("PUBLIC_SITE_URL tanımlı değil (ör. https://ecotube.com.tr)");
+    if (!base) throw new Error("PUBLIC_SITE_URL tanımlı değil (ör. https://analistnediyor.com)");
     return `${base.replace(/\/$/, "")}/api/youtube/webhook`;
 }
 

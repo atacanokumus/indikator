@@ -63,7 +63,7 @@ export class PriceService {
         ]);
         if (US_TICKERS.has(normalized)) return this.getYahooFinancePrice(normalized);
 
-        // 0. Handle Normalized Keys from ECOTUBE ASSET_MAP
+        // 0. Handle Normalized Keys from Analist Ne Diyor ASSET_MAP
         if (normalized === 'ALTIN') return this.getGoldPrice();
         if (normalized === 'BTC') return this.getCryptoPrice('bitcoin');
         if (normalized === 'ETH') return this.getCryptoPrice('ethereum');

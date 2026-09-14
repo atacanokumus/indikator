@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: "Gizlilik Politikası",
-    description: "ECOTUBE gizlilik politikası, çerez kullanımı ve KVKK bilgilendirmesi.",
+    description: "Analist Ne Diyor gizlilik politikası, çerez kullanımı ve KVKK bilgilendirmesi.",
     alternates: { canonical: "/gizlilik" },
 };
 
-const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@ecotube.com.tr";
+const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@analistnediyor.com";
 
 export default function GizlilikPage() {
     return (
@@ -16,7 +16,7 @@ export default function GizlilikPage() {
 
             <h2 className="h2" style={{ marginTop: 30 }}>Hangi verileri topluyoruz?</h2>
             <p className="small">
-                ECOTUBE&apos;u kullanmak için üyelik gerekmez. Adınızı, e-postanızı veya telefonunuzu
+                Analist Ne Diyor&apos;u kullanmak için üyelik gerekmez. Adınızı, e-postanızı veya telefonunuzu
                 istemiyoruz. Siteyi kullanırken yalnızca teknik olarak zorunlu veriler (tarayıcı türü,
                 yaklaşık konum, ziyaret edilen sayfa) barındırma ve reklam altyapısı tarafından işlenir.
             </p>

@@ -9,7 +9,7 @@ export function Footer() {
                     <div style={{ maxWidth: 340 }}>
                         <div className="row gap-8" style={{ marginBottom: 10 }}>
                             <LogoMark size={26} />
-                            <strong style={{ fontSize: 16, letterSpacing: "-0.03em" }}>ecotube</strong>
+                            <strong style={{ fontSize: 16, letterSpacing: "-0.03em" }}>analistnediyor</strong>
                         </div>
                         <p className="small" style={{ margin: 0 }}>
                             YouTube&apos;daki ekonomi yorumcularının videolarını yapay zeka ile okuyup,
@@ -45,14 +45,14 @@ export function Footer() {
                 <hr className="divider" style={{ marginBlock: 22 }} />
 
                 <p className="tiny" style={{ margin: 0, lineHeight: 1.65 }}>
-                    <strong>Yatırım tavsiyesi değildir.</strong> ECOTUBE size ne yapmanız gerektiğini
+                    <strong>Yatırım tavsiyesi değildir.</strong> Analist Ne Diyor size ne yapmanız gerektiğini
                     söylemez; kamuya açık YouTube videolarında kimin hangi yönde konuştuğunu sayar.
                     Buradaki içerikler kişiye özel değildir, genel niteliktedir ve yatırım danışmanlığı
                     kapsamında değildir. Yön etiketleri yorumcuların kendi ifadelerinin yapay zeka ile
                     çıkarılmış özetidir ve hata içerebilir; kaynağı videodan teyit edin.
                 </p>
                 <p className="tiny" style={{ marginTop: 10 }}>
-                    © {new Date().getFullYear()} ECOTUBE
+                    © {new Date().getFullYear()} Analist Ne Diyor
                 </p>
             </div>
         </footer>
