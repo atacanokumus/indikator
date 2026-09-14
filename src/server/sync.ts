@@ -3,7 +3,12 @@
  * Akış: transkript dene → olmazsa ses indir + Gemini File API → sonuçları kaydet.
  * Başarısız videolar işaretlenir, 3 denemeden sonra bir daha denenmez.
  */
-import { getChannelVideos, getVideoDurationSeconds, getVideoTranscript } from "@/services/youtube";
+import {
+    getChannelVideos,
+    getVideoDurationSeconds,
+    getVideoTranscript,
+    TransientTranscriptError,
+} from "@/services/youtube";
 import { analyzeTranscript } from "@/lib/gemini";
 import { PriceService } from "@/services/price-service";
 import type { Analysis, VideoInfo } from "@/lib/types-video";
@@ -69,6 +74,9 @@ export async function processVideo(
 
     let results: Analysis[] = [];
     let lastError = "";
+    // Geçici hatada deneme sayacını artırmıyoruz; yoksa sağlam bir video
+    // üç geçici hatadan sonra kalıcı olarak kara listeye düşüyor.
+    let transient = false;
 
     // Tek yol: altyazı. Ses indirme yolu, YouTube Kullanım Şartları nedeniyle
     // kaldırıldı; altyazısı olmayan video analiz edilmeden atlanır.
@@ -84,11 +92,16 @@ export async function processVideo(
             log(`[SYNC] ${lastError} — video atlanıyor.`);
         }
     } catch (err) {
+        transient = err instanceof TransientTranscriptError;
         lastError = `Altyazı alınamadı: ${(err as Error).message}`;
         log(`[SYNC] ${lastError} — video atlanıyor.`);
     }
 
     if (results.length === 0) {
+        if (transient) {
+            log(`[SYNC] Geçici hata — sayaç artırılmadı, sonraki turda tekrar denenecek.`);
+            return { success: false, findings: 0 };
+        }
         await recordFailure(video.id, lastError || "Sinyal bulunamadı");
         log(`[SYNC] ${video.id} için sonuç yok. Deneme sayacı artırıldı.`);
         return { success: false, findings: 0 };
@@ -176,6 +189,8 @@ export async function syncChannel(
             const r = await processVideo(video, channelId, channelTitle, channelThumbnail, log, opts.language ?? "tr");
             if (r.success) processed++;
             findings += r.findings;
+            // YouTube hız sınırına takılmamak için videolar arasında kısa bekleme
+            await new Promise((res) => setTimeout(res, 1500));
         }
 
         return { success: true, videosProcessed: processed, totalFindings: findings, logs };

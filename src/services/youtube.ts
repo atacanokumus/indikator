@@ -120,6 +120,20 @@ interface YtDlpInfo {
     automatic_captions?: Record<string, YtDlpSub[]>;
 }
 
+/**
+ * Geçici hata: YouTube altyazı sunucusu bazen (hız sınırı, bölgesel engel)
+ * JSON yerine bir HTML hata sayfası döndürür. Bu videonun altyazısı YOK
+ * demek değildir; bir sonraki turda büyük ihtimalle gelir. Bu yüzden bu hata
+ * alındığında videoyu kalıcı başarısız listesine YAZMIYORUZ.
+ */
+export class TransientTranscriptError extends Error {
+    readonly transient = true;
+    constructor(message: string) {
+        super(message);
+        this.name = "TransientTranscriptError";
+    }
+}
+
 function vttToText(text: string): string {
     return text
         .split("\n")
@@ -172,7 +186,26 @@ async function transcriptViaYtDlp(videoId: string): Promise<string | null> {
     if (!sub?.url) return null;
 
     const text = await (await fetch(sub.url)).text();
-    const out = sub.ext === "json3" || text.includes("wireMagic") ? json3ToText(text) : vttToText(text);
+
+    // YouTube hız sınırı uygularken altyazı adresinden HTML hata sayfası döner.
+    const head = text.trimStart().slice(0, 60).toLowerCase();
+    if (head.startsWith("<!doctype") || head.startsWith("<html")) {
+        throw new TransientTranscriptError(
+            "YouTube altyazı sunucusu geçici olarak HTML hata sayfası döndürdü"
+        );
+    }
+
+    let out: string;
+    try {
+        out = sub.ext === "json3" || text.includes("wireMagic") ? json3ToText(text) : vttToText(text);
+    } catch {
+        // Biçim beklediğimiz gibi değilse diğer ayrıştırıcıyı dene.
+        try {
+            out = sub.ext === "json3" ? vttToText(text) : json3ToText(text);
+        } catch {
+            throw new TransientTranscriptError("Altyazı yanıtı çözümlenemedi");
+        }
+    }
     return out.length > 10 ? decodeHtml(out) : null;
 }
 
