@@ -185,11 +185,18 @@ async function transcriptViaYtDlp(videoId: string): Promise<string | null> {
     const sub = subs?.find((s) => s.ext === "json3") ?? subs?.find((s) => s.ext === "vtt");
     if (!sub?.url) return null;
 
-    const text = await (await fetch(sub.url)).text();
-
-    // YouTube hız sınırı uygularken altyazı adresinden HTML hata sayfası döner.
-    const head = text.trimStart().slice(0, 60).toLowerCase();
-    if (head.startsWith("<!doctype") || head.startsWith("<html")) {
+    // YouTube hız sınırı uygularken altyazı adresinden JSON yerine HTML hata
+    // sayfası döner. Bu geçicidir; kısa beklemelerle birkaç kez tekrar deniyoruz.
+    let text = "";
+    const waits = [0, 2500, 6000];
+    for (let i = 0; i < waits.length; i++) {
+        if (waits[i]) await new Promise((r) => setTimeout(r, waits[i]));
+        text = await (await fetch(sub.url)).text();
+        const head = text.trimStart().slice(0, 60).toLowerCase();
+        if (!head.startsWith("<!doctype") && !head.startsWith("<html")) break;
+        text = "";
+    }
+    if (!text) {
         throw new TransientTranscriptError(
             "YouTube altyazı sunucusu geçici olarak HTML hata sayfası döndürdü"
         );
