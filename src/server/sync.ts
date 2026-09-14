@@ -27,6 +27,8 @@ export interface SyncResult {
     totalFindings: number;
     logs: string[];
     error?: string;
+    /** Sonuç yok ama sebebi geçici (altyazı henüz hazır değil vb.) — tekrar denenebilir. */
+    transient?: boolean;
 }
 
 const makeLogger = () => {
@@ -57,7 +59,7 @@ export async function processVideo(
     channelThumbnail: string | undefined,
     log: (m: string) => void,
     language: "tr" | "en" = "tr"
-): Promise<{ success: boolean; findings: number }> {
+): Promise<{ success: boolean; findings: number; transient?: boolean }> {
     log(`[SYNC] İşleniyor: ${video.title} (${video.id})`);
 
     if (await videoAlreadyAnalyzed(video.id)) {
@@ -107,7 +109,7 @@ export async function processVideo(
     if (results.length === 0) {
         if (transient) {
             log(`[SYNC] Geçici hata — sayaç artırılmadı, sonraki turda tekrar denenecek.`);
-            return { success: false, findings: 0 };
+            return { success: false, findings: 0, transient: true };
         }
         await recordFailure(video.id, lastError || "Sinyal bulunamadı");
         log(`[SYNC] ${video.id} için sonuç yok. Deneme sayacı artırıldı.`);
@@ -159,7 +161,13 @@ export async function syncVideo(
             publishedAt: videoMeta?.publishedAt || new Date().toISOString(),
         };
         const r = await processVideo(video, channelId, channelTitle, channelThumbnail, log, language);
-        return { success: true, videosProcessed: r.success ? 1 : 0, totalFindings: r.findings, logs };
+        return {
+            success: true,
+            videosProcessed: r.success ? 1 : 0,
+            totalFindings: r.findings,
+            transient: r.transient,
+            logs,
+        };
     } catch (err) {
         const message = (err as Error).message;
         log(`[CRITICAL] ${message}`);

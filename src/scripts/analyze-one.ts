@@ -23,13 +23,33 @@ async function main() {
     }
 
     console.log(`[ANALYZE] ${channel.title} → ${title || videoId}`);
-    const result = await syncVideo(
-        videoId, channelId, channel.title, channel.thumbnail,
-        { title: title || undefined, publishedAt: publishedAt || undefined },
-        channel.language ?? "tr"
-    );
 
-    result.logs.forEach((l) => console.log(l));
+    /**
+     * YouTube push bildirimi videodan 1-2 dakika sonra geliyor; otomatik
+     * altyazı ise genelde biraz daha geç hazır oluyor. İlk denemede altyazı
+     * yoksa iş akışını bitirip 6 saat beklemek yerine kısa aralıklarla birkaç
+     * kez daha deniyoruz — "video atar atmaz güncelleme" vaadi buna bağlı.
+     * Yalnızca GEÇİCİ hatada tekrar denenir; altyazısı kapalı video ilk
+     * denemede kalıcı olarak işaretlenir ve boşuna dakika harcanmaz.
+     */
+    const RETRY_WAITS_MS = [90_000, 240_000, 420_000];
+    let result = await runOnce();
+    for (let i = 0; i < RETRY_WAITS_MS.length && result.transient; i++) {
+        const dk = Math.round(RETRY_WAITS_MS[i] / 60000 * 10) / 10;
+        console.log(`[ANALYZE] Altyazı henüz hazır değil; ${dk} dk sonra tekrar denenecek.`);
+        await new Promise((r) => setTimeout(r, RETRY_WAITS_MS[i]));
+        result = await runOnce();
+    }
+
+    async function runOnce() {
+        const r = await syncVideo(
+            videoId, channelId, channel!.title, channel!.thumbnail,
+            { title: title || undefined, publishedAt: publishedAt || undefined },
+            channel!.language ?? "tr"
+        );
+        r.logs.forEach((l) => console.log(l));
+        return r;
+    }
 
     if (result.totalFindings > 0) {
         await evaluatePendingPredictions().catch((e) => console.error("[EVALUATOR]", e.message));
