@@ -3,9 +3,8 @@
  * Akış: transkript dene → olmazsa ses indir + Gemini File API → sonuçları kaydet.
  * Başarısız videolar işaretlenir, 3 denemeden sonra bir daha denenmez.
  */
-import * as fs from "fs";
-import { getChannelVideos, getVideoTranscript, downloadAudioLocally } from "@/services/youtube";
-import { analyzeAudioFile, analyzeTranscript } from "@/lib/gemini";
+import { getChannelVideos, getVideoTranscript } from "@/services/youtube";
+import { analyzeTranscript } from "@/lib/gemini";
 import { PriceService } from "@/services/price-service";
 import type { Analysis, VideoInfo } from "@/lib/types-video";
 import {
@@ -59,39 +58,22 @@ export async function processVideo(
     let results: Analysis[] = [];
     let lastError = "";
 
-    // 1) Hızlı yol: transkript
+    // Tek yol: altyazı. Ses indirme yolu, YouTube Kullanım Şartları nedeniyle
+    // kaldırıldı; altyazısı olmayan video analiz edilmeden atlanır.
     try {
-        log(`[SYNC] Transkript deneniyor...`);
+        log(`[SYNC] Altyazı alınıyor...`);
         const transcript = await getVideoTranscript(video.id);
         if (transcript && transcript.length > 200) {
-            log(`[SYNC] Transkript bulundu (${transcript.length} karakter).`);
+            log(`[SYNC] Altyazı bulundu (${transcript.length} karakter).`);
             results = await analyzeTranscript(transcript, video.title);
-            log(`[AI] Transkript analizi: ${results.length} sonuç`);
+            log(`[AI] Analiz: ${results.length} sonuç`);
         } else {
-            lastError = "Transkript çok kısa veya boş";
-            log(`[SYNC] ${lastError}.`);
+            lastError = "Altyazı çok kısa veya boş";
+            log(`[SYNC] ${lastError} — video atlanıyor.`);
         }
     } catch (err) {
-        lastError = `Transkript hatası: ${(err as Error).message}`;
-        log(`[SYNC] ${lastError}`);
-    }
-
-    // 2) Yedek yol: ses indir + Gemini File API
-    if (results.length === 0) {
-        let audioPath: string | null = null;
-        try {
-            log(`[SYNC] Ses indiriliyor (yedek yol)...`);
-            audioPath = await downloadAudioLocally(video.id);
-            results = await analyzeAudioFile(audioPath, video.title);
-            log(`[AI] Ses analizi: ${results.length} sonuç`);
-        } catch (err) {
-            lastError = `Ses analizi hatası: ${(err as Error).message}`;
-            log(`[ERROR] ${lastError}`);
-        } finally {
-            if (audioPath && fs.existsSync(audioPath)) {
-                try { fs.unlinkSync(audioPath); } catch { /* yoksay */ }
-            }
-        }
+        lastError = `Altyazı alınamadı: ${(err as Error).message}`;
+        log(`[SYNC] ${lastError} — video atlanıyor.`);
     }
 
     if (results.length === 0) {

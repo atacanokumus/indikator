@@ -11,9 +11,9 @@ type Sort = "POPULAR" | "RECENT" | "AZ";
 
 const FILTERS: { key: Filter; label: string }[] = [
     { key: "ALL", label: "Tümü" },
-    { key: "AL", label: "AL" },
-    { key: "SAT", label: "SAT" },
-    { key: "BEKLE", label: "Bekle" },
+    { key: "AL", label: "Alım ağırlıklı" },
+    { key: "SAT", label: "Satış ağırlıklı" },
+    { key: "BEKLE", label: "Bekle / Gözlemle" },
 ];
 
 export function SignalExplorer({ items }: { items: AssetConsensus[] }) {
@@ -27,8 +27,8 @@ export function SignalExplorer({ items }: { items: AssetConsensus[] }) {
         let out = items.filter((it) => {
             if (q && !`${it.asset} ${assetLabel(it.asset)}`.toLocaleLowerCase("tr").includes(q)) return false;
             if (filter === "ALL") return true;
-            if (filter === "BEKLE") return it.recommendation === "TUT" || it.recommendation === "GÖZLEMLE";
-            return it.recommendation === filter;
+            if (filter === "BEKLE") return it.leading === "TUT" || it.leading === "GÖZLEMLE";
+            return it.leading === filter;
         });
 
         out = [...out];

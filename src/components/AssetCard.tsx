@@ -1,42 +1,60 @@
 "use client";
 
 import { useState } from "react";
-import type { AssetConsensus } from "@/lib/types";
-import { assetLabel, formatPrice, relativeTime, signalClass, SIGNAL_LABEL, SIGNAL_SENTENCE } from "@/lib/display";
+import Link from "next/link";
+import type { AnalystSignal, AssetConsensus } from "@/lib/types";
+import {
+    assetLabel,
+    DIRECTION,
+    DIRECTION_PHRASE,
+    formatDateTr,
+    formatPrice,
+    relativeTime,
+} from "@/lib/display";
+import { assetSlug } from "@/lib/slug";
+import { TallyBar, TallyHeadline, TallySentence } from "./Tally";
+import { ReportButton } from "./ReportButton";
 
 export function AssetCard({ item }: { item: AssetConsensus }) {
     const [open, setOpen] = useState(false);
     const price = formatPrice(item.price, item.currency);
-    const total = Math.max(1, item.breakdown.AL + item.breakdown.SAT + item.breakdown.BEKLE);
 
     return (
-        <article className="card card-hover" id={`varlik-${encodeURIComponent(item.asset)}`} style={{ scrollMarginTop: 80 }}>
+        <article className="card card-hover" id={`varlik-${assetSlug(item.asset)}`} style={{ scrollMarginTop: 80 }}>
             <div className="card-pad stack gap-12">
                 <div className="between" style={{ alignItems: "flex-start" }}>
-                    <div className="stack">
-                        <h3 className="h3">{assetLabel(item.asset)}</h3>
+                    <h3 className="h3">
+                        <Link href={`/varlik/${assetSlug(item.asset)}`} style={{ textDecoration: "none" }}>
+                            {assetLabel(item.asset)}
+                        </Link>
+                    </h3>
+                    <div className="stack" style={{ alignItems: "flex-end" }}>
                         {price ? (
-                            <span className="mono" style={{ fontSize: 17, fontWeight: 700, marginTop: 2 }}>{price}</span>
+                            <span className="mono" style={{ fontSize: 15, fontWeight: 700 }}>{price}</span>
                         ) : (
-                            <span className="tiny">fiyat bilgisi yok</span>
+                            <span className="tiny">fiyat yok</span>
                         )}
+                        {/* Tebliğ m.78/2-b: fiyatın alındığı an açıkça belirtilmeli */}
+                        {item.priceAt && <span className="tiny">{relativeTime(item.priceAt)}</span>}
                     </div>
-                    <span className={signalClass(item.recommendation)}>{SIGNAL_LABEL[item.recommendation]}</span>
                 </div>
 
-                <p className="small" style={{ margin: 0 }}>{SIGNAL_SENTENCE[item.recommendation]}</p>
+                <TallyHeadline
+                    leading={item.leading}
+                    leadingCount={item.leadingCount}
+                    total={item.analystCount}
+                />
 
-                <div className="meter" aria-hidden="true">
-                    {item.breakdown.AL > 0 && <i className="m-al" style={{ width: `${(item.breakdown.AL / total) * 100}%` }} />}
-                    {item.breakdown.SAT > 0 && <i className="m-sat" style={{ width: `${(item.breakdown.SAT / total) * 100}%` }} />}
-                    {item.breakdown.BEKLE > 0 && <i className="m-bekle" style={{ width: `${(item.breakdown.BEKLE / total) * 100}%` }} />}
-                </div>
+                <TallyBar tally={item.tally} total={item.analystCount} />
 
-                <div className="row gap-6 wrapflex">
-                    {item.breakdown.AL > 0 && <span className="sig sig-AL">{item.breakdown.AL} AL</span>}
-                    {item.breakdown.SAT > 0 && <span className="sig sig-SAT">{item.breakdown.SAT} SAT</span>}
-                    {item.breakdown.BEKLE > 0 && <span className="sig sig-TUT">{item.breakdown.BEKLE} BEKLE</span>}
-                </div>
+                <TallySentence tally={item.tally} total={item.analystCount} size="sm" />
+
+                {/* Tebliğ m.78/2-c: son 12 ayda görüşünü değiştirenler */}
+                {item.changedCount > 0 && (
+                    <span className="tiny">
+                        Son 12 ayda {item.changedCount} analist bu varlıkta görüşünü değiştirdi.
+                    </span>
+                )}
             </div>
 
             <hr className="divider" />
@@ -50,65 +68,98 @@ export function AssetCard({ item }: { item: AssetConsensus }) {
                     cursor: "pointer", color: "inherit", font: "inherit",
                 }}
             >
-                <span className="tiny">Son sinyal: {relativeTime(item.latestSignalAt)}</span>
+                <span className="tiny">Son görüş: {relativeTime(item.latestSignalAt)}</span>
                 <span className="small" style={{ color: "var(--brand)", fontWeight: 650 }}>
-                    {open ? "Kapat" : `${item.analystCount} analist görüşü`} {open ? "▲" : "▼"}
+                    {open ? "Kapat ▲" : `Kim ne dedi (${item.analystCount}) ▼`}
                 </span>
             </button>
 
             {open && (
-                <div style={{ borderTop: "1px solid var(--border)", maxHeight: 380, overflowY: "auto" }}>
+                <div style={{ borderTop: "1px solid var(--border)", maxHeight: 420, overflowY: "auto" }}>
                     {item.signals.map((s, i) => (
-                        <div
-                            key={`${s.videoId}-${i}`}
-                            className="row gap-12"
-                            style={{
-                                padding: "13px 20px", alignItems: "flex-start",
-                                borderTop: i > 0 ? "1px solid var(--border)" : "none",
-                            }}
-                        >
-                            {s.channelThumbnail ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={s.channelThumbnail} alt="" width={30} height={30} className="avatar" loading="lazy" />
-                            ) : (
-                                <span
-                                    className="avatar row"
-                                    style={{
-                                        width: 30, height: 30, justifyContent: "center",
-                                        color: "var(--brand)", fontWeight: 800, fontSize: 12,
-                                    }}
-                                >
-                                    {s.channelTitle.charAt(0)}
-                                </span>
-                            )}
-
-                            <div className="stack gap-4" style={{ flex: 1, minWidth: 0 }}>
-                                <div className="between gap-8">
-                                    <span className="small truncate" style={{ fontWeight: 700, color: "var(--text)" }}>
-                                        {s.channelTitle}
-                                    </span>
-                                    <span className={signalClass(s.recommendation)} style={{ fontSize: 11, padding: "3px 8px" }}>
-                                        {SIGNAL_LABEL[s.recommendation]}
-                                    </span>
-                                </div>
-                                <p className="small clamp-3" style={{ margin: 0 }}>{s.reasoning}</p>
-                                <div className="row gap-8 wrapflex">
-                                    <span className="tiny">{relativeTime(s.date)}</span>
-                                    <a
-                                        className="tiny"
-                                        style={{ color: "var(--brand)", fontWeight: 650 }}
-                                        href={`https://www.youtube.com/watch?v=${s.videoId}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        Videoyu izle →
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                        <SignalRow key={`${s.videoId}-${i}`} signal={s} asset={item.asset} first={i === 0} />
                     ))}
                 </div>
             )}
         </article>
+    );
+}
+
+export function SignalRow({
+    signal: s,
+    asset,
+    first,
+}: {
+    signal: AnalystSignal;
+    asset: string;
+    first: boolean;
+}) {
+    return (
+        <div
+            className="row gap-12"
+            style={{
+                padding: "14px 20px", alignItems: "flex-start",
+                borderTop: first ? "none" : "1px solid var(--border)",
+            }}
+        >
+            {s.channelThumbnail ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={s.channelThumbnail} alt="" width={32} height={32} className="avatar" loading="lazy" />
+            ) : (
+                <span
+                    className="avatar row"
+                    style={{ width: 32, height: 32, justifyContent: "center", color: "var(--brand)", fontWeight: 800, fontSize: 13 }}
+                >
+                    {s.channelTitle.charAt(0)}
+                </span>
+            )}
+
+            <div className="stack gap-6" style={{ flex: 1, minWidth: 0 }}>
+                <div className="between gap-8">
+                    <span className="small truncate" style={{ fontWeight: 700, color: "var(--text)" }}>
+                        {s.channelTitle}
+                    </span>
+                    <span className={`dir-chip chip-${s.recommendation}`}>{DIRECTION[s.recommendation]}</span>
+                </div>
+
+                {/* Emir kipi yok: analistin ne yaptığı anlatılıyor */}
+                <p className="small" style={{ margin: 0 }}>
+                    <strong style={{ color: "var(--text)" }}>{s.channelTitle}</strong>{" "}
+                    {DIRECTION_PHRASE[s.recommendation]}.
+                </p>
+
+                <p className="small clamp-3" style={{ margin: 0, color: "var(--text-soft)" }}>
+                    {s.reasoning}
+                </p>
+
+                {/* Tebliğ m.78/2-c: aynı analistin önceki görüşü */}
+                {s.previous && (
+                    <span className="prev-note">
+                        Önceki görüşü: <s>{DIRECTION[s.previous.recommendation]}</s> ({formatDateTr(s.previous.date)})
+                    </span>
+                )}
+
+                <div className="row gap-12 wrapflex" style={{ marginTop: 2 }}>
+                    <span className="tiny">{formatDateTr(s.date)}</span>
+                    <a
+                        className="tiny"
+                        style={{ color: "var(--brand)", fontWeight: 650 }}
+                        href={`https://www.youtube.com/watch?v=${s.videoId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Videoda dinle →
+                    </a>
+                    <ReportButton videoId={s.videoId} asset={asset} channelTitle={s.channelTitle} />
+                </div>
+
+                <span className="ai-note">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" />
+                    </svg>
+                    Yapay zeka özeti — hata içerebilir, videodan teyit edin
+                </span>
+            </div>
+        </div>
     );
 }

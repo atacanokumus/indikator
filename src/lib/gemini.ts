@@ -5,7 +5,7 @@
  * - Üstel geri çekilme (eskiden 10 x 60 sn = 10 dk bloklama vardı)
  * - Transkript uzunluk sınırı (2 saatlik video = 150k+ karakter)
  */
-import { GoogleGenAI, Type, createPartFromUri } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import type { Analysis } from "./types";
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
@@ -33,7 +33,7 @@ const ANALYSIS_SCHEMA = {
             recommendation: { type: Type.STRING, enum: ["AL", "SAT", "TUT", "GÖZLEMLE"] },
             score: { type: Type.INTEGER, description: "Ekonomistin ifadesindeki kararlılık, 0-100" },
             timeframe: { type: Type.STRING, enum: ["KISA", "ORTA", "UZUN"] },
-            reasoning: { type: Type.STRING, description: "Tek cümlelik gerekçe, ekonomistin kendi argümanı" },
+            reasoning: { type: Type.STRING, description: "En fazla 25 kelimelik, KENDİ SÖZCÜKLERİNLE yazılmış gerekçe. Konuşmacının cümlelerini birebir aktarma." },
             targetPrice: { type: Type.STRING, description: "Videoda rakam verildiyse, yoksa boş bırak" },
         },
         required: ["asset", "recommendation", "timeframe", "reasoning"],
@@ -47,7 +47,10 @@ Görevin: Konuşmacının NET görüş bildirdiği yatırım araçlarını (hiss
 Kurallar:
 - SADECE konuşmacının açık bir yönlü görüş belirttiği varlıkları listele.
 - Konuşmacı kararsızsa veya "izliyorum, bekliyorum" diyorsa GÖZLEMLE kullan.
-- Gerekçe, konuşmacının KENDİ argümanı olmalı; kendi yorumunu ekleme.
+- Gerekçe, konuşmacının argümanını YANSITMALI ama onun cümleleriyle DEĞİL, senin
+  kendi sözcüklerinle yazılmalı. Videodan birebir alıntı yapmak telif ihlalidir.
+  En fazla 25 kelime. Tırnak içinde alıntı kullanma.
+- Kendi yorumunu, tahminini veya tavsiyeni ekleme; sadece konuşmacının söylediğini özetle.
 - Genel piyasa yorumu, siyaset veya makro tahmin varlık sinyali DEĞİLDİR; bunları listeleme.
 - Hiçbir net sinyal yoksa boş dizi döndür. Uydurma sinyal üretme.
 
@@ -116,7 +119,7 @@ function parseResults(text: string | undefined): Analysis[] {
             timeframe: (["KISA", "ORTA", "UZUN"].includes(String(r.timeframe))
                 ? String(r.timeframe)
                 : "ORTA") as Analysis["timeframe"],
-            reasoning: String(r.reasoning ?? "").slice(0, 600),
+            reasoning: String(r.reasoning ?? "").slice(0, 300),
             targetPrice: r.targetPrice ? String(r.targetPrice) : null,
         }));
 }
@@ -145,50 +148,6 @@ export async function analyzeTranscript(transcript: string, videoTitle?: string)
         })
     );
     return parseResults(res.text);
-}
-
-/** Transkript alınamayan videolar için: ses dosyasını Gemini File API'ye yükleyip analiz eder. */
-export async function analyzeAudioFile(filePath: string, videoTitle?: string): Promise<Analysis[]> {
-    const client = ai();
-    let fileName = "";
-    try {
-        const uploaded = await withRetry("ses-yükleme", () =>
-            client.files.upload({ file: filePath, config: { mimeType: "audio/mp4" } })
-        );
-        fileName = uploaded.name!;
-
-        // İşlenmesini bekle (en fazla ~5 dk)
-        let state = uploaded.state;
-        let uri = uploaded.uri;
-        for (let i = 0; state === "PROCESSING" && i < 60; i++) {
-            await new Promise((r) => setTimeout(r, 5000));
-            const f = await client.files.get({ name: fileName });
-            state = f.state;
-            uri = f.uri;
-        }
-        if (state !== "ACTIVE" || !uri) throw new Error(`Gemini ses dosyasını işleyemedi (durum: ${state})`);
-
-        const res = await withRetry("ses-analiz", () =>
-            client.models.generateContent({
-                model: MODEL,
-                contents: [
-                    createPartFromUri(uri!, "audio/mp4"),
-                    { text: `Bu bir Türkçe ekonomi/yatırım videosunun sesidir. Video başlığı: ${videoTitle || "bilinmiyor"}` },
-                ],
-                config: {
-                    systemInstruction: SYSTEM_PROMPT,
-                    responseMimeType: "application/json",
-                    responseSchema: ANALYSIS_SCHEMA as never,
-                    temperature: 0.2,
-                },
-            })
-        );
-        return parseResults(res.text);
-    } finally {
-        if (fileName) {
-            await client.files.delete({ name: fileName }).catch(() => { });
-        }
-    }
 }
 
 /* ------------------------------------------------------------------ */

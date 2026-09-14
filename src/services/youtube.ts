@@ -4,7 +4,9 @@
  * Transkript için üç yol denenir:
  *   1. Anonim youtube-transcript kütüphanesi (hızlı)
  *   2. YOUTUBE_COOKIE tanımlıysa kimlikli InnerTube isteği
- *   3. yt-dlp ikilisi (en dayanıklı; /tmp'ye indirilip önbelleklenir)
+ *   3. yt-dlp ile SADECE ALTYAZI (medya indirilmez)
+ *
+ * Ses/video indirme yolu kaldırılmıştır — bkz. aşağıdaki not.
  */
 import { execFile } from "child_process";
 import fs from "fs";
@@ -197,29 +199,18 @@ export async function getVideoTranscript(videoId: string): Promise<string> {
     throw new Error("Bu videoda altyazı kapalı veya erişilemiyor");
 }
 
-/* --------------------------- Ses indirme --------------------------- */
-
-export async function downloadAudioLocally(videoId: string): Promise<string> {
-    const bin = await getYtDlp();
-    const outputPath = path.join(os.tmpdir(), `${videoId}.m4a`);
-
-    await execFileAsync(
-        bin,
-        [
-            `https://www.youtube.com/watch?v=${videoId}`,
-            "-f", "bestaudio[ext=m4a]/bestaudio",
-            "--extract-audio",
-            "--audio-format", "m4a",
-            "--no-warnings",
-            "--output", outputPath,
-        ],
-        { maxBuffer: 32 * 1024 * 1024 }
-    );
-
-    if (!fs.existsSync(outputPath)) throw new Error("Ses dosyası oluşturulamadı");
-    return outputPath;
-}
-
+/* --------------------------- Ses indirme: KALDIRILDI --------------------------- */
+/**
+ * downloadAudioLocally FONKSİYONU BİLİNÇLİ OLARAK KALDIRILMIŞTIR.
+ *
+ * YouTube Kullanım Şartları, Hizmet'ten içerik indirilmesini ve kopyalamayı
+ * kısıtlayan özelliklerin aşılmasını açıkça yasaklıyor. Ses dosyası indirmek
+ * bu maddelere doğrudan temas ediyordu. Yaptırımı verebilecek taraf (Google)
+ * aynı zamanda reklam gelirimizi ödeyen taraf olduğu için, kapsamı bir miktar
+ * daraltıp bu riski tamamen kaldırmayı tercih ettik.
+ *
+ * Sonuç: altyazısı bulunmayan video analiz edilmez, atlanır.
+ */
 /* --------------------------- Kanal RSS'i --------------------------- */
 
 interface RssItem {

@@ -1,21 +1,49 @@
-import type { Recommendation } from "./types";
+import type { Recommendation, Tally } from "./types";
 
-export const SIGNAL_LABEL: Record<Recommendation, string> = {
-    AL: "AL",
-    SAT: "SAT",
+/**
+ * DİL TERCİHİ — HUKUKİ
+ * Site bir emir kipi kullanmaz. "AL" değil "ALIM yönünde"; "SAT" değil
+ * "SATIŞ yönlü". Etiketler, analistin konuşmasının YÖNÜNÜ tarif eder;
+ * okuyucuya verilmiş bir talimat değildir.
+ */
+export const DIRECTION: Record<Recommendation, string> = {
+    AL: "ALIM",
+    SAT: "SATIŞ",
     TUT: "BEKLE",
     "GÖZLEMLE": "GÖZLEMLE",
 };
 
-export const SIGNAL_SENTENCE: Record<Recommendation, string> = {
-    AL: "Analistlerin çoğunluğu alım yönünde",
-    SAT: "Analistlerin çoğunluğu satış yönünde",
-    TUT: "Analistler kararsız, beklemede",
-    "GÖZLEMLE": "Net görüş yok, izleniyor",
+/** Sayım cümlesinin sonuna gelen ek: "4'ü ALIM yönünde konuşuyor" */
+export const DIRECTION_SUFFIX: Record<Recommendation, string> = {
+    AL: "yönünde",
+    SAT: "yönlü",
+    TUT: "diyor",
+    "GÖZLEMLE": "diyor",
 };
+
+/** Tek analistlik kartlarda kullanılan kısa ifade */
+export const DIRECTION_PHRASE: Record<Recommendation, string> = {
+    AL: "alım yönünde konuştu",
+    SAT: "satış yönlü konuştu",
+    TUT: "beklemeyi tercih etti",
+    "GÖZLEMLE": "net yön vermedi, izliyor",
+};
+
+/** Sayımı okunur bir cümleye çevirir. Sıralama: en çok konuşulan yön başta. */
+export function tallyParts(tally: Tally): { rec: Recommendation; count: number }[] {
+    return (["AL", "SAT", "TUT", "GÖZLEMLE"] as Recommendation[])
+        .map((rec) => ({ rec, count: tally[rec] ?? 0 }))
+        .filter((x) => x.count > 0)
+        .sort((a, b) => b.count - a.count);
+}
 
 export function signalClass(rec: Recommendation) {
     return `sig sig-${rec}`;
+}
+
+/** Yön kelimesinin rengini veren sınıf (büyük puntolu gösterim için) */
+export function directionClass(rec: Recommendation) {
+    return `dir dir-${rec}`;
 }
 
 /** Öne çıkarılacak varlıklar — ziyaretçilerin en çok aradıkları. */

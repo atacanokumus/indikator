@@ -57,32 +57,61 @@ export interface NewsItem {
     relatedAssets?: string[];
 }
 
-/** Ana sayfanın tek okumada aldığı, sunucuda önceden hesaplanmış özet. */
+export interface AnalystSignal {
+    channelId: string;
+    channelTitle: string;
+    channelThumbnail?: string;
+    recommendation: Recommendation;
+    reasoning: string;
+    timeframe: Timeframe;
+    videoId: string;
+    videoTitle: string;
+    date: string;
+    /** Videonun kaçıncı saniyesinde bu konuya girildiği (varsa) */
+    startSeconds?: number | null;
+    /** Aynı analistin bu varlık için bir önceki görüşü — Tebliğ m.78/2-c */
+    previous?: { recommendation: Recommendation; date: string; videoId: string } | null;
+}
+
+/** Her yönde kaç analist konuşmuş — sitenin gösterdiği tek sayısal gerçek. */
+export interface Tally {
+    AL: number;
+    SAT: number;
+    TUT: number;
+    "GÖZLEMLE": number;
+}
+
+/**
+ * Ana sayfanın tek okumada aldığı, sunucuda önceden hesaplanmış özet.
+ *
+ * NOT: Burada kasıtlı olarak `recommendation` alanı YOKTUR. Site kendi
+ * yatırım tavsiyesini üretmez; yalnızca analistlerin görüşlerini sayar.
+ * `leading` sadece "en çok hangi yönde konuşuldu" bilgisidir, bir öneri değildir.
+ */
 export interface AssetConsensus {
     asset: string;
-    recommendation: Recommendation;
-    /** 0-100 */
-    confidence: number;
+    /** En çok analistin konuştuğu yön — tavsiye değil, sayımın sonucu */
+    leading: Recommendation;
+    /** Baskın yönde konuşan analist sayısı */
+    leadingCount: number;
+    /** Baskın yönün toplam içindeki payı, 0-100 */
+    share: number;
     analystCount: number;
-    breakdown: { AL: number; SAT: number; BEKLE: number };
+    tally: Tally;
     latestSignalAt: string;
     price?: number | null;
     currency?: string | null;
-    signals: {
-        channelId: string;
-        channelTitle: string;
-        channelThumbnail?: string;
-        recommendation: Recommendation;
-        reasoning: string;
-        timeframe: Timeframe;
-        videoId: string;
-        videoTitle: string;
-        date: string;
-    }[];
+    /** Fiyatın alındığı an — Tebliğ m.78/2-b */
+    priceAt?: string | null;
+    /** Son 12 ayda görüşünü değiştiren analist sayısı — Tebliğ m.78/2-c */
+    changedCount: number;
+    signals: AnalystSignal[];
 }
 
 export interface HomeSnapshot {
     generatedAt: string;
+    /** Tebliğ m.78/2-a — tavsiyenin yenilenme sıklığı */
+    updateFrequency: string;
     /** Analiz edilen toplam video sayısı (pencere içinde) */
     videoCount: number;
     analystCount: number;

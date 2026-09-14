@@ -30,6 +30,7 @@ export function mockSnapshot(): HomeSnapshot {
         videoCount: 64,
         analystCount: ANALYSTS.length,
         windowDays: 30,
+        updateFrequency: "Video yayınlandığı anda analiz edilir; fiyatlar en az 3 saatte bir yenilenir.",
         lastVideoAt: new Date(now - 42 * 60_000).toISOString(),
         consensus: ASSETS.map(([asset, rec, price, currency], idx) => {
             const count = 3 + ((idx * 2) % 5);
@@ -48,20 +49,25 @@ export function mockSnapshot(): HomeSnapshot {
                     date: new Date(now - (i + 1) * 9 * 3600_000).toISOString(),
                 };
             });
-            const breakdown = { AL: 0, SAT: 0, BEKLE: 0 };
-            signals.forEach((s) =>
-                s.recommendation === "AL" ? breakdown.AL++ : s.recommendation === "SAT" ? breakdown.SAT++ : breakdown.BEKLE++
-            );
+            const tally = { AL: 0, SAT: 0, TUT: 0, "GÖZLEMLE": 0 };
+            signals.forEach((s) => { tally[s.recommendation]++; });
+            const leadingCount = tally[rec];
             return {
                 asset,
-                recommendation: rec,
-                confidence: Math.round((Math.max(breakdown.AL, breakdown.SAT, breakdown.BEKLE) / count) * 100),
+                leading: rec,
+                leadingCount,
+                share: Math.round((leadingCount / count) * 100),
                 analystCount: count,
-                breakdown,
+                tally,
                 latestSignalAt: signals[0].date,
                 price,
                 currency,
-                signals,
+                priceAt: new Date(now - 42 * 60_000).toISOString(),
+                changedCount: idx % 3,
+                signals: signals.map((s, i) => ({
+                    ...s,
+                    previous: i === 1 ? { recommendation: "SAT" as Recommendation, date: new Date(now - 40 * 864e5).toISOString(), videoId: "dQw4w9WgXcQ" } : null,
+                })),
             };
         }),
     };

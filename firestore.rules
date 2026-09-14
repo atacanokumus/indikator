@@ -18,6 +18,8 @@ service cloud.firestore {
     match /settings/{doc}       { allow read, write: if false; }
     match /failed_videos/{doc}  { allow read, write: if false; }
     match /pubsub_subs/{doc}    { allow read, write: if false; }
+    // Kullanıcı bildirimleri yalnızca sunucu üzerinden yazılır
+    match /signal_reports/{doc}  { allow read, write: if false; }
 
     // Kural tanımlanmamış her şey kapalı
     match /{document=**} { allow read, write: if false; }

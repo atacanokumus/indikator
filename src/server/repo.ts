@@ -123,14 +123,58 @@ export async function updateStoredPrice(asset: string, price: number, currency: 
         .set({ asset, price, currency, updatedAt: new Date().toISOString() }, { merge: true });
 }
 
-export async function getStoredPrices(): Promise<Record<string, { price: number; currency: string }>> {
+export async function getStoredPrices(): Promise<
+    Record<string, { price: number; currency: string; updatedAt: string }>
+> {
     const snap = await adminDb().collection("prices").get();
-    const out: Record<string, { price: number; currency: string }> = {};
+    const out: Record<string, { price: number; currency: string; updatedAt: string }> = {};
     snap.docs.forEach((d) => {
         const v = d.data();
-        out[v.asset] = { price: v.price, currency: v.currency };
+        out[v.asset] = {
+            price: v.price,
+            currency: v.currency,
+            updatedAt: typeof v.updatedAt === "string" ? v.updatedAt : new Date().toISOString(),
+        };
     });
     return out;
+}
+
+/* ------------- Kullanıcı bildirimleri (yanlış özet) ------------- */
+
+/** Bildirilmiş (video, varlık) çiftleri — snapshot bunları listeden çıkarır. */
+export async function getSuppressedSignals(): Promise<Set<string>> {
+    const snap = await adminDb()
+        .collection("signal_reports")
+        .where("status", "==", "OPEN")
+        .limit(500)
+        .get();
+    return new Set(snap.docs.map((d) => `${d.data().videoId}::${d.data().asset}`));
+}
+
+export async function recordSignalReport(
+    videoId: string,
+    asset: string,
+    reason: string,
+    note: string,
+    ip: string
+) {
+    const id = `${videoId}__${asset}`.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 200);
+    await adminDb()
+        .collection("signal_reports")
+        .doc(id)
+        .set(
+            {
+                videoId,
+                asset,
+                reason: reason.slice(0, 60),
+                note: note.slice(0, 500),
+                status: "OPEN",
+                reportCount: FieldValue.increment(1),
+                reporterIpHash: ip,
+                lastReportedAt: new Date().toISOString(),
+            },
+            { merge: true }
+        );
 }
 
 /* ---------------- Sistem durumu ---------------- */

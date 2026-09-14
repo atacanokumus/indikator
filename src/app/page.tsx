@@ -5,6 +5,7 @@ import { NewsTicker } from "@/components/NewsTicker";
 import { SignalExplorer } from "@/components/SignalExplorer";
 import { SpotlightCard } from "@/components/SpotlightCard";
 import { assetLabel, relativeTime, SPOTLIGHT_ASSETS } from "@/lib/display";
+import { LegalNotice } from "@/components/LegalNotice";
 import { getHomeSnapshot } from "@/server/read";
 
 export const revalidate = 60;
@@ -42,8 +43,9 @@ export default async function HomePage() {
                     </h1>
                     <p className="lead" style={{ marginTop: 14 }}>
                         YouTube&apos;daki ekonomi yorumcularının son videolarını okuyup,
-                        hangi varlıkta <strong>AL</strong>, <strong>SAT</strong> ya da <strong>BEKLE</strong>
-                        {" "}dediklerini tek ekranda topluyoruz. Video izlemeden, saniyeler içinde.
+                        hangi varlıkta kaç kişinin <strong>alım</strong>, <strong>satış</strong> ya da
+                        {" "}<strong>bekleme</strong> yönünde konuştuğunu sayıyoruz. Tavsiye vermiyoruz —
+                        sayıyoruz. Yorum size ait.
                     </p>
 
                     {snapshot.lastVideoAt && (
@@ -74,10 +76,10 @@ export default async function HomePage() {
                     <div>
                         <h2 id="tum-sinyaller" className="h2">Tüm varlıklar</h2>
                         <p className="small" style={{ margin: "4px 0 0" }}>
-                            Her varlık için analistlerin en güncel görüşleri ve ağırlıklı konsensüs.
+                            Her varlık için, kaç analistin hangi yönde konuştuğunun sayımı.
                         </p>
                     </div>
-                    <Link href="/konsensus" className="btn btn-ghost">Konsensüs tablosu →</Link>
+                    <Link href="/konsensus" className="btn btn-ghost">Tüm sayım tablosu →</Link>
                 </div>
 
                 {hasData ? (
@@ -106,12 +108,12 @@ export default async function HomePage() {
                             d: "Videonun transkripti (yoksa sesi) yapay zeka ile okunur; konuşmacının hangi varlık için ne dediği çıkarılır.",
                         },
                         {
-                            t: "3 · Sinyal üretilir",
-                            d: "Her varlık için AL / SAT / BEKLE etiketi, gerekçesi ve o anki fiyatı kaydedilir.",
+                            t: "3 · Yön etiketlenir",
+                            d: "Konuşmacının o varlık için hangi yönde konuştuğu (alım, satış, bekleme, gözlem) ve kısa gerekçesi kaydedilir.",
                         },
                         {
-                            t: "4 · Konsensüs hesaplanır",
-                            d: "Birden fazla yorumcunun görüşü, güncellik ve geçmiş isabet oranına göre ağırlıklandırılıp birleştirilir.",
+                            t: "4 · Sayım yapılır",
+                            d: "Aynı varlık için konuşan yorumcular sayılır: kaçı alım, kaçı satış, kaçı bekleme yönünde. Bu sayım size gösterilir.",
                         },
                     ].map((s) => (
                         <div key={s.t} className="card card-pad stack gap-8">
@@ -135,23 +137,12 @@ export default async function HomePage() {
                 </div>
             </section>
 
-            {/* ---------------- Yasal uyarı ---------------- */}
+            {/* ---------------- Yasal uyarı (Tebliğ m.79) ---------------- */}
             <section className="wrap section-tight">
-                <div className="card card-pad stack gap-8" style={{ borderColor: "var(--bekle-border)", background: "var(--bekle-bg)" }}>
-                    <span className="row gap-6" style={{ color: "var(--bekle)", fontWeight: 750, fontSize: 13 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
-                            <path d="M12 9v4M12 17h.01" />
-                        </svg>
-                        Yasal uyarı
-                    </span>
-                    <p className="small" style={{ margin: 0, color: "var(--text)" }}>
-                        Bu sitedeki içerikler <strong>yatırım danışmanlığı değildir</strong>. ECOTUBE, kamuya açık
-                        YouTube videolarını özetleyen bir araştırma aracıdır; sinyaller yorumcuların kendi
-                        ifadelerinin yapay zeka ile çıkarılmış özetidir ve hata içerebilir. Yatırım kararlarınızı
-                        kendi araştırmanıza ve yetkili kuruluşlardan alacağınız danışmanlığa dayandırın.
-                    </p>
-                </div>
+                <LegalNotice
+                    updateFrequency={snapshot.updateFrequency}
+                    generatedAt={snapshot.generatedAt}
+                />
             </section>
 
             <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />
@@ -174,8 +165,8 @@ const FAQ = [
         a: "Takip edilen bir kanal video yayınladığı anda YouTube bize bildirim gönderir ve video birkaç dakika içinde analiz edilir. Ayrıca gün boyunca düzenli kontroller yapılır, böylece kaçan video kalmaz.",
     },
     {
-        q: "Konsensüs nasıl hesaplanıyor?",
-        a: "Bir varlık için her yorumcunun yalnızca en güncel görüşü alınır. Görüşler, ne kadar yeni olduklarına ve yorumcunun geçmiş isabet oranına göre ağırlıklandırılıp birleştirilir.",
+        q: "Sayım nasıl yapılıyor?",
+        a: "Bir varlık için her yorumcunun yalnızca en güncel görüşü sayılır; aynı kişi iki kez sayılmaz. Sonuç bir ortalama veya puan değil, düz bir sayımdır: kaç kişi hangi yönde konuşmuş. ECOTUBE bu sayıya kendi görüşünü katmaz.",
     },
     {
         q: "Analistlerin başarı oranı neye göre ölçülüyor?",
@@ -183,7 +174,7 @@ const FAQ = [
     },
     {
         q: "Bu bir yatırım tavsiyesi mi?",
-        a: "Hayır. ECOTUBE yatırım danışmanlığı hizmeti vermez; başkalarının kamuya açık yorumlarını derleyen bir araştırma aracıdır.",
+        a: "Hayır. ECOTUBE size ne yapmanız gerektiğini söylemez, size başkalarının ne dediğini sayarak gösterir. Yatırım danışmanlığı, yetkili kuruluşların kişiye özel sunduğu bir hizmettir; buradaki içerik kişiye özel değildir ve genel niteliktedir.",
     },
 ];
 

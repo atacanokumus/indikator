@@ -29,6 +29,24 @@ YouTube (video yayınlanır)
 - **Ana sayfa:** Her ziyaretçi Firestore'a gitmez; analiz sonrası üretilen tek
   `snapshots/home` dokümanı sunucuda 60 saniye önbelleğe alınıp sunulur.
 
+## Hukuki tasarım kararları
+
+Bunlar keyfi değil; bilerek böyle yapıldı, değiştirmeden önce nedenini okuyun.
+
+| Karar | Nerede | Neden |
+|---|---|---|
+| Site kendi tavsiyesini üretmez, yalnızca **sayar** | `src/server/snapshot.ts`, `src/components/Tally.tsx` | Ağırlıklı puanla "AL/SAT" basmak, siteyi III-37.1 m.73/3 anlamında genel yatırım tavsiyesi sunan konuma sokuyordu |
+| Emir kipi yok: "AL" değil "ALIM yönünde" | `src/lib/display.ts` | Etiket, okuyucuya talimat değil, konuşmacının yönünün tarifi |
+| Ses/video **indirilmez** | `src/services/youtube.ts` | YouTube Kullanım Şartları; yaptırımı AdSense hesabına düşer |
+| Altyazı ve ses **saklanmaz** | `src/server/sync.ts` | FSEK — yalnızca türetilmiş olgu saklanır |
+| Gerekçe en fazla 300 karakter, birebir alıntı yasak | `src/lib/gemini.ts` | FSEK m.35 — maksadın haklı kıldığı ölçü |
+| Her sinyalde "bu özet yanlış" düğmesi, bildirilen sinyal anında düşer | `src/components/ReportButton.tsx`, `src/app/api/report/route.ts` | 5651 m.9 erişim engeline karşı en hızlı savunma |
+| Fiyat zamanı, güncellenme sıklığı, 12 aylık görüş değişikliği ekranda | `src/components/LegalNotice.tsx`, `AssetCard` | Tebliğ m.78/2-a, m.78/2-b, m.78/2-c |
+| Çıkar çatışması beyanı ve tebliğ uyarı metni her sayfada | `src/components/LegalNotice.tsx` | Tebliğ m.50, m.79 |
+| Reklam betiği çerez onayı öncesi yüklenmez | `src/components/AdsenseLoader.tsx` | KVKK — önce onay, sonra çerez |
+
+Ayrıntılı gerekçe ve kalan riskler için oturumdaki **Hukuki Risk Dosyası**'na bakın.
+
 ### Dizin yapısı
 
 | Yol | Ne işe yarar |

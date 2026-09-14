@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import Script from "next/script";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { CookieConsent } from "@/components/CookieConsent";
+import { AdsenseLoader } from "@/components/AdsenseLoader";
 import "../styles/site.css";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-inter", display: "swap" });
@@ -67,17 +68,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Navbar />
                 <main id="icerik">{children}</main>
                 <Footer />
+                <CookieConsent />
 
-                {/* AdSense yalnızca yayıncı kimliği tanımlıysa yüklenir */}
-                {adsenseClient && (
-                    <Script
-                        id="adsbygoogle"
-                        async
-                        strategy="afterInteractive"
-                        crossOrigin="anonymous"
-                        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
-                    />
-                )}
+                {/*
+                  AdSense yalnızca (1) yayıncı kimliği tanımlıysa ve (2) ziyaretçi
+                  çerez onayı verdiyse yüklenir. Onay öncesi hiçbir reklam betiği
+                  çalışmaz — KVKK ve AB kullanıcıları için gerekli sıra budur.
+                */}
+                {adsenseClient && <AdsenseLoader client={adsenseClient} />}
 
                 <script
                     type="application/ld+json"

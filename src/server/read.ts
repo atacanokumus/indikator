@@ -7,6 +7,7 @@ const EMPTY: HomeSnapshot = {
     videoCount: 0,
     analystCount: 0,
     windowDays: 30,
+    updateFrequency: "",
     consensus: [],
     lastVideoAt: null,
 };

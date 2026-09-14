@@ -16,7 +16,7 @@ export function Logo({ withTagline = false }: { withTagline?: boolean }) {
     return (
         <span className="row gap-8" style={{ textDecoration: "none" }}>
             <LogoMark />
-            <span className="stack" style={{ lineHeight: 1 }}>
+            <span className="stack logo-word" style={{ lineHeight: 1 }}>
                 <span style={{ fontSize: 21, fontWeight: 850, letterSpacing: "-0.045em", color: "var(--brand)" }}>
                     eco<span style={{ color: "var(--gold)" }}>tube</span>
                 </span>

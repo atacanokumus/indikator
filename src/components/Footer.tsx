@@ -25,10 +25,16 @@ export function Footer() {
                             <Link className="small" href="/analistler">Analistler</Link>
                         </div>
                         <div className="stack gap-8">
+                            <span className="eyebrow">Yasal</span>
+                            <Link className="small" href="/gizlilik">Gizlilik</Link>
+                            <Link className="small" href="/kvkk">KVKK aydınlatma</Link>
+                            <Link className="small" href="/kaldirma">İçerik kaldırma</Link>
+                        </div>
+                        <div className="stack gap-8">
                             <span className="eyebrow">Kurumsal</span>
                             <Link className="small" href="/hakkimizda">Hakkımızda</Link>
+                            <Link className="small" href="/metodoloji">Metodoloji</Link>
                             <Link className="small" href="/iletisim">İletişim</Link>
-                            <Link className="small" href="/gizlilik">Gizlilik</Link>
                         </div>
                     </nav>
                 </div>
@@ -36,10 +42,11 @@ export function Footer() {
                 <hr className="divider" style={{ marginBlock: 22 }} />
 
                 <p className="tiny" style={{ margin: 0, lineHeight: 1.65 }}>
-                    <strong>Yatırım tavsiyesi değildir.</strong> ECOTUBE, kamuya açık YouTube içeriklerini
-                    özetleyen bir araştırma aracıdır; burada yer alan hiçbir içerik SPK mevzuatı uyarınca
-                    yatırım danışmanlığı kapsamında değildir. Sinyaller, yorumcuların kendi ifadelerinin
-                    yapay zeka ile çıkarılmış özetidir ve hata içerebilir.
+                    <strong>Yatırım tavsiyesi değildir.</strong> ECOTUBE size ne yapmanız gerektiğini
+                    söylemez; kamuya açık YouTube videolarında kimin hangi yönde konuştuğunu sayar.
+                    Buradaki içerikler kişiye özel değildir, genel niteliktedir ve yatırım danışmanlığı
+                    kapsamında değildir. Yön etiketleri yorumcuların kendi ifadelerinin yapay zeka ile
+                    çıkarılmış özetidir ve hata içerebilir; kaynağı videodan teyit edin.
                 </p>
                 <p className="tiny" style={{ marginTop: 10 }}>
                     © {new Date().getFullYear()} ECOTUBE

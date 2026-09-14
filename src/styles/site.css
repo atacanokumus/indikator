@@ -378,3 +378,121 @@ a { color: inherit; }
 
 /* SignalExplorer içindeki reklam yuvası kenar boşluğu almasın */
 .grid-cards + .ad-slot.wrap, .ad-slot.wrap { max-width: var(--max); margin-inline: auto; }
+
+/* =========================================================
+   SAYIM GÖSTERİMİ
+   Site tavsiye vermez, sayar. Yön kelimeleri büyük ve renkli
+   olduğu için okuyucu bir bakışta anlar; ama cümle daima
+   "kaç analist ne dedi" biçimindedir.
+   ========================================================= */
+
+.dir { font-weight: 850; letter-spacing: -0.01em; white-space: nowrap; }
+.dir-AL { color: var(--al); }
+.dir-SAT { color: var(--sat); }
+.dir-TUT { color: var(--bekle); }
+.dir-GÖZLEMLE { color: var(--gozlemle); }
+
+/* --- cümle --- */
+.tally-sentence {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+.tally-sentence .tally-lead { color: var(--text-soft); }
+.tally-count { font-weight: 850; color: var(--text); font-variant-numeric: tabular-nums; }
+.tally-eki { font-weight: 850; color: var(--text); }
+.tally-tail { color: var(--text-muted); }
+.tally-sep { color: var(--text-muted); }
+
+.tally-sm { font-size: 13.5px; }
+.tally-sm .dir { font-size: 15px; }
+.tally-sm .tally-count, .tally-sm .tally-eki { font-size: 15px; }
+
+.tally-md { font-size: 15px; }
+.tally-md .dir { font-size: 19px; }
+.tally-md .tally-count, .tally-md .tally-eki { font-size: 19px; }
+
+.tally-lg { font-size: 16.5px; }
+.tally-lg .dir { font-size: 24px; }
+.tally-lg .tally-count, .tally-lg .tally-eki { font-size: 24px; }
+
+@media (max-width: 480px) {
+  .tally-lg .dir { font-size: 21px; }
+  .tally-lg .tally-count, .tally-lg .tally-eki { font-size: 21px; }
+}
+
+/* --- oranlı çubuk --- */
+.tally-bar {
+  display: flex;
+  height: 10px;
+  border-radius: var(--r-full);
+  overflow: hidden;
+  background: var(--bg-sunken);
+  gap: 2px;
+}
+.tally-bar > span { display: block; height: 100%; border-radius: 2px; transition: width .4s ease; }
+.tally-bar .bar-AL { background: var(--al); }
+.tally-bar .bar-SAT { background: var(--sat); }
+.tally-bar .bar-TUT { background: var(--bekle); }
+.tally-bar .bar-GÖZLEMLE { background: var(--gozlemle); }
+
+/* --- büyük başlık: 4/7 ALIM --- */
+.tally-headline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.th-frac { display: inline-flex; align-items: baseline; font-variant-numeric: tabular-nums; }
+.th-num { font-size: 34px; font-weight: 850; letter-spacing: -0.04em; color: var(--text); line-height: 1; }
+.th-slash { font-size: 20px; color: var(--text-muted); margin: 0 2px; }
+.th-den { font-size: 20px; color: var(--text-muted); font-weight: 700; }
+.th-word { font-size: 22px; }
+@media (max-width: 480px) {
+  .th-num { font-size: 28px; }
+  .th-word { font-size: 19px; }
+}
+
+/* --- yön rozeti (tekil analist satırları) --- */
+.dir-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: var(--r-full);
+  font-size: 12.5px; font-weight: 800; letter-spacing: .02em;
+  border: 1px solid transparent; white-space: nowrap;
+}
+.chip-AL { background: var(--al-bg); color: var(--al); border-color: var(--al-border); }
+.chip-SAT { background: var(--sat-bg); color: var(--sat); border-color: var(--sat-border); }
+.chip-TUT { background: var(--bekle-bg); color: var(--bekle); border-color: var(--bekle-border); }
+.chip-GÖZLEMLE { background: var(--gozlemle-bg); color: var(--gozlemle); border-color: var(--gozlemle-border); }
+
+/* --- yapay zeka uyarısı ve bildir düğmesi --- */
+.ai-note {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: var(--text-muted);
+}
+.report-btn {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font: inherit; font-size: 11.5px; color: var(--text-muted);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.report-btn:hover { color: var(--sat); }
+
+/* --- önceki görüş rozeti (Tebliğ m.78/2-c) --- */
+.prev-note {
+  font-size: 11.5px; color: var(--text-muted);
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.prev-note s { opacity: .75; }
+
+/* --- yasal şerit --- */
+.legal-strip {
+  font-size: 12px; color: var(--text-muted); line-height: 1.6;
+  background: var(--bg-sunken); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 12px 16px;
+}
+
+/* Dar ekranda menü taşmasın: kelime markası gizlenir, ikon kalır */
+@media (max-width: 560px) {
+  .logo-word { display: none; }
+  .navbar-inner { gap: 8px; }
+  .nav-link { padding: 7px 8px; font-size: 12.5px; }
+}
+@media (max-width: 380px) {
+  .nav-link { padding: 6px 6px; font-size: 12px; }
+}
