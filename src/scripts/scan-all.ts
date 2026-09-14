@@ -9,23 +9,48 @@ import { syncChannel } from "@/server/sync";
 import { evaluatePendingPredictions } from "@/server/evaluator";
 import { writeHomeSnapshot } from "@/server/snapshot";
 
+/**
+ * TOPLAM süre bütçesi. Eskiden bütçe KANAL BAŞINA idi; 30 kanalla bu,
+ * iş akışının 30 dakikalık sınırını aşıp ortada kesilmesi demekti — o zaman
+ * snapshot ve değerlendirme adımları hiç çalışmıyordu. Artık küresel bir
+ * son tarih var: süre dolunca temiz biçimde durulur, snapshot yine yazılır.
+ * Kalan videolar bir sonraki turda işlenir (her video kalıcı olarak
+ * "analiz edildi" ya da "başarısız" işaretlendiği için ilerleme birikimlidir).
+ */
+const TOTAL_BUDGET_MS = Number(process.env.SCAN_BUDGET_MS || 18 * 60_000);
+
 async function main() {
     const deep = process.argv.includes("--deep");
+    const startedAt = Date.now();
     const channels = await getChannels();
     if (channels.length === 0) {
         console.log("[SCAN] Takip edilen kanal yok.");
         return;
     }
 
-    console.log(`[SCAN] ${channels.length} kanal taranıyor (${deep ? "derin" : "hızlı"} mod)...`);
+    console.log(
+        `[SCAN] ${channels.length} kanal taranıyor (${deep ? "derin" : "hızlı"} mod), ` +
+        `toplam bütçe ${Math.round(TOTAL_BUDGET_MS / 60000)} dk...`
+    );
     let videos = 0;
     let findings = 0;
+    let skipped = 0;
 
-    for (const channel of channels) {
+    // En az taranmış kanalın öne geçmesi için sırayı karıştır; böylece bütçe
+    // dolduğunda hep aynı kanallar dışarıda kalmaz.
+    const queue = [...channels].sort(() => Math.random() - 0.5);
+
+    for (const channel of queue) {
+        const remaining = TOTAL_BUDGET_MS - (Date.now() - startedAt);
+        if (remaining <= 30_000) {
+            skipped = queue.length - queue.indexOf(channel);
+            console.log(`[SCAN] Süre bütçesi doldu. ${skipped} kanal sonraki tura kaldı.`);
+            break;
+        }
         try {
             const r = await syncChannel(channel.id, channel.title, channel.thumbnail, {
                 maxVideos: deep ? 10 : 3,
-                timeBudgetMs: deep ? 10 * 60_000 : 4 * 60_000,
+                timeBudgetMs: Math.min(remaining, deep ? 5 * 60_000 : 3 * 60_000),
                 language: channel.language ?? "tr",
             });
             videos += r.videosProcessed;
@@ -41,7 +66,10 @@ async function main() {
     await evaluatePendingPredictions().catch((e) => console.error("[EVALUATOR]", e.message));
     await writeHomeSnapshot();
 
-    console.log(`[SCAN] Tamamlandı. ${videos} yeni video, ${findings} sinyal.`);
+    console.log(
+        `[SCAN] Tamamlandı. ${videos} yeni video, ${findings} sinyal` +
+        (skipped ? `, ${skipped} kanal sonraki tura kaldı.` : ".")
+    );
 }
 
 main().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1); });
