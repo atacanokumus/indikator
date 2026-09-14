@@ -160,60 +160,87 @@ function json3ToText(text: string): string {
         .trim();
 }
 
-async function transcriptViaYtDlp(videoId: string): Promise<string | null> {
+/**
+ * yt-dlp ile transkript.
+ *
+ * NEDEN DOSYAYA İNDİRİYORUZ: Önceden yt-dlp'den yalnızca altyazı ADRESİNİ
+ * alıp kendimiz fetch ediyorduk. YouTube bu adreslere sıkı hız sınırı
+ * uyguluyor ve JSON yerine HTML hata sayfası döndürüyordu — özellikle
+ * yabancı kanallarda videoların çoğu bu yüzden analiz edilemiyordu.
+ * yt-dlp aynı dosyayı kendi istemci taklidi ve yeniden deneme mantığıyla
+ * indirdiğinde sorun çıkmıyor. Bu yüzden indirme işini ona bırakıyoruz.
+ */
+async function transcriptViaYtDlp(
+    videoId: string,
+    preferred: "tr" | "en" = "tr"
+): Promise<string | null> {
     const bin = await getYtDlp();
-    const { stdout } = await execFileAsync(
-        bin,
-        [
-            `https://www.youtube.com/watch?v=${videoId}`,
-            "--dump-json",
-            "--write-auto-subs",
-            "--sub-lang", "tr,en",
-            "--skip-download",
-            "--no-warnings",
-        ],
-        { maxBuffer: 32 * 1024 * 1024 }
-    );
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), `sub_${videoId}_`));
+    const other = preferred === "tr" ? "en" : "tr";
+    // Önce kanalın dili, sonra diğeri, sonra elde ne varsa.
+    const langs = `${preferred}.*,${other}.*`;
+    let ytDlpError = "";
 
-    const info = JSON.parse(stdout) as YtDlpInfo;
-    const subs =
-        info.subtitles?.tr ?? info.subtitles?.en ??
-        info.automatic_captions?.tr ?? info.automatic_captions?.en ??
-        // hiçbiri yoksa mevcut ilk altyazıyı al (İspanyolca, Almanca vb.)
-        Object.values(info.subtitles ?? {})[0] ??
-        Object.values(info.automatic_captions ?? {})[0];
-    const sub = subs?.find((s) => s.ext === "json3") ?? subs?.find((s) => s.ext === "vtt");
-    if (!sub?.url) return null;
-
-    // YouTube hız sınırı uygularken altyazı adresinden JSON yerine HTML hata
-    // sayfası döner. Bu geçicidir; kısa beklemelerle birkaç kez tekrar deniyoruz.
-    let text = "";
-    const waits = [0, 2500, 6000];
-    for (let i = 0; i < waits.length; i++) {
-        if (waits[i]) await new Promise((r) => setTimeout(r, waits[i]));
-        text = await (await fetch(sub.url)).text();
-        const head = text.trimStart().slice(0, 60).toLowerCase();
-        if (!head.startsWith("<!doctype") && !head.startsWith("<html")) break;
-        text = "";
-    }
-    if (!text) {
-        throw new TransientTranscriptError(
-            "YouTube altyazı sunucusu geçici olarak HTML hata sayfası döndürdü"
-        );
-    }
-
-    let out: string;
     try {
-        out = sub.ext === "json3" || text.includes("wireMagic") ? json3ToText(text) : vttToText(text);
-    } catch {
-        // Biçim beklediğimiz gibi değilse diğer ayrıştırıcıyı dene.
-        try {
-            out = sub.ext === "json3" ? vttToText(text) : json3ToText(text);
-        } catch {
-            throw new TransientTranscriptError("Altyazı yanıtı çözümlenemedi");
+        await execFileAsync(
+            bin,
+            [
+                `https://www.youtube.com/watch?v=${videoId}`,
+                "--skip-download",
+                "--write-subs",
+                "--write-auto-subs",
+                "--sub-langs", langs,
+                "--sub-format", "json3/vtt/best",
+                "--retries", "3",
+                "--ignore-errors",
+                "--no-warnings",
+                "--no-progress",
+                "-o", path.join(dir, "%(id)s"),
+            ],
+            { maxBuffer: 64 * 1024 * 1024, timeout: 120_000 }
+        ).catch((err: Error) => {
+            // yt-dlp bir dilde 429 alıp çıkış kodu 1 dönebilir; ama daha önce
+            // indirdiği dosyalar işimizi görür. Bu yüzden hatayı burada
+            // yutuyoruz, kararı aşağıda klasörün içeriğine bakarak veriyoruz.
+            ytDlpError = err.message.slice(0, 160);
+        });
+
+        const files = fs.readdirSync(dir);
+        if (files.length === 0) {
+            // Hiç dosya yoksa ve yt-dlp hata verdiyse bu geçici bir ağ/hız
+            // sınırı sorunudur; videoyu kalıcı kara listeye almayalım.
+            if (ytDlpError) throw new TransientTranscriptError(`yt-dlp: ${ytDlpError}`);
+            return null;
         }
+
+        // Dil tercihine göre sırala: tr.* > en.* > diğerleri, "-orig" sonda.
+        const score = (f: string) => {
+            const lower = f.toLowerCase();
+            let n = 0;
+            if (lower.includes(`.${preferred}`)) n -= 100;
+            else if (lower.includes(`.${other}`)) n -= 50;
+            if (lower.includes("-orig")) n += 5;
+            if (lower.endsWith(".json3")) n -= 2;
+            return n;
+        };
+        files.sort((a, b) => score(a) - score(b));
+
+        for (const file of files) {
+            const raw = fs.readFileSync(path.join(dir, file), "utf-8");
+            let out = "";
+            try {
+                out = file.endsWith(".json3") || raw.includes("wireMagic")
+                    ? json3ToText(raw)
+                    : vttToText(raw);
+            } catch {
+                continue;
+            }
+            if (out.length > 10) return decodeHtml(out);
+        }
+        return null;
+    } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
     }
-    return out.length > 10 ? decodeHtml(out) : null;
 }
 
 export async function getVideoTranscript(videoId: string, preferred: "tr" | "en" = "tr"): Promise<string> {
@@ -243,7 +270,7 @@ export async function getVideoTranscript(videoId: string, preferred: "tr" | "en"
     }
 
     // 3) yt-dlp
-    const text = await transcriptViaYtDlp(videoId);
+    const text = await transcriptViaYtDlp(videoId, preferred);
     if (text) return text;
 
     throw new Error("Bu videoda altyazı kapalı veya erişilemiyor");
