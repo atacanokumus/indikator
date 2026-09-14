@@ -1,4 +1,9 @@
-import "./src/scripts/_env";
+/**
+ * Belirli kanalları adına göre tarar.
+ * Kullanım: npx tsx src/scripts/scan-channel.ts "Patrick Boyle" "Real Vision"
+ * BUDGET_MS ile toplam süre bütçesi verilebilir (varsayılan 140 sn).
+ */
+import "./_env";
 import { getChannels } from "@/server/repo";
 import { syncChannel } from "@/server/sync";
 const HEDEF = process.argv.slice(2);
