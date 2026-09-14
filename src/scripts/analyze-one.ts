@@ -4,7 +4,7 @@
  *   npx tsx src/scripts/analyze-one.ts <videoId> <channelId> [başlık] [yayınTarihi]
  */
 import "./_env";
-import { getChannel } from "@/server/repo";
+import { getChannel, recordFailure } from "@/server/repo";
 import { syncVideo } from "@/server/sync";
 import { evaluatePendingPredictions } from "@/server/evaluator";
 import { writeHomeSnapshot } from "@/server/snapshot";
@@ -32,13 +32,21 @@ async function main() {
      * Yalnızca GEÇİCİ hatada tekrar denenir; altyazısı kapalı video ilk
      * denemede kalıcı olarak işaretlenir ve boşuna dakika harcanmaz.
      */
-    const RETRY_WAITS_MS = [90_000, 240_000, 420_000];
+    const RETRY_WAITS_MS = [120_000, 300_000];
     let result = await runOnce();
     for (let i = 0; i < RETRY_WAITS_MS.length && result.transient; i++) {
         const dk = Math.round(RETRY_WAITS_MS[i] / 60000 * 10) / 10;
         console.log(`[ANALYZE] Altyazı henüz hazır değil; ${dk} dk sonra tekrar denenecek.`);
         await new Promise((r) => setTimeout(r, RETRY_WAITS_MS[i]));
         result = await runOnce();
+    }
+
+    // Tüm denemeler geçici hatayla bittiyse videonun altyazısı muhtemelen
+    // tamamen kapalı. Sayacı burada bir artırıyoruz: yoksa 6 saatlik tarama
+    // bu videoyu sonsuza dek tekrar tekrar denemeye devam eder.
+    if (result.transient) {
+        await recordFailure(videoId, "Altyazı birkaç denemede de alınamadı");
+        console.log(`[ANALYZE] Altyazı hâlâ yok; deneme sayacı artırıldı.`);
     }
 
     async function runOnce() {
