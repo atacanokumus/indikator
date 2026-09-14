@@ -30,10 +30,17 @@ export const CLASS_ASSETS = new Set([
 
 /** Hiçbir şey ifade etmeyen, listede gürültü yaratan ifadeler. */
 const NOISE = [
+    // Türkçe
     "kuresel piyasalar", "riskli varliklar", "yabanci piyasalar", "borsalar",
     "hisse senetleri genel", "turkiye ekonomi politikasi", "halka arzlar",
     "piyasalar", "genel piyasa", "tum piyasalar", "ekonomi", "enflasyon",
     "faiz", "faiz orani", "merkez bankasi", "politika faizi",
+    // İngilizce — yabancı kanallar bunları varlık sanıp döndürebiliyor
+    "the market", "markets", "stock market", "the economy", "economy",
+    "inflation", "recession", "interest rates", "rates", "the fed", "fed",
+    "federal reserve", "cpi", "jobs report", "unemployment", "gdp",
+    "monetary policy", "fiscal policy", "risk assets", "global markets",
+    "equities", "stocks", "the dollar system", "liquidity",
 ];
 
 /**
@@ -43,18 +50,20 @@ const NOISE = [
 const RULES: [RegExp, string][] = [
     // --- gürültü (en başta elenir) ---
     [/^(kuresel piyasalar|riskli varliklar|yabanci piyasalar|borsalar|piyasalar)$/, "__NOISE__"],
+    [/^(the )?(market|markets|economy|stock market|equities|stocks)$/, "__NOISE__"],
+    [/^(inflation|recession|interest rates?|the fed|federal reserve|cpi|gdp|liquidity)$/, "__NOISE__"],
     [/\brasyo(su)?\b|\boran(i)?\b(?!.*tahvil)/, "__NOISE__"],
 
     // --- kıymetli madenler ---
-    [/\balti?n\b|\bxau\b|\bgold\b|darphane/, "ALTIN"],
+    [/\balti?n\b|\bxau\b|\bgold\b|darphane|bullion/, "ALTIN"],
     [/\bgumus\b|\bxag\b|\bsilver\b/, "GÜMÜŞ"],
     [/\bplatin\b|\bxpt\b/, "PL=F"],
     [/\bpaladyum\b|\bxpd\b/, "PA=F"],
 
     // --- enerji ve emtia (brent, petrolden ÖNCE) ---
     [/\bbrent\b/, "BZ=F"],
-    [/\bpetrol\b|\bcrude\b|\boil\b|\bwti\b/, "CL=F"],
-    [/\bdogal ?gaz\b|\bnatural ?gas\b/, "NG=F"],
+    [/\bpetrol\b|\bcrude\b|\boil\b|\bwti\b|\buso\b/, "CL=F"],
+    [/\bdogal ?gaz\b|\bnatural ?gas\b|\bhenry hub\b/, "NG=F"],
     [/\bbakir\b|\bcopper\b/, "HG=F"],
     [/\buranyum\b|\buranium\b/, "URA"],
     [/\bbugday\b|\bwheat\b/, "ZW=F"],
@@ -67,27 +76,28 @@ const RULES: [RegExp, string][] = [
 
     // --- kripto ---
     [/\bbitcoin\b|\bbtc\b/, "BTC"],
+    [/\bmicrostrategy\b|\bmstr\b/, "MSTR"],
     [/\bethereum\b|\beth\b/, "ETH"],
     [/\bsolana\b|\bsol\b/, "SOL"],
     [/\bripple\b|\bxrp\b/, "XRP"],
     [/\bavalanche\b|\bavax\b/, "AVAX"],
     [/\bdogecoin\b|\bdoge\b/, "DOGE"],
-    [/\bkripto\b|\baltcoin\b/, "KRIPTO"],
+    [/\bkripto\b|\baltcoin\b|\bcrypto\b|digital assets/, "KRIPTO"],
 
     // --- döviz (çiftler önce, tek para birimi sonra) ---
     [/eur ?[/\-] ?usd|euro ?[/\-] ?dolar|eur ?usd parite|parite/, "EUR/USD"],
     [/usd ?[/\-] ?jpy|dolar ?[/\-] ?yen|japon yeni|\bjpy\b/, "USD/JPY"],
     [/eur ?[/\-] ?tl|eur ?[/\-] ?try|euro ?[/\-] ?tl|\beuro\b|\beur\b/, "EUR/TRY"],
     [/gbp ?[/\-] ?tl|gbp ?[/\-] ?try|sterlin|\bgbp\b/, "GBP/TRY"],
-    [/dolar endeksi|\bdxy\b/, "DXY"],
+    [/dolar endeksi|\bdxy\b|dollar index|us dollar index/, "DXY"],
     [/\bdolar\b|\busd\b|\bdoviz\b|amerikan dolari|abd dolari/, "USD/TRY"],
     [/turk lirasi|\btry\b(?! ?[/\-])|\btl\b(?! ?[/\-])/, "TRY"],
 
     // --- endeksler ---
     [/borsa istanbul|\bbist\b|\bxu ?100\b|^borsa$|turkiye hisse|turk hisse/, "XU100"],
-    [/nasdaq|\bixic\b/, "NASDAQ"],
-    [/s&p ?500|\bspx\b|\bgspc\b/, "SP500"],
-    [/dow jones|\bdjia\b/, "DJI"],
+    [/nasdaq|\bixic\b|\bqqq\b/, "NASDAQ"],
+    [/s&p ?500|\bspx\b|\bgspc\b|\bspy\b|s and p 500/, "SP500"],
+    [/dow jones|\bdjia\b|\bdia\b/, "DJI"],
     [/nikkei|japon hisse/, "NIKKEI"],
     [/\bdax\b|avrupa hisse|alman hisse/, "AVRUPA-HISSE"],
 
@@ -108,7 +118,7 @@ const RULES: [RegExp, string][] = [
     [/alibaba|\bbaba\b/, "BABA"],
     [/\bspacex\b/, "SPACEX"],
     [/\bpsq\b/, "PSQ"],
-    [/abd hisse|amerikan hisse|abd borsa|amerikan borsa|teknoloji.*hisse|yapay zeka.*hisse/, "ABD-HISSE"],
+    [/abd hisse|amerikan hisse|abd borsa|amerikan borsa|teknoloji.*hisse|yapay zeka.*hisse|us stocks|magnificent 7|mag 7|big tech|\bai stocks\b/, "ABD-HISSE"],
 
     // --- BIST hisseleri ---
     [/\bthyao\b|turk hava yollari|\bthy\b/, "THYAO"],
@@ -139,13 +149,15 @@ const RULES: [RegExp, string][] = [
     [/\benkai\b|\benka\b/, "ENKAI"],
     [/\bulker\b/, "ULKER"],
     [/\btursg\b|turkiye sigorta/, "TURSG"],
-    [/banka(cilik)? (hisse|endeks|sektor)|bist banka/, "BANKA-HISSE"],
+    [/banka(cilik)? (hisse|endeks|sektor)|bist banka|bank stocks|\bkre\b/, "BANKA-HISSE"],
 
     // --- sabit getirili ve diğer ---
     [/eurobond/, "EUROBOND"],
-    [/tahvil|bono|\bbond\b/, "TAHVIL"],
-    [/mevduat|para (piyasasi )?fon|likit fon/, "MEVDUAT"],
-    [/konut|gayrimenkul|emlak/, "KONUT"],
+    [/10 ?(yil|year).*(tahvil|treasury|bond|yield)|us ?10y|\btnx\b|treasury yield/, "US10Y"],
+    [/\bvix\b|volatility index|korku endeksi/, "VIX"],
+    [/tahvil|bono|\bbonds?\b|treasur(y|ies)|fixed income/, "TAHVIL"],
+    [/mevduat|para (piyasasi )?fon|likit fon|money market|savings/, "MEVDUAT"],
+    [/konut|gayrimenkul|emlak|real estate|housing|\breits?\b/, "KONUT"],
 ];
 
 /** Dört-beş harfli BIST kodu mu? (FED, FAİZ gibi kelimeleri elemek için) */

@@ -40,7 +40,9 @@ const ANALYSIS_SCHEMA = {
     },
 } as const;
 
-const SYSTEM_PROMPT = `Sen finansal içerik analiz eden bir asistansın. Sana bir Türkçe ekonomi/yatırım videosunun içeriği verilecek.
+const SYSTEM_PROMPT = `Sen finansal içerik analiz eden bir asistansın. Sana bir ekonomi/yatırım
+videosunun içeriği verilecek. Transkript TÜRKÇE ya da İNGİLİZCE olabilir; her ikisini de anla.
+Çıktıyı DAİMA Türkçe ve aşağıdaki sade adlarla ver — İngilizce videoda "gold" duysan bile "Altın" yaz.
 
 Görevin: Konuşmacının NET görüş bildirdiği yatırım araçlarını (hisse, kripto, emtia, döviz, endeks) tespit etmek.
 
@@ -64,7 +66,18 @@ Parantez, açıklama, sembol veya ek kelime EKLEME. ("Ons Altın (XAU/USD)" değ
   BIST hissesi:   dört harfli kodu yaz — THYAO, ASELS, TUPRS, TCELL…
   ABD hissesi:    sembolü yaz — NVDA, TSLA, AAPL, GOOGL…
   Sınıf:          Banka Hisseleri, ABD Hisseleri, Konut, Mevduat, Tahvil, Eurobond
-Listede olmayan bir varlık için sade Türkçe adını ya da borsa kodunu yaz.`;
+Listede olmayan bir varlık için sade Türkçe adını ya da borsa kodunu yaz.
+
+İngilizce karşılıklar (video İngilizceyse bunları kullan):
+  gold/bullion -> Altın · silver -> Gümüş · crude/WTI -> Petrol · Brent -> Brent Petrol
+  natural gas -> Doğalgaz · copper -> Bakır · wheat -> Buğday
+  S&P 500 -> S&P 500 · Nasdaq -> Nasdaq · Dow -> Dow Jones · VIX -> VIX
+  dollar index/DXY -> Dolar Endeksi · 10-year treasury -> ABD 10 Yıllık Tahvili
+  treasuries/bonds -> Tahvil · real estate/REITs -> Konut · crypto -> Kripto Paralar
+  US stocks/Magnificent 7 -> ABD Hisseleri
+
+ASLA varlık sayma: enflasyon, resesyon, faiz, Fed kararı, CPI, işsizlik, GSYH, "the market",
+"the economy", likidite, para politikası. Bunlar makro yorumdur, yatırım aracı değildir.`;
 
 /* ------------------------------------------------------------------ */
 

@@ -39,7 +39,7 @@ const HISTORY_DAYS = 365;
 /** Tebliğ m.78/2-a: tavsiyenin yenilenme sıklığı açıkça belirtilmeli */
 const UPDATE_FREQUENCY =
     "Takip edilen bir kanal video yayınladığı anda analiz edilir; tipik gecikme 1-2 dakikadır. " +
-    "Kaçan içerik kalmaması için 3 saatte bir tarama, günde bir kez de derin tarama yapılır. " +
+    "Kaçan içerik kalmaması için 6 saatte bir tarama, günde bir kez de derin tarama yapılır. " +
     "Fiyatlar en az 3 saatte bir yenilenir.";
 
 const ORDER: Recommendation[] = ["AL", "SAT", "TUT", "GÖZLEMLE"];
@@ -114,6 +114,7 @@ export async function buildHomeSnapshot(): Promise<HomeSnapshot> {
     for (const asset of assets) {
         const signals: AnalystSignal[] = [];
         const tally: Tally = { AL: 0, SAT: 0, TUT: 0, "GÖZLEMLE": 0 };
+        const regionSplit = { TR: 0, GLOBAL: 0 };
         let changedCount = 0;
 
         for (const pair of activePairs) {
@@ -130,8 +131,11 @@ export async function buildHomeSnapshot(): Promise<HomeSnapshot> {
             if (prior) changedCount++;
 
             tally[latest.rec] = (tally[latest.rec] ?? 0) + 1;
+            const region = channelById.get(channelId)?.region ?? "TR";
+            regionSplit[region] += 1;
             signals.push({
                 channelId,
+                region,
                 channelTitle: latest.video.channelTitle || channelById.get(channelId)?.title || "",
                 channelThumbnail:
                     latest.video.channelThumbnail || channelById.get(channelId)?.thumbnail,
@@ -174,7 +178,8 @@ export async function buildHomeSnapshot(): Promise<HomeSnapshot> {
             currency: priceInfo?.currency ?? null,
             priceAt: priceInfo?.updatedAt ?? null,
             changedCount,
-            signals: signals.slice(0, 15),
+            regionSplit,
+            signals: signals.slice(0, 20),
         });
     }
 

@@ -88,6 +88,9 @@ export const ASSET_LABEL: Record<string, string> = {
     NASDAQ: "Nasdaq",
     SP500: "S&P 500",
     DJI: "Dow Jones",
+    US10Y: "ABD 10 Yıllık Tahvili",
+    VIX: "VIX (korku endeksi)",
+    MSTR: "MicroStrategy",
     NIKKEI: "Nikkei",
 
     NVDA: "Nvidia",

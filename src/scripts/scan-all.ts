@@ -26,6 +26,7 @@ async function main() {
             const r = await syncChannel(channel.id, channel.title, channel.thumbnail, {
                 maxVideos: deep ? 10 : 3,
                 timeBudgetMs: deep ? 10 * 60_000 : 4 * 60_000,
+                language: channel.language ?? "tr",
             });
             videos += r.videosProcessed;
             findings += r.totalFindings;

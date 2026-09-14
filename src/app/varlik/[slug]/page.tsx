@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
 import { SignalRow } from "@/components/AssetCard";
 import { TallyBar, TallyHeadline, TallySentence } from "@/components/Tally";
+import { RegionSplit } from "@/components/RegionSplit";
 import { LegalNotice } from "@/components/LegalNotice";
 import { DIRECTION, assetLabel, formatDateTr, formatPrice, relativeTime } from "@/lib/display";
 import { assetSlug, findAssetBySlug } from "@/lib/slug";
@@ -85,6 +86,8 @@ export default async function VarlikPage({ params }: { params: Promise<{ slug: s
                     />
                     <TallyBar tally={item.tally} total={item.analystCount} />
                     <TallySentence tally={item.tally} total={item.analystCount} size="lg" />
+
+                    <RegionSplit split={item.regionSplit} />
 
                     {item.changedCount > 0 && (
                         <p className="small" style={{ margin: 0 }}>

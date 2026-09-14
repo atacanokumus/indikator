@@ -34,9 +34,14 @@ export interface VideoAnalysis {
     hasPending?: boolean;
 }
 
+export type Region = "TR" | "GLOBAL";
+
 export interface Channel {
     id: string;
     title: string;
+    /** Yayın dili — altyazı seçimi ve arayüzdeki TR/Global ayrımı için */
+    language?: "tr" | "en";
+    region?: Region;
     thumbnail?: string;
     handle?: string;
     addedAt?: string;
@@ -60,6 +65,7 @@ export interface NewsItem {
 export interface AnalystSignal {
     channelId: string;
     channelTitle: string;
+    region?: Region;
     channelThumbnail?: string;
     recommendation: Recommendation;
     reasoning: string;
@@ -105,6 +111,8 @@ export interface AssetConsensus {
     priceAt?: string | null;
     /** Son 12 ayda görüşünü değiştiren analist sayısı — Tebliğ m.78/2-c */
     changedCount: number;
+    /** Yerli / yabancı analist dağılımı — çeşitliliği görünür kılar */
+    regionSplit: { TR: number; GLOBAL: number };
     signals: AnalystSignal[];
 }
 

@@ -163,7 +163,11 @@ async function transcriptViaYtDlp(videoId: string): Promise<string | null> {
 
     const info = JSON.parse(stdout) as YtDlpInfo;
     const subs =
-        info.subtitles?.tr ?? info.automatic_captions?.tr ?? info.subtitles?.en ?? info.automatic_captions?.en;
+        info.subtitles?.tr ?? info.subtitles?.en ??
+        info.automatic_captions?.tr ?? info.automatic_captions?.en ??
+        // hiçbiri yoksa mevcut ilk altyazıyı al (İspanyolca, Almanca vb.)
+        Object.values(info.subtitles ?? {})[0] ??
+        Object.values(info.automatic_captions ?? {})[0];
     const sub = subs?.find((s) => s.ext === "json3") ?? subs?.find((s) => s.ext === "vtt");
     if (!sub?.url) return null;
 
@@ -172,13 +176,19 @@ async function transcriptViaYtDlp(videoId: string): Promise<string | null> {
     return out.length > 10 ? decodeHtml(out) : null;
 }
 
-export async function getVideoTranscript(videoId: string): Promise<string> {
-    // 1) Anonim kütüphane
-    try {
-        const raw = await YoutubeTranscript.fetchTranscript(videoId, { lang: "tr" });
-        if (raw?.length) return raw.map((i) => decodeHtml(i.text)).join(" ");
-    } catch {
-        // BotGuard engellemiş olabilir; sıradaki yönteme geç
+export async function getVideoTranscript(videoId: string, preferred: "tr" | "en" = "tr"): Promise<string> {
+    // 1) Anonim kütüphane — önce kanalın dili, sonra diğeri, sonra varsayılan
+    const langs = preferred === "tr" ? ["tr", "en"] : ["en", "tr"];
+    for (const lang of [...langs, undefined]) {
+        try {
+            const raw = await YoutubeTranscript.fetchTranscript(
+                videoId,
+                lang ? { lang } : undefined
+            );
+            if (raw?.length) return raw.map((i) => decodeHtml(i.text)).join(" ");
+        } catch {
+            // bu dilde altyazı yok ya da BotGuard engelledi; sıradakine geç
+        }
     }
 
     // 2) Kimlikli istek (yalnızca cookie tanımlıysa)
@@ -211,6 +221,36 @@ export async function getVideoTranscript(videoId: string): Promise<string> {
  *
  * Sonuç: altyazısı bulunmayan video analiz edilmez, atlanır.
  */
+/* --------------------------- Video süresi --------------------------- */
+
+/**
+ * Videonun saniye cinsinden süresi. RESMİ YouTube Data API kullanılır
+ * (istek başına 1 kota birimi) — kazıma değil, Google'ın sunduğu yol.
+ *
+ * Amaç: Shorts ve kısa kliplerin analize girmesini engellemek. Bunlarda
+ * kullanılabilir sinyal yok ama Gemini kotası ve Actions dakikası harcıyorlar.
+ * Anahtar tanımlı değilse null döner ve filtre uygulanmaz.
+ */
+export async function getVideoDurationSeconds(videoId: string): Promise<number | null> {
+    const key = process.env.YOUTUBE_API_KEY;
+    if (!key) return null;
+    try {
+        const res = await fetch(
+            `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoId}&key=${key}`,
+            { signal: AbortSignal.timeout(10_000) }
+        );
+        if (!res.ok) return null;
+        const data = (await res.json()) as { items?: { contentDetails?: { duration?: string } }[] };
+        const iso = data.items?.[0]?.contentDetails?.duration;
+        if (!iso) return null;
+        const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+        if (!m) return null;
+        return Number(m[1] ?? 0) * 3600 + Number(m[2] ?? 0) * 60 + Number(m[3] ?? 0);
+    } catch {
+        return null;
+    }
+}
+
 /* --------------------------- Kanal RSS'i --------------------------- */
 
 interface RssItem {

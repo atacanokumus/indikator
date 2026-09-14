@@ -8,7 +8,7 @@ name: Yedek Tarama ve Bakım
 # sınırı kalkar ve aralığı "*/15 * * * *" yapabilirsiniz.
 on:
   schedule:
-    - cron: "10 */3 * * *"  # 3 saatte bir: kaçan video kontrolü
+    - cron: "10 */6 * * *"  # 6 saatte bir: kaçan video kontrolü
     - cron: "20 3 * * *"    # her gün 06:20 TR: derin tarama + abonelik yenileme
   workflow_dispatch:
     inputs:
@@ -30,6 +30,7 @@ jobs:
       NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
       WEBSUB_SECRET: ${{ secrets.WEBSUB_SECRET }}
       PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
       IS_DEEP: ${{ (github.event.schedule == '20 3 * * *' || inputs.deep) && 'yes' || 'no' }}
@@ -39,7 +40,14 @@ jobs:
         with:
           node-version: "24"
           cache: npm
-      - run: npm ci
+      - name: node_modules önbelleği
+        id: nm
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: nm-${{ runner.os }}-node24-${{ hashFiles('package-lock.json') }}
+      - if: steps.nm.outputs.cache-hit != 'true'
+        run: npm ci
 
       - name: Kanalları tara
         run: |

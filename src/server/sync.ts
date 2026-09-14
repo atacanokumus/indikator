@@ -3,7 +3,7 @@
  * Akış: transkript dene → olmazsa ses indir + Gemini File API → sonuçları kaydet.
  * Başarısız videolar işaretlenir, 3 denemeden sonra bir daha denenmez.
  */
-import { getChannelVideos, getVideoTranscript } from "@/services/youtube";
+import { getChannelVideos, getVideoDurationSeconds, getVideoTranscript } from "@/services/youtube";
 import { analyzeTranscript } from "@/lib/gemini";
 import { PriceService } from "@/services/price-service";
 import type { Analysis, VideoInfo } from "@/lib/types-video";
@@ -35,12 +35,16 @@ const makeLogger = () => {
     };
 };
 
+/** Bundan kısa videolar analiz edilmez: Shorts ve klipler sinyal taşımaz, kota harcar. */
+const MIN_DURATION_SECONDS = Number(process.env.MIN_VIDEO_SECONDS || 240);
+
 export async function processVideo(
     video: VideoInfo,
     channelId: string,
     channelTitle: string,
     channelThumbnail: string | undefined,
-    log: (m: string) => void
+    log: (m: string) => void,
+    language: "tr" | "en" = "tr"
 ): Promise<{ success: boolean; findings: number }> {
     log(`[SYNC] İşleniyor: ${video.title} (${video.id})`);
 
@@ -53,6 +57,14 @@ export async function processVideo(
         return { success: false, findings: 0 };
     }
 
+    // Shorts filtresi — resmi YouTube Data API ile (1 kota birimi)
+    const duration = await getVideoDurationSeconds(video.id);
+    if (duration !== null && duration < MIN_DURATION_SECONDS) {
+        log(`[SYNC] Video çok kısa (${duration} sn) — Shorts/klip, atlanıyor.`);
+        await recordFailure(video.id, `Çok kısa: ${duration} sn`);
+        return { success: false, findings: 0 };
+    }
+
     await setSyncStatus({ isAnalyzing: true, currentChannel: channelTitle, currentVideo: video.title });
 
     let results: Analysis[] = [];
@@ -62,7 +74,7 @@ export async function processVideo(
     // kaldırıldı; altyazısı olmayan video analiz edilmeden atlanır.
     try {
         log(`[SYNC] Altyazı alınıyor...`);
-        const transcript = await getVideoTranscript(video.id);
+        const transcript = await getVideoTranscript(video.id, language);
         if (transcript && transcript.length > 200) {
             log(`[SYNC] Altyazı bulundu (${transcript.length} karakter).`);
             results = await analyzeTranscript(transcript, video.title);
@@ -115,7 +127,8 @@ export async function syncVideo(
     channelId: string,
     channelTitle: string,
     channelThumbnail?: string,
-    videoMeta?: Partial<VideoInfo>
+    videoMeta?: Partial<VideoInfo>,
+    language: "tr" | "en" = "tr"
 ): Promise<SyncResult> {
     const { log, logs } = makeLogger();
     try {
@@ -125,7 +138,7 @@ export async function syncVideo(
             thumbnail: videoMeta?.thumbnail || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
             publishedAt: videoMeta?.publishedAt || new Date().toISOString(),
         };
-        const r = await processVideo(video, channelId, channelTitle, channelThumbnail, log);
+        const r = await processVideo(video, channelId, channelTitle, channelThumbnail, log, language);
         return { success: true, videosProcessed: r.success ? 1 : 0, totalFindings: r.findings, logs };
     } catch (err) {
         const message = (err as Error).message;
@@ -141,7 +154,7 @@ export async function syncChannel(
     channelId: string,
     channelTitle: string,
     channelThumbnail?: string,
-    opts: { maxVideos?: number; timeBudgetMs?: number } = {}
+    opts: { maxVideos?: number; timeBudgetMs?: number; language?: "tr" | "en" } = {}
 ): Promise<SyncResult> {
     const { log, logs } = makeLogger();
     const start = Date.now();
@@ -160,7 +173,7 @@ export async function syncChannel(
                 log(`[SYNC] Süre bütçesi doldu, kalanlar sonraki turda.`);
                 break;
             }
-            const r = await processVideo(video, channelId, channelTitle, channelThumbnail, log);
+            const r = await processVideo(video, channelId, channelTitle, channelThumbnail, log, opts.language ?? "tr");
             if (r.success) processed++;
             findings += r.findings;
         }

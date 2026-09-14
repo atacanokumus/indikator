@@ -14,6 +14,7 @@ import {
 import { assetSlug } from "@/lib/slug";
 import { TallyBar, TallyHeadline, TallySentence } from "./Tally";
 import { ReportButton } from "./ReportButton";
+import { RegionBadge, RegionSplit } from "./RegionSplit";
 
 export function AssetCard({ item }: { item: AssetConsensus }) {
     const [open, setOpen] = useState(false);
@@ -48,6 +49,8 @@ export function AssetCard({ item }: { item: AssetConsensus }) {
                 <TallyBar tally={item.tally} total={item.analystCount} />
 
                 <TallySentence tally={item.tally} total={item.analystCount} size="sm" />
+
+                <RegionSplit split={item.regionSplit} />
 
                 {/* Tebliğ m.78/2-c: son 12 ayda görüşünü değiştirenler */}
                 {item.changedCount > 0 && (
@@ -116,7 +119,8 @@ export function SignalRow({
 
             <div className="stack gap-6" style={{ flex: 1, minWidth: 0 }}>
                 <div className="between gap-8">
-                    <span className="small truncate" style={{ fontWeight: 700, color: "var(--text)" }}>
+                    <span className="small truncate row gap-6" style={{ fontWeight: 700, color: "var(--text)" }}>
+                        <RegionBadge region={s.region} />
                         {s.channelTitle}
                     </span>
                     <span className={`dir-chip chip-${s.recommendation}`}>{DIRECTION[s.recommendation]}</span>

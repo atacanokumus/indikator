@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
 import { TallyBar } from "@/components/Tally";
+import { RegionSplit } from "@/components/RegionSplit";
 import { DIRECTION, assetLabel, formatPrice, relativeTime, tallyParts } from "@/lib/display";
 import { assetSlug } from "@/lib/slug";
 import { getHomeSnapshot } from "@/server/read";
@@ -39,9 +40,9 @@ export default async function KonsensusPage() {
                             <caption className="sr-only">Varlık bazında analist sayımı</caption>
                             <thead>
                                 <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                                    {["Varlık", "Fiyat", "Sayım", "Dağılım", "Son görüş"].map((h, i) => (
+                                    {["Varlık", "Fiyat", "Sayım", "Dağılım", "Kaynak", "Son görüş"].map((h, i) => (
                                         <th key={h} scope="col" className="eyebrow"
-                                            style={{ padding: "13px 16px", textAlign: i > 3 ? "right" : "left" }}>
+                                            style={{ padding: "13px 16px", textAlign: i > 4 ? "right" : "left" }}>
                                             {h}
                                         </th>
                                     ))}
@@ -77,6 +78,9 @@ export default async function KonsensusPage() {
                                             {c.changedCount > 0 && (
                                                 <span className="tiny">{c.changedCount} analist görüş değiştirdi</span>
                                             )}
+                                        </td>
+                                        <td style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>
+                                            <RegionSplit split={c.regionSplit} />
                                         </td>
                                         <td className="tiny" style={{ padding: "13px 16px", textAlign: "right", whiteSpace: "nowrap" }}>
                                             {relativeTime(c.latestSignalAt)}

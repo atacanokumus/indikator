@@ -39,6 +39,7 @@ export function mockSnapshot(): HomeSnapshot {
                     i === 0 ? rec : (["AL", "SAT", "TUT", "GÖZLEMLE"] as Recommendation[])[(idx + i) % 4];
                 return {
                     channelId: `mock-${i}`,
+                    region: (i % 2 === 0 ? "TR" : "GLOBAL") as "TR" | "GLOBAL",
                     channelTitle: ANALYSTS[(idx + i) % ANALYSTS.length],
                     recommendation: r,
                     reasoning:
@@ -64,6 +65,7 @@ export function mockSnapshot(): HomeSnapshot {
                 currency,
                 priceAt: new Date(now - 42 * 60_000).toISOString(),
                 changedCount: idx % 3,
+                regionSplit: { TR: Math.ceil(count / 2), GLOBAL: Math.floor(count / 2) },
                 signals: signals.map((s, i) => ({
                     ...s,
                     previous: i === 1 ? { recommendation: "SAT" as Recommendation, date: new Date(now - 40 * 864e5).toISOString(), videoId: "dQw4w9WgXcQ" } : null,

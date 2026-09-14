@@ -23,10 +23,11 @@ async function main() {
     }
 
     console.log(`[ANALYZE] ${channel.title} → ${title || videoId}`);
-    const result = await syncVideo(videoId, channelId, channel.title, channel.thumbnail, {
-        title: title || undefined,
-        publishedAt: publishedAt || undefined,
-    });
+    const result = await syncVideo(
+        videoId, channelId, channel.title, channel.thumbnail,
+        { title: title || undefined, publishedAt: publishedAt || undefined },
+        channel.language ?? "tr"
+    );
 
     result.logs.forEach((l) => console.log(l));
 

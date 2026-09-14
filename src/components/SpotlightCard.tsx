@@ -3,6 +3,7 @@ import type { AssetConsensus } from "@/lib/types";
 import { assetLabel, formatPrice, relativeTime } from "@/lib/display";
 import { assetSlug } from "@/lib/slug";
 import { TallyBar, TallyHeadline, TallySentence } from "./Tally";
+import { RegionSplit } from "./RegionSplit";
 
 /**
  * Ana sayfada "hemen cevap" kartı.
@@ -36,7 +37,10 @@ export function SpotlightCard({ item }: { item: AssetConsensus }) {
 
             <TallySentence tally={item.tally} total={item.analystCount} size="sm" />
 
-            <span className="tiny">Son görüş: {relativeTime(item.latestSignalAt)}</span>
+            <div className="between">
+                <RegionSplit split={item.regionSplit} />
+                <span className="tiny">{relativeTime(item.latestSignalAt)}</span>
+            </div>
         </Link>
     );
 }
