@@ -49,6 +49,13 @@ jobs:
       - if: steps.nm.outputs.cache-hit != 'true'
         run: npm ci
 
+      # ÖNEMLİ: Abonelik yenileme taramadan ÖNCE. Eskiden en sondaydı; tarama
+      # 30 dakikalık iş sınırına takılırsa abonelikler hiç yenilenmiyor ve
+      # anlık güncelleme zinciri sessizce ölüyordu.
+      - name: Push aboneliklerini yenile
+        if: env.IS_DEEP == 'yes'
+        run: npx tsx src/scripts/resubscribe.ts
+
       - name: Kanalları tara
         run: |
           if [ "$IS_DEEP" = "yes" ]; then
@@ -60,6 +67,3 @@ jobs:
       - name: Fiyatları güncelle
         run: npx tsx src/scripts/sync-prices.ts
 
-      - name: Push aboneliklerini yenile
-        if: env.IS_DEEP == 'yes'
-        run: npx tsx src/scripts/resubscribe.ts
