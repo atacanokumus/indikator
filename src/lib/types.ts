@@ -2,7 +2,13 @@
 
 export type Recommendation = "AL" | "SAT" | "TUT" | "GÖZLEMLE";
 export type Timeframe = "KISA" | "ORTA" | "UZUN";
-export type EvalStatus = "PENDING" | "SUCCESS" | "FAILURE" | "NEUTRAL";
+/**
+ * OLCULEMEZ: fiyat kaynağı olmayan varlık (KRIPTO, KONUT, MEVDUAT gibi sınıflar
+ * ya da fiyatı bulunamayan kodlar). Eskiden bunlar sessizce NEUTRAL kapatılıyor,
+ * yani "ölçtük, yatay kaldı" gibi görünüyordu — 941 kaydın 522'si böyleydi.
+ * İsabet karnesinde bu kayıtlar paydaya HİÇ girmemeli.
+ */
+export type EvalStatus = "PENDING" | "SUCCESS" | "FAILURE" | "NEUTRAL" | "OLCULEMEZ";
 
 export interface Analysis {
     asset: string;
@@ -13,6 +19,10 @@ export interface Analysis {
     targetPrice?: number | string | null;
     entryPrice?: number | null;
     exitPrice?: number | null;
+    /** Ölçümün yapıldığı an (vade sonu) — "bugün" değil. */
+    measuredAt?: string | null;
+    /** Giriş-çıkış arası yüzde değişim; karnede gösterilir. */
+    changePct?: number | null;
     evaluatedAt?: string | null;
     isEvaluated?: boolean;
     status?: EvalStatus;

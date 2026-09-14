@@ -11,7 +11,7 @@
  * onun üzerinden yapılıyor.
  */
 import { PriceService } from "@/services/price-service";
-import type { Analysis } from "@/lib/types";
+import type { Analysis, EvalStatus } from "@/lib/types";
 import { toIso } from "@/lib/types";
 import { getChannel, getPendingAnalyses, updateAnalysisResults, updateChannelStats } from "./repo";
 
@@ -36,11 +36,14 @@ export async function evaluatePendingPredictions() {
             const required = TIMEFRAME_DAYS[analysis.timeframe] ?? 30;
             if (daysPassed < required) continue;
 
-            const outcome = await evaluateOne(analysis);
+            const outcome = await evaluateOne(analysis, publishedAt, required);
             if (!outcome) continue;
 
             changed = true;
             evaluated++;
+
+            // Ölçülemeyen kayıt analistin karnesine yazılmaz.
+            if (outcome.status === "OLCULEMEZ") continue;
 
             const d = channelDeltas.get(data.channelId) ?? { score: 0, total: 0, success: 0 };
             d.score += outcome.scoreChange;
@@ -70,23 +73,60 @@ export async function evaluatePendingPredictions() {
     return { evaluated };
 }
 
+/**
+ * Tek bir görüşün sonradan tutup tutmadığını ölçer.
+ *
+ * DÜZELTİLEN İKİ HATA:
+ *  1) Çıkış fiyatı olarak BUGÜNKÜ fiyat alınıyordu. 7 günlük (KISA) bir görüş,
+ *     aradan 60 gün geçmişse 60 günlük harekete göre puanlanıyordu. Artık
+ *     ölçüm penceresi görüşün kendi vadesi: yayın tarihi + vade süresi.
+ *  2) Giriş fiyatı kayıt anında alınamadıysa sinyal "NEUTRAL" diye kapanıyordu;
+ *     yani ölçülmemiş kayıt, ölçülmüş gibi görünüyordu (941 kaydın 522'si).
+ *     Artık önce tarihten giriş fiyatı çekiliyor; yine de bulunamazsa kayıt
+ *     OLCULEMEZ olarak işaretlenip karnenin paydasının DIŞINDA bırakılıyor.
+ */
 async function evaluateOne(
-    analysis: Analysis
-): Promise<{ status: "SUCCESS" | "FAILURE" | "NEUTRAL"; scoreChange: number } | null> {
-    const entry = analysis.entryPrice ?? 0;
-    if (!entry || entry <= 0) {
-        // Giriş fiyatı yoksa ölçemeyiz; tekrar tekrar denememek için nötr kapat.
+    analysis: Analysis,
+    publishedAt: Date,
+    requiredDays: number
+): Promise<{ status: EvalStatus; scoreChange: number } | null> {
+    const publishedIso = publishedAt.toISOString();
+    const measureAt = new Date(publishedAt.getTime() + requiredDays * 864e5);
+    const measureIso = measureAt.toISOString();
+
+    const close = (status: EvalStatus) => {
         analysis.isEvaluated = true;
-        analysis.status = "NEUTRAL";
+        analysis.status = status;
         analysis.evaluatedAt = new Date().toISOString();
-        return { status: "NEUTRAL", scoreChange: 0 };
+    };
+
+    // Fiyat kaynağı olmayan varlık sınıfları (KRIPTO, KONUT, MEVDUAT...)
+    if (!PriceService.yahooSymbol(analysis.asset)) {
+        close("OLCULEMEZ");
+        return { status: "OLCULEMEZ", scoreChange: 0 };
     }
 
-    const current = await PriceService.getCurrentPrice(analysis.asset);
-    if (!current) return null; // fiyat alınamadı, sonraki turda tekrar dene
+    // Giriş: kayıt anında alınmışsa onu kullan, yoksa yayın tarihinden çek.
+    let entry = analysis.entryPrice ?? 0;
+    if (!entry || entry <= 0) {
+        const at = await PriceService.getPriceAt(analysis.asset, publishedIso);
+        if (at) {
+            entry = at.price;
+            analysis.entryPrice = at.price;
+        }
+    }
+    if (!entry || entry <= 0) {
+        close("OLCULEMEZ");
+        return { status: "OLCULEMEZ", scoreChange: 0 };
+    }
 
-    const change = ((current.price - entry) / entry) * 100;
-    let status: "SUCCESS" | "FAILURE" | "NEUTRAL" = "NEUTRAL";
+    // Çıkış: vade sonundaki fiyat. Vade sonu henüz gelmediyse zaten buraya
+    // gelinmiyor (çağıran kontrol ediyor); veri gelmezse sonraki tura bırak.
+    const exit = await PriceService.getPriceAt(analysis.asset, measureIso);
+    if (!exit) return null;
+
+    const change = ((exit.price - entry) / entry) * 100;
+    let status: EvalStatus = "NEUTRAL";
     let scoreChange = 0;
 
     if (analysis.recommendation === "AL") {
@@ -96,15 +136,15 @@ async function evaluateOne(
         if (change < -THRESHOLD) { status = "SUCCESS"; scoreChange = 8; }
         else if (change > THRESHOLD) { status = "FAILURE"; scoreChange = -10; }
     } else {
-        // TUT / GÖZLEMLE: yatay kalması başarıdır
+        // TUT / GÖZLEMLE: fiyatın yatay kalması görüşü doğrular
         status = Math.abs(change) <= THRESHOLD ? "SUCCESS" : "NEUTRAL";
         scoreChange = status === "SUCCESS" ? 3 : 0;
     }
 
-    analysis.exitPrice = current.price;
-    analysis.isEvaluated = true;
-    analysis.status = status;
-    analysis.evaluatedAt = new Date().toISOString();
+    analysis.exitPrice = exit.price;
+    analysis.changePct = Math.round(change * 100) / 100;
+    analysis.measuredAt = measureIso;
+    close(status);
 
     return { status, scoreChange };
 }
