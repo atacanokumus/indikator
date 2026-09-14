@@ -156,7 +156,7 @@ export default async function KarnePage() {
                                             <span style={{ color: "var(--text-muted)" }}> · {t.measured} ölçüm</span>
                                         </span>
                                     </div>
-                                    <Bar hit={t.hit} miss={t.measured - t.hit} flat={0} />
+                                    <Bar hit={t.hit} miss={t.miss} flat={t.flat} />
                                 </div>
                             );
                         })}

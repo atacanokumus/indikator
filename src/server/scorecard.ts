@@ -31,6 +31,14 @@ export const MIN_SAMPLE = 20;
 export const THRESHOLD_PCT = 1.5;
 export const TIMEFRAME_DAYS: Record<Timeframe, number> = { KISA: 7, ORTA: 30, UZUN: 180 };
 
+/** Bir kesitin sonucu: ölçülen, tutan, tutmayan, yatay kalan. */
+export interface Bucket {
+    measured: number;
+    hit: number;
+    miss: number;
+    flat: number;
+}
+
 export interface ScoreCounts {
     measured: number;
     hit: number;
@@ -47,8 +55,8 @@ export interface ScorecardRow extends ScoreCounts {
     region: "TR" | "GLOBAL";
     /** measured < MIN_SAMPLE ise null — bilerek gösterilmiyor. */
     hitRate: number | null;
-    byTimeframe: Record<Timeframe, { measured: number; hit: number }>;
-    byDirection: Record<Recommendation, { measured: number; hit: number }>;
+    byTimeframe: Record<Timeframe, Bucket>;
+    byDirection: Record<Recommendation, Bucket>;
     topAssets: { asset: string; measured: number; hit: number }[];
     firstSignalAt: string | null;
     lastMeasuredAt: string | null;
@@ -60,25 +68,25 @@ export interface Scorecard {
     thresholdPct: number;
     totals: ScoreCounts;
     /** Tüm kanalların birleşik yön dağılımı — "herkes ne diyor" sorusunun cevabı. */
-    directionTotals: Record<Recommendation, { measured: number; hit: number }>;
-    timeframeTotals: Record<Timeframe, { measured: number; hit: number }>;
+    directionTotals: Record<Recommendation, Bucket>;
+    timeframeTotals: Record<Timeframe, Bucket>;
     rows: ScorecardRow[];
 }
 
 const emptyCounts = (): ScoreCounts => ({
     measured: 0, hit: 0, miss: 0, flat: 0, unmeasurable: 0, pending: 0,
 });
-const emptyTf = () => ({
-    KISA: { measured: 0, hit: 0 },
-    ORTA: { measured: 0, hit: 0 },
-    UZUN: { measured: 0, hit: 0 },
+const b = (): Bucket => ({ measured: 0, hit: 0, miss: 0, flat: 0 });
+const emptyTf = (): Record<Timeframe, Bucket> => ({ KISA: b(), ORTA: b(), UZUN: b() });
+const emptyDir = (): Record<Recommendation, Bucket> => ({
+    AL: b(), SAT: b(), TUT: b(), "GÖZLEMLE": b(),
 });
-const emptyDir = () => ({
-    AL: { measured: 0, hit: 0 },
-    SAT: { measured: 0, hit: 0 },
-    TUT: { measured: 0, hit: 0 },
-    "GÖZLEMLE": { measured: 0, hit: 0 },
-});
+function addTo(bucket: Bucket, status: string) {
+    bucket.measured++;
+    if (status === "SUCCESS") bucket.hit++;
+    else if (status === "FAILURE") bucket.miss++;
+    else bucket.flat++;
+}
 
 function tally(c: ScoreCounts, a: Analysis) {
     switch (a.status) {
@@ -136,15 +144,16 @@ export async function buildScorecard(): Promise<Scorecard> {
             const measured = a.status === "SUCCESS" || a.status === "FAILURE" || a.status === "NEUTRAL";
             if (!measured) continue;
             const hit = a.status === "SUCCESS" ? 1 : 0;
+            const st = String(a.status);
 
             const tf = (TIMEFRAME_DAYS[a.timeframe] ? a.timeframe : "ORTA") as Timeframe;
-            row.byTimeframe[tf].measured++; row.byTimeframe[tf].hit += hit;
-            timeframeTotals[tf].measured++; timeframeTotals[tf].hit += hit;
+            addTo(row.byTimeframe[tf], st);
+            addTo(timeframeTotals[tf], st);
 
             const dir = a.recommendation;
             if (row.byDirection[dir]) {
-                row.byDirection[dir].measured++; row.byDirection[dir].hit += hit;
-                directionTotals[dir].measured++; directionTotals[dir].hit += hit;
+                addTo(row.byDirection[dir], st);
+                addTo(directionTotals[dir], st);
             }
 
             const asset = normalizeAsset(a.asset);
