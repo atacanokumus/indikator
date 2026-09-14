@@ -40,8 +40,15 @@ const makeLogger = () => {
     };
 };
 
-/** Bundan kısa videolar analiz edilmez: Shorts ve klipler sinyal taşımaz, kota harcar. */
-const MIN_DURATION_SECONDS = Number(process.env.MIN_VIDEO_SECONDS || 240);
+/**
+ * Bundan kısa videolar analiz edilmez: Shorts sinyal taşımaz, kota harcar.
+ *
+ * Eşik 240 sn iken finansZone, Heresy Financial gibi kanalların 2-3 dakikalık
+ * gerçek analiz klipleri de eleniyordu ("Doruk Ozaner: Bankacılık kârları...").
+ * Shorts'un üst sınırı 180 sn olduğu için 100 sn, Shorts'u eleyip kısa ama
+ * içerikli klipleri korumak açısından daha isabetli.
+ */
+const MIN_DURATION_SECONDS = Number(process.env.MIN_VIDEO_SECONDS || 100);
 
 export async function processVideo(
     video: VideoInfo,
