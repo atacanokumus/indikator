@@ -12,6 +12,9 @@ service cloud.firestore {
     match /prices/{doc}        { allow read: if true; allow write: if false; }
     match /system_status/{doc} { allow read: if true; allow write: if false; }
     match /snapshots/{doc}     { allow read: if true; allow write: if false; }
+    // Bültenler yalnızca sunucuda okunuyor (admin SDK kuralları atlar);
+    // tarayıcıya doğrudan açmaya gerek yok.
+    match /bulletins/{doc}     { allow read: if false; allow write: if false; }
     match /news_cache/{doc}    { allow read: if true; allow write: if false; }
 
     // Gizli koleksiyonlar: tarayıcıdan asla erişilemez

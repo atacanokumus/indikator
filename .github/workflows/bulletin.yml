@@ -1,0 +1,32 @@
+name: Haftalık Bülten
+
+# Her pazartesi sabahı haftanın bültenini üretir. Bülten kendi kalıcı
+# adresinde yayımlanır; hem okuyucu için geri gelme sebebi, hem arama
+# motoru için düzenli taze içerik.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Pazartesi 09:00 TR
+  workflow_dispatch:
+
+jobs:
+  bulletin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: node_modules önbelleği
+        id: nm
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: nm-${{ runner.os }}-node24-${{ hashFiles('package-lock.json') }}
+      - if: steps.nm.outputs.cache-hit != 'true'
+        run: npm ci
+      - run: npx tsx src/scripts/build-bulletin.ts

@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import type { HomeSnapshot } from "@/lib/types";
 import type { Scorecard } from "./scorecard";
+import type { Bulletin } from "./bulletin";
 import { getDocData } from "./repo";
 
 const EMPTY: HomeSnapshot = {
@@ -50,4 +51,41 @@ export const getScorecard = unstable_cache(
     },
     ["scorecard"],
     { revalidate: 300, tags: ["scorecard"] }
+);
+
+/** Haftalık bülten — tek bülten, liste ve en güncel. */
+export const getBulletin = unstable_cache(
+    async (id: string): Promise<Bulletin | null> => {
+        try {
+            return await getDocData<Bulletin>("bulletins", id);
+        } catch {
+            return null;
+        }
+    },
+    ["bulletin"],
+    { revalidate: 3600, tags: ["bulletin"] }
+);
+
+export const getLatestBulletin = unstable_cache(
+    async (): Promise<Bulletin | null> => {
+        try {
+            return await getDocData<Bulletin>("bulletins", "latest");
+        } catch {
+            return null;
+        }
+    },
+    ["bulletin-latest"],
+    { revalidate: 600, tags: ["bulletin"] }
+);
+
+export const getBulletinIndex = unstable_cache(
+    async (): Promise<{ items: { id: string; weekLabel: string; signalCount: number }[] } | null> => {
+        try {
+            return await getDocData("bulletins", "index");
+        } catch {
+            return null;
+        }
+    },
+    ["bulletin-index"],
+    { revalidate: 600, tags: ["bulletin"] }
 );

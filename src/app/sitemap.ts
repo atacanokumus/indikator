@@ -12,6 +12,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ["/konsensus", 0.9, "hourly"],
         ["/analistler", 0.8, "daily"],
         ["/karne", 0.9, "daily"],
+        ["/bulten", 0.8, "weekly"],
+        ["/sozluk", 0.5, "monthly"],
         ["/metodoloji", 0.6, "monthly"],
         ["/hakkimizda", 0.4, "monthly"],
         ["/kaldirma", 0.3, "monthly"],
@@ -38,5 +40,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }));
     } catch { /* snapshot yoksa sadece statik sayfalar */ }
 
-    return [...statics, ...assets];
+    // Haftalık bültenler — her biri kalıcı, kendi adresi olan içerik
+    let bulletins: MetadataRoute.Sitemap = [];
+    try {
+        const { getBulletinIndex } = await import("@/server/read");
+        const index = await getBulletinIndex();
+        bulletins = (index?.items ?? []).map((b) => ({
+            url: `${SITE_URL}/bulten/${b.id}`,
+            lastModified: now,
+            changeFrequency: "monthly" as const,
+            priority: 0.6,
+        }));
+    } catch { /* bülten yoksa sorun değil */ }
+
+    return [...statics, ...assets, ...bulletins];
 }

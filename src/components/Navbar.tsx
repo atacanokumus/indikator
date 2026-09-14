@@ -10,6 +10,7 @@ const LINKS = [
     { href: "/konsensus", label: "Konsensüs" },
     { href: "/analistler", label: "Analistler" },
     { href: "/karne", label: "Karne" },
+    { href: "/bulten", label: "Bülten" },
 ];
 
 export function Navbar() {
