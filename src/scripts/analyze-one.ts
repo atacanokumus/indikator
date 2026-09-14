@@ -8,6 +8,7 @@ import { getChannel, recordFailure } from "@/server/repo";
 import { syncVideo } from "@/server/sync";
 import { evaluatePendingPredictions } from "@/server/evaluator";
 import { writeHomeSnapshot } from "@/server/snapshot";
+import { writeScorecard } from "@/server/scorecard";
 
 async function main() {
     const [videoId, channelId, title, publishedAt] = process.argv.slice(2);
@@ -62,6 +63,7 @@ async function main() {
     if (result.totalFindings > 0) {
         await evaluatePendingPredictions().catch((e) => console.error("[EVALUATOR]", e.message));
         await writeHomeSnapshot();
+        await writeScorecard();
     }
 
     console.log(`[ANALYZE] Bitti. Bulgu: ${result.totalFindings}`);

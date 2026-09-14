@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import type { HomeSnapshot } from "@/lib/types";
+import type { Scorecard } from "./scorecard";
 import { getDocData } from "./repo";
 
 const EMPTY: HomeSnapshot = {
@@ -32,4 +33,21 @@ export const getHomeSnapshot = unstable_cache(
     },
     ["home-snapshot"],
     { revalidate: 60, tags: ["snapshot"] }
+);
+
+/**
+ * İsabet karnesi verisi. Ana sayfa anlık görüntüsüyle aynı mantık:
+ * sunucuda önbelleğe alınır, ziyaretçi başına Firestore okuması yapılmaz.
+ */
+export const getScorecard = unstable_cache(
+    async (): Promise<Scorecard | null> => {
+        try {
+            return await getDocData<Scorecard>("snapshots", "scorecard");
+        } catch (err) {
+            console.error("[READ] karne okunamadı:", (err as Error).message);
+            return null;
+        }
+    },
+    ["scorecard"],
+    { revalidate: 300, tags: ["scorecard"] }
 );

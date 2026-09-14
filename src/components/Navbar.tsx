@@ -9,6 +9,7 @@ const LINKS = [
     { href: "/", label: "Sinyaller" },
     { href: "/konsensus", label: "Konsensüs" },
     { href: "/analistler", label: "Analistler" },
+    { href: "/karne", label: "Karne" },
 ];
 
 export function Navbar() {

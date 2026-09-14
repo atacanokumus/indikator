@@ -11,6 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ["", 1, "hourly"],
         ["/konsensus", 0.9, "hourly"],
         ["/analistler", 0.8, "daily"],
+        ["/karne", 0.9, "daily"],
         ["/metodoloji", 0.6, "monthly"],
         ["/hakkimizda", 0.4, "monthly"],
         ["/kaldirma", 0.3, "monthly"],
