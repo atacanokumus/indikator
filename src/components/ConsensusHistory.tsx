@@ -58,7 +58,13 @@ export function ConsensusHistory({
     const step = max <= 4 ? 1 : Math.ceil(max / 4);
     const ticks: number[] = [];
     for (let v = 0; v <= max; v += step) ticks.push(v);
-    if (ticks[ticks.length - 1] !== max) ticks.push(max);
+    // En ust cizgi her zaman grafigin ulastigi degeri gostersin; ama onceki
+    // cizgiye cok yakinsa onun yerine gecsin, yoksa iki etiket ust uste biner.
+    const last = ticks[ticks.length - 1];
+    if (last !== max) {
+        if (max - last < step / 2) ticks[ticks.length - 1] = max;
+        else ticks.push(max);
+    }
 
     const y = (v: number) => padT + plotH - (v / max) * plotH;
 
