@@ -181,5 +181,11 @@ export function relativeTime(iso: string): string {
 export function formatDateTr(iso: string): string {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+    // DIKKAT: timeZone acikca verilmeli. Verilmezse sunucu UTC'ye, tarayici
+    // Europe/Istanbul'a gore bicimlendirir; gece yarisina yakin tarihlerde iki
+    // taraf farkli gun yazar ve React hidrasyonu "#418" ile patlar. Ustelik
+    // Turkiye'deki okuyucu icin dogru olan da Istanbul saati.
+    return d.toLocaleDateString("tr-TR", {
+        day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Istanbul",
+    });
 }

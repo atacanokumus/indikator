@@ -1,3 +1,4 @@
+import { formatDateTr } from "@/lib/display";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -12,7 +13,7 @@ export default function GizlilikPage() {
     return (
         <article className="wrap section" style={{ maxWidth: 720 }}>
             <h1 className="h1" style={{ fontSize: "clamp(1.7rem, 3.6vw, 2.3rem)" }}>Gizlilik Politikası</h1>
-            <p className="tiny" style={{ marginTop: 8 }}>Son güncelleme: {new Date().toLocaleDateString("tr-TR")}</p>
+            <p className="tiny" style={{ marginTop: 8 }}>Son güncelleme: {formatDateTr(new Date().toISOString())}</p>
 
             <h2 className="h2" style={{ marginTop: 30 }}>Hangi verileri topluyoruz?</h2>
             <p className="small">
