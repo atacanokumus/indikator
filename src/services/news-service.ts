@@ -28,6 +28,27 @@ export async function getNews(): Promise<NewsItem[]> {
         return cached.items ?? [];
     }
 
+    /**
+     * ONBELLEK BAYATSA BILE ZIYARETCIYI BEKLETME.
+     *
+     * Asagidaki tazeleme sekiz RSS kaynagini (her biri 8 sn zaman asimi) ve
+     * ustune bir Gemini toplu istegini iceriyor. Bu zincir sunucusuz fonksiyon
+     * suresini asabiliyordu ve ana sayfa ile /konsensus'ta araliklı 502
+     * goruluyordu. Artik bayat da olsa elde veri varsa o donuyor; tazeleme
+     * arka planda kosuyor ve bir sonraki ziyaretci yenisini goruyor.
+     */
+    if (cached?.items?.length) {
+        void refresh(cached).catch(() => { /* arka plan; ziyaretciyi ilgilendirmez */ });
+        return cached.items;
+    }
+
+    return refresh(cached);
+}
+
+async function refresh(
+    cached: { items: NewsItem[]; fetchedAt: string } | null
+): Promise<NewsItem[]> {
+
     let items: NewsItem[] = [];
     const settled = await Promise.allSettled(SOURCES.map((s) => parser.parseURL(s.url)));
     settled.forEach((res, i) => {

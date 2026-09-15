@@ -3,6 +3,9 @@ import { getNews } from "@/services/news-service";
 
 export const runtime = "nodejs";
 export const revalidate = 300;
+/** Soguk onbellekte RSS + toplu analiz zinciri uzun surebiliyor; varsayilan
+ *  sure asimi 502 uretiyordu. */
+export const maxDuration = 30;
 
 export async function GET() {
     try {
