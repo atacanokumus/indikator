@@ -1,3 +1,4 @@
+import { RelativeTime } from "@/components/RelativeTime";
 import Link from "next/link";
 import type { AssetConsensus } from "@/lib/types";
 import { assetLabel, formatPrice, relativeTime } from "@/lib/display";
@@ -39,7 +40,7 @@ export function SpotlightCard({ item }: { item: AssetConsensus }) {
 
             <div className="between">
                 <RegionSplit split={item.regionSplit} />
-                <span className="tiny">{relativeTime(item.latestSignalAt)}</span>
+                <RelativeTime iso={item.latestSignalAt} className="tiny" />
             </div>
         </Link>
     );

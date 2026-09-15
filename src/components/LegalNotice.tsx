@@ -1,3 +1,4 @@
+import { RelativeTime } from "@/components/RelativeTime";
 import Link from "next/link";
 import { relativeTime } from "@/lib/display";
 
@@ -42,7 +43,7 @@ export function LegalNotice({
             {updateFrequency && (
                 <p className="small" style={{ margin: 0 }}>
                     <strong>Güncellenme sıklığı.</strong> {updateFrequency}
-                    {generatedAt && <> Bu sayfadaki sayım {relativeTime(generatedAt)} üretildi.</>}
+                    {generatedAt && <> Bu sayfadaki sayım <RelativeTime iso={generatedAt} /> üretildi.</>}
                 </p>
             )}
 

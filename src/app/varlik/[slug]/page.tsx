@@ -1,3 +1,4 @@
+import { RelativeTime } from "@/components/RelativeTime";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,7 +7,7 @@ import { SignalRow } from "@/components/AssetCard";
 import { TallyBar, TallyHeadline, TallySentence } from "@/components/Tally";
 import { RegionSplit } from "@/components/RegionSplit";
 import { LegalNotice } from "@/components/LegalNotice";
-import { DIRECTION, assetLabel, formatDateTr, formatPrice, relativeTime } from "@/lib/display";
+import { DIRECTION, assetLabel, formatDateTr, formatPrice } from "@/lib/display";
 import { assetSlug, findAssetBySlug } from "@/lib/slug";
 import { ConsensusHistory } from "@/components/ConsensusHistory";
 import { getAssetHistory, getHomeSnapshot } from "@/server/read";
@@ -70,7 +71,7 @@ export default async function VarlikPage({ params }: { params: Promise<{ slug: s
                                 {/* Tebliğ m.78/2-b */}
                                 {item.priceAt && (
                                     <span className="tiny">
-                                        {formatDateTr(item.priceAt)} · {relativeTime(item.priceAt)} alındı
+                                        {formatDateTr(item.priceAt)} · <RelativeTime iso={item.priceAt} /> alındı
                                     </span>
                                 )}
                             </div>

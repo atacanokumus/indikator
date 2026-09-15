@@ -1,10 +1,11 @@
+import { RelativeTime } from "@/components/RelativeTime";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
 import { NewsTicker } from "@/components/NewsTicker";
 import { SignalExplorer } from "@/components/SignalExplorer";
 import { SpotlightCard } from "@/components/SpotlightCard";
-import { assetLabel, relativeTime, SPOTLIGHT_ASSETS } from "@/lib/display";
+import { assetLabel, SPOTLIGHT_ASSETS } from "@/lib/display";
 import { LegalNotice } from "@/components/LegalNotice";
 import { getHomeSnapshot } from "@/server/read";
 
@@ -51,7 +52,7 @@ export default async function HomePage() {
                     {snapshot.lastVideoAt && (
                         <p className="tiny row gap-6" style={{ marginTop: 14 }}>
                             <span className="pulse-dot" style={{ color: "var(--al)" }} />
-                            Son analiz edilen video: {relativeTime(snapshot.lastVideoAt)}
+                            Son analiz edilen video: <RelativeTime iso={snapshot.lastVideoAt} />
                         </p>
                     )}
                 </div>

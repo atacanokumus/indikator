@@ -44,7 +44,7 @@ async function main() {
 
     // Kanal puanları da sıfırlanmalı; eskisi yanlış ölçümden birikmişti.
     const chans = await db.collection("channels").get();
-    let cb = db.batch();
+    const cb = db.batch();
     chans.forEach((c) =>
         cb.update(c.ref, { totalScore: 100, predictionCount: 0, successCount: 0, weight: 1 })
     );

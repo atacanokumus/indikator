@@ -14,9 +14,6 @@ import type { Recommendation, Tally, VideoAnalysis } from "@/lib/types";
 import { toIso } from "@/lib/types";
 import { getAnalysesSince, setDocData } from "./repo";
 
-/** Anahtar birlestirmede kullanilan ayrac: varlik adlarinda asla gecmez. */
-const SEP = "\u0000";
-
 export const HISTORY_MONTHS = 12;
 
 export interface HistoryPoint {

@@ -1,9 +1,10 @@
+import { RelativeTime } from "@/components/RelativeTime";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
 import { TallyBar } from "@/components/Tally";
 import { RegionSplit } from "@/components/RegionSplit";
-import { DIRECTION, assetLabel, formatPrice, relativeTime, tallyParts } from "@/lib/display";
+import { DIRECTION, assetLabel, formatPrice, tallyParts } from "@/lib/display";
 import { assetSlug } from "@/lib/slug";
 import { getHomeSnapshot } from "@/server/read";
 
@@ -58,7 +59,7 @@ export default async function KonsensusPage() {
                                         </th>
                                         <td className="mono small" style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>
                                             {formatPrice(c.price, c.currency) ?? "—"}
-                                            {c.priceAt && <div className="tiny">{relativeTime(c.priceAt)}</div>}
+                                            {c.priceAt && <div className="tiny"><RelativeTime iso={c.priceAt} /></div>}
                                         </td>
                                         <td style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>
                                             {tallyParts(c.tally).map((p, i) => (
@@ -83,7 +84,7 @@ export default async function KonsensusPage() {
                                             <RegionSplit split={c.regionSplit} />
                                         </td>
                                         <td className="tiny" style={{ padding: "13px 16px", textAlign: "right", whiteSpace: "nowrap" }}>
-                                            {relativeTime(c.latestSignalAt)}
+                                            <RelativeTime iso={c.latestSignalAt} />
                                         </td>
                                     </tr>
                                 ))}
@@ -95,7 +96,7 @@ export default async function KonsensusPage() {
                 {updateFrequency && (
                     <p className="legal-strip" style={{ marginTop: 18 }}>
                         <strong>Güncellenme sıklığı.</strong> {updateFrequency}{" "}
-                        Bu tablo {relativeTime(generatedAt)} üretildi.
+                        Bu tablo <RelativeTime iso={generatedAt} /> üretildi.
                     </p>
                 )}
             </section>

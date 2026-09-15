@@ -1,5 +1,6 @@
 "use client";
 
+import { RelativeTime } from "@/components/RelativeTime";
 import { useState } from "react";
 import Link from "next/link";
 import type { AnalystSignal, AssetConsensus } from "@/lib/types";
@@ -36,7 +37,7 @@ export function AssetCard({ item }: { item: AssetConsensus }) {
                             <span className="tiny">fiyat yok</span>
                         )}
                         {/* Tebliğ m.78/2-b: fiyatın alındığı an açıkça belirtilmeli */}
-                        {item.priceAt && <span className="tiny">{relativeTime(item.priceAt)}</span>}
+                        {item.priceAt && <RelativeTime iso={item.priceAt} className="tiny" />}
                     </div>
                 </div>
 
@@ -71,7 +72,7 @@ export function AssetCard({ item }: { item: AssetConsensus }) {
                     cursor: "pointer", color: "inherit", font: "inherit",
                 }}
             >
-                <span className="tiny">Son görüş: {relativeTime(item.latestSignalAt)}</span>
+                <span className="tiny">Son görüş: <RelativeTime iso={item.latestSignalAt} /></span>
                 <span className="small" style={{ color: "var(--brand)", fontWeight: 650 }}>
                     {open ? "Kapat ▲" : `Kim ne dedi (${item.analystCount}) ▼`}
                 </span>
