@@ -316,6 +316,16 @@ html, body { overflow-x: clip; }
   gap: 14px;
 }
 @media (max-width: 900px) { .grid-spot { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/*
+ * 420 pikselin altında tek sütun. İki sütunda kart 165 piksele düşüyordu ve
+ * "🇹🇷 13 yerli · 🌍 7 yabancı" satırı ile tarih kartın dışına taşıyordu.
+ * Kartı daraltmak yerine sütunu tekleştirmek doğru çözüm: içerik sığıyor.
+ */
+@media (max-width: 420px) { .grid-spot { grid-template-columns: 1fr; } }
+
+/* Dar kartlarda yan yana duran ikili satırlar sarabilsin. */
+.grid-spot .between { flex-wrap: wrap; gap: 6px; }
+.region-split { flex-wrap: wrap; }
 
 .grid-cards {
   display: grid;
