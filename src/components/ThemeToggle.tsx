@@ -1,35 +1,55 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 
 type Mode = "light" | "dark";
 
-/** Kök elementteki data-theme değerini okur (SSR uyumlu). */
+/**
+ * TEMA DUGMESI
+ *
+ * DUZELTILEN HATA: Bilesen render sirasinda window.matchMedia okuyordu.
+ * Sunucuda window yok, tarayicida var; isletim sistemi koyu temadayken
+ * sunucu "Koyu temaya geç", tarayici "Açık temaya geç" yaziyordu. Ikisi
+ * aria-label ozniteligi oldugu icin metin karsilastirmasinda gorunmuyor ama
+ * React hidrasyonu "Minified React error #418" ile patliyordu. Patlayinca
+ * sayfadaki TUM istemci bilesenleri sessizce calismaz hale geliyordu —
+ * somut sonucu Vercel Analytics betiginin sayfaya hic eklenmemesiydi.
+ *
+ * COZUM: Isletim sistemi tercihi de dis kaynaga tasindi. React hidrasyon
+ * sirasinda ilk render icin getServerSnapshot'i kullanir; iki taraf ayni
+ * degeri gorur, hidrasyondan hemen sonra gercek deger okunur.
+ */
 function subscribe(cb: () => void) {
     const obs = new MutationObserver(cb);
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    mq.addEventListener("change", cb);
+    return () => {
+        obs.disconnect();
+        mq.removeEventListener("change", cb);
+    };
+}
+
+function getSnapshot(): Mode {
+    const attr = document.documentElement.dataset.theme;
+    if (attr === "dark" || attr === "light") return attr;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+/** Sunucu her zaman ayni degeri dondurur; hidrasyon bu deger uzerinden eslesir. */
+function getServerSnapshot(): Mode {
+    return "light";
 }
 
 export function ThemeToggle() {
-    const [, force] = useState(0);
-    const current = useSyncExternalStore(
-        subscribe,
-        () => document.documentElement.dataset.theme ?? "",
-        () => ""
-    );
-
-    const isDark =
-        current === "dark" ||
-        (current === "" &&
-            typeof window !== "undefined" &&
-            window.matchMedia?.("(prefers-color-scheme: dark)").matches);
+    const mode = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+    const isDark = mode === "dark";
 
     const toggle = () => {
-        const next: Mode = isDark ? "light" : "dark";
-        document.documentElement.dataset.theme = next;
-        try { localStorage.setItem("and-theme", next); } catch { /* gizli sekme */ }
-        force((n) => n + 1);
+        document.documentElement.dataset.theme = isDark ? "light" : "dark";
+        try {
+            localStorage.setItem("and-theme", isDark ? "light" : "dark");
+        } catch { /* gizli sekme */ }
     };
 
     return (
