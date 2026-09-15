@@ -268,6 +268,8 @@ a { color: inherit; }
 
 /* ------------------------------ Üst menü ------------------------------ */
 
+html, body { overflow-x: clip; }
+
 .navbar {
   position: sticky; top: 0; z-index: 50;
   background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
@@ -284,10 +286,26 @@ a { color: inherit; }
 }
 .nav-link:hover { background: var(--bg-hover); color: var(--text); }
 .nav-link[aria-current="page"] { color: var(--brand); background: var(--brand-soft); }
+/*
+ * Dar ekranda menü YANA KAYDIRILIR, sayfa değil.
+ * Menüye Karne ve Bülten eklenince 375 piksellik telefonda satır taşıyor ve
+ * SAYFANIN TAMAMI yatay kayıyordu (scrollWidth 408 > 375). Kaydırmayı menünün
+ * kendi kutusuna hapsediyoruz; tema düğmesi sabit kalıyor.
+ */
 @media (max-width: 640px) {
-  .navbar-inner { height: 56px; }
+  .navbar-inner { height: 56px; gap: 8px; }
   .nav-link { padding: 7px 9px; font-size: 13px; }
-  .nav-links { gap: 1px; }
+  .nav-links {
+    gap: 1px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .navbar-inner > .row { flex: 0 0 auto; }
 }
 
 /* ------------------------------ Izgaralar ------------------------------ */

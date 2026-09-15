@@ -47,6 +47,15 @@ export const metadata: Metadata = {
     },
     robots: { index: true, follow: true },
     alternates: { canonical: "/" },
+    /**
+     * Google Search Console doğrulaması. Doğrulama kodu ortam değişkeninden
+     * geliyor; koda gömülmüyor ki farklı ortamlarda farklı mülkler
+     * doğrulanabilsin ve kod deposunda gereksiz bir kimlik durmasın.
+     * Değişken tanımlı değilse etiket hiç basılmaz.
+     */
+    verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+        ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+        : undefined,
 };
 
 export const viewport: Viewport = {
