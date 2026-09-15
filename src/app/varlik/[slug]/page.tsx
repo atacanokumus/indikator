@@ -8,7 +8,8 @@ import { RegionSplit } from "@/components/RegionSplit";
 import { LegalNotice } from "@/components/LegalNotice";
 import { DIRECTION, assetLabel, formatDateTr, formatPrice, relativeTime } from "@/lib/display";
 import { assetSlug, findAssetBySlug } from "@/lib/slug";
-import { getHomeSnapshot } from "@/server/read";
+import { ConsensusHistory } from "@/components/ConsensusHistory";
+import { getAssetHistory, getHomeSnapshot } from "@/server/read";
 
 export const revalidate = 60;
 
@@ -44,6 +45,7 @@ export default async function VarlikPage({ params }: { params: Promise<{ slug: s
     if (!item) notFound();
 
     const name = assetLabel(item.asset);
+    const history = (await getAssetHistory())[item.asset] ?? [];
     const price = formatPrice(item.price, item.currency);
     const others = snapshot.consensus.filter((c) => c.asset !== item.asset).slice(0, 6);
 
@@ -102,6 +104,12 @@ export default async function VarlikPage({ params }: { params: Promise<{ slug: s
                     </p>
                 </div>
             </section>
+
+            {history.length > 0 && (
+                <section className="wrap section-tight">
+                    <ConsensusHistory series={history} assetLabel={name} />
+                </section>
+            )}
 
             <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_TOP} />
 

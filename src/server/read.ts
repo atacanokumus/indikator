@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import type { HomeSnapshot } from "@/lib/types";
 import type { Scorecard } from "./scorecard";
 import type { Bulletin } from "./bulletin";
+import type { HistoryPoint } from "./history";
 import { getDocData } from "./repo";
 
 const EMPTY: HomeSnapshot = {
@@ -88,4 +89,22 @@ export const getBulletinIndex = unstable_cache(
     },
     ["bulletin-index"],
     { revalidate: 600, tags: ["bulletin"] }
+);
+
+
+/** Varlık bazında aylık konsensüs geçmişi. Tek doküman, uzun önbellek. */
+export const getAssetHistory = unstable_cache(
+    async (): Promise<Record<string, HistoryPoint[]>> => {
+        try {
+            const doc = await getDocData<{ history: Record<string, HistoryPoint[]> }>(
+                "snapshots", "history"
+            );
+            return doc?.history ?? {};
+        } catch (err) {
+            console.error("[READ] geçmiş okunamadı:", (err as Error).message);
+            return {};
+        }
+    },
+    ["asset-history"],
+    { revalidate: 900, tags: ["history"] }
 );

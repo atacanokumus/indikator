@@ -9,6 +9,7 @@ import { syncChannel } from "@/server/sync";
 import { evaluatePendingPredictions } from "@/server/evaluator";
 import { writeHomeSnapshot } from "@/server/snapshot";
 import { writeScorecard } from "@/server/scorecard";
+import { writeAssetHistory } from "@/server/history";
 
 /**
  * TOPLAM süre bütçesi. Eskiden bütçe KANAL BAŞINA idi; 30 kanalla bu,
@@ -67,6 +68,7 @@ async function main() {
     await evaluatePendingPredictions().catch((e) => console.error("[EVALUATOR]", e.message));
     await writeHomeSnapshot();
     await writeScorecard();
+    await writeAssetHistory();
 
     console.log(
         `[SCAN] Tamamlandı. ${videos} yeni video, ${findings} sinyal` +

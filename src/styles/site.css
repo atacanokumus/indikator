@@ -33,7 +33,11 @@
   --sat: #be123c;
   --sat-bg: #fff1f3;
   --sat-border: #fecdd6;
-  --bekle: #b45309;
+  /* Renk korlugu dogrulayicisinda #b45309 ile #be123c (SATIS) ayirt edilemiyordu:
+     normal goruste bile OKLab DeltaE 11,5 — esik 15. Bu ikisi tally cubugunda ve
+     gecmis grafiginde yan yana gelebiliyor. #c08401 ile fark 22,6'ya cikiyor ve
+     yuzey kontrasti da 3:1 esigini geciyor. */
+  --bekle: #c08401;
   --bekle-bg: #fffbeb;
   --bekle-border: #fde68a;
   --gozlemle: #1d4ed8;
