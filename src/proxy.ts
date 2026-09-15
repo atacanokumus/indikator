@@ -64,6 +64,20 @@ export default function proxy(request: NextRequest) {
     return response;
 }
 
+/**
+ * DIKKAT — _vercel ve .js haric tutulmali.
+ *
+ * Vercel Web Analytics betigini reklam engelleyicilerden kacmak icin rastgele
+ * bir yoldan servis ediyor (ornegin /85b12c015a6b922c/script.js). Bu yol
+ * matcher'a takildiginda istek 502 donuyor ve tarayici "MIME type text/plain"
+ * diyerek betigi calistirmayi reddediyor. Sonucu: olcum acik gorunuyor ama tek
+ * bir ziyaret bile kaydedilmiyor.
+ *
+ * Genel kural olarak da dogru: bu katman yalnizca guvenlik basliklari ekliyor,
+ * statik dosyalarda calismasinin bir faydasi yok.
+ */
 export const config = {
-    matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|webp|ico|txt|xml)$).*)"],
+    matcher: [
+        "/((?!_next/static|_next/image|_vercel|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|webp|ico|txt|xml|js|css|map|woff|woff2)$).*)",
+    ],
 };
