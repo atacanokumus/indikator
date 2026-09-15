@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
@@ -84,6 +86,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <main id="icerik">{children}</main>
                 <Footer />
                 <CookieConsent />
+
+                {/*
+                  Ziyaretci olcumu. Vercel Analytics CEREZ KULLANMAZ ve kisiyi
+                  tanimlayan bir kimlik saklamaz; bu yuzden onay bandinin
+                  arkasinda beklemesi gerekmiyor ve KVKK acisindan reklam
+                  betiginden farkli bir konumda. Google Analytics secseydik
+                  cerez koydugu icin onaydan once yuklenemezdi.
+                */}
+                <Analytics />
+                <SpeedInsights />
 
                 {/*
                   AdSense yalnızca (1) yayıncı kimliği tanımlıysa ve (2) ziyaretçi
