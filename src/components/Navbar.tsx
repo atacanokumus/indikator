@@ -6,7 +6,7 @@ import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 
 const LINKS = [
-    { href: "/", label: "Sinyaller" },
+    { href: "/", label: "Görüşler" },
     { href: "/konsensus", label: "Konsensüs" },
     { href: "/analistler", label: "Analistler" },
     { href: "/karne", label: "Karne" },

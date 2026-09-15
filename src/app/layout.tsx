@@ -83,18 +83,43 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 */}
                 {adsenseClient && <AdsenseLoader client={adsenseClient} />}
 
+                {/*
+                  Yapılandırılmış veri. Arama motorları ve yapay zeka asistanları
+                  siteyi burayı okuyarak tarif ediyor; bu yüzden buradaki cümle
+                  sayfalardaki duruşla birebir aynı olmak zorunda. Eskiden burada
+                  "yapay zeka ile çıkarılan yatırım sinyalleri" yazıyordu — sayfalardan
+                  temizlediğimiz tavsiye dili en çok alıntılanan yerde kalmıştı.
+                */}
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{
-                        __html: JSON.stringify({
-                            "@context": "https://schema.org",
-                            "@type": "WebSite",
-                            name: "Analist Ne Diyor",
-                            url: SITE_URL,
-                            inLanguage: "tr-TR",
-                            description:
-                                "YouTube ekonomi yorumcularının videolarından yapay zeka ile çıkarılan yatırım sinyalleri.",
-                        }),
+                        __html: JSON.stringify([
+                            {
+                                "@context": "https://schema.org",
+                                "@type": "WebSite",
+                                "@id": `${SITE_URL}#website`,
+                                name: "Analist Ne Diyor",
+                                url: SITE_URL,
+                                inLanguage: "tr-TR",
+                                description:
+                                    "YouTube ekonomi yorumcularının videolarında hangi varlık için hangi yönde " +
+                                    "konuştuğunun sayımı ve geçmiş görüşlerin isabet karnesi. Yatırım tavsiyesi değildir.",
+                                publisher: { "@id": `${SITE_URL}#org` },
+                            },
+                            {
+                                "@context": "https://schema.org",
+                                "@type": "Organization",
+                                "@id": `${SITE_URL}#org`,
+                                name: "Analist Ne Diyor",
+                                url: SITE_URL,
+                                logo: `${SITE_URL}/logo.svg`,
+                                description:
+                                    "Takip edilen YouTube ekonomi yorumcularının görüşlerini varlık bazında sayan, " +
+                                    "geçmiş görüşlerin sonradan tutup tutmadığını fiyat verisiyle ölçen bağımsız bir yayın.",
+                                knowsLanguage: ["tr", "en"],
+                                areaServed: "TR",
+                            },
+                        ]),
                     }}
                 />
             </body>

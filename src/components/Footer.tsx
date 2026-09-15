@@ -20,7 +20,7 @@ export function Footer() {
                     <nav className="row gap-24 wrapflex" style={{ alignItems: "flex-start" }} aria-label="Alt menü">
                         <div className="stack gap-8">
                             <span className="eyebrow">Sayfalar</span>
-                            <Link className="small" href="/">Sinyaller</Link>
+                            <Link className="small" href="/">Görüşler</Link>
                             <Link className="small" href="/konsensus">Konsensüs</Link>
                             <Link className="small" href="/analistler">Analistler</Link>
                             <Link className="small" href="/karne">İsabet karnesi</Link>
