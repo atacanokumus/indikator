@@ -1,5 +1,5 @@
 import type { Recommendation, Tally as TallyType } from "@/lib/types";
-import { DIRECTION, DIRECTION_SUFFIX, tallyParts } from "@/lib/display";
+import { DIRECTION, DIRECTION_SUFFIX, sayiEki, tallyParts } from "@/lib/display";
 
 /**
  * SAYIM GÖSTERİMİ
@@ -29,7 +29,7 @@ export function TallySentence({
             {parts.map((part, i) => (
                 <span key={part.rec} className="tally-part">
                     <span className="tally-count">{part.count}</span>
-                    <span className="tally-eki">{suffixFor(part.count)}</span>{" "}
+                    <span className="tally-eki">{sayiEki(part.count)}</span>{" "}
                     <strong className={`dir dir-${part.rec}`}>{DIRECTION[part.rec]}</strong>{" "}
                     <span className="tally-tail">{DIRECTION_SUFFIX[part.rec]}</span>
                     {i < parts.length - 1 ? <span className="tally-sep">, </span> : null}
@@ -39,14 +39,6 @@ export function TallySentence({
     );
 }
 
-/** Türkçe iyelik eki: 4'ü, 2'si, 1'i, 3'ü, 5'i… */
-function suffixFor(n: number): string {
-    const map: Record<number, string> = {
-        1: "'i", 2: "'si", 3: "'ü", 4: "'ü", 5: "'i",
-        6: "'sı", 7: "'si", 8: "'i", 9: "'u", 10: "'u",
-    };
-    return map[n] ?? "'i";
-}
 
 /** Yönlere göre renkli, oranlı çubuk. */
 export function TallyBar({ tally, total }: { tally: TallyType; total: number }) {

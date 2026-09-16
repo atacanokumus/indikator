@@ -189,3 +189,38 @@ export function formatDateTr(iso: string): string {
         day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Istanbul",
     });
 }
+
+
+/**
+ * Turkce sayi eki: 4'u, 11'i, 13'u, 20'si, 40'i...
+ *
+ * Ek son RAKAMA degil, sayinin OKUNUSUNUN son kelimesine gore degisir.
+ * Onceki surum yalnizca son rakama bakiyordu; 13 icin "13'i" (dogrusu 13'u),
+ * 20 icin "20'i" (dogrusu 20'si) uretiyordu. Sayim cumleleri sitenin en cok
+ * okunan metni oldugu icin bu hata her yerde gorunuyordu.
+ */
+const EK_BIRLER: Record<number, string> = {
+    1: "'i", 2: "'si", 3: "'\u00fc", 4: "'\u00fc", 5: "'i",
+    6: "'s\u0131", 7: "'si", 8: "'i", 9: "'u",
+};
+const EK_ONLAR: Record<number, string> = {
+    10: "'u", 20: "'si", 30: "'u", 40: "'\u0131", 50: "'si",
+    60: "'\u0131", 70: "'i", 80: "'i", 90: "'\u0131",
+};
+
+export function sayiEki(n: number): string {
+    if (!Number.isFinite(n) || n <= 0) return "'\u0131";
+    const birler = n % 10;
+    if (birler !== 0) return EK_BIRLER[birler];
+    const onlar = n % 100;
+    if (onlar !== 0) return EK_ONLAR[onlar];
+    if (n % 1000 !== 0) return "'\u00fc";
+    return "'i";
+}
+
+/** Bulunma hali: 47'sinde, 34'unde, 50'sinde... */
+export function sayiEkiDe(n: number): string {
+    const ek = sayiEki(n);
+    const son = ek[ek.length - 1];
+    return `${ek}n${"ei\u00f6\u00fc".includes(son) ? "de" : "da"}`;
+}
