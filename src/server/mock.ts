@@ -32,6 +32,7 @@ export function mockSnapshot(): HomeSnapshot {
         windowDays: 30,
         updateFrequency: "Video yayınlandığı anda analiz edilir; fiyatlar en az 3 saatte bir yenilenir.",
         lastVideoAt: new Date(now - 42 * 60_000).toISOString(),
+        lastScanAt: new Date(now - 95 * 60_000).toISOString(),
         consensus: ASSETS.map(([asset, rec, price, currency], idx) => {
             const count = 3 + ((idx * 2) % 5);
             const signals = Array.from({ length: count }, (_, i) => {

@@ -136,6 +136,10 @@ export interface HomeSnapshot {
     windowDays: number;
     consensus: AssetConsensus[];
     lastVideoAt: string | null;
+    /** En son yedek tarama TAMAMLANDIĞINDA yazılır — yeni bulgu olsun olmasın.
+     *  "Site 6 saatte bir taranıyor" vaadinin kanıtı; null ise henüz hiç
+     *  taramadan geçmemiş (ör. mock/boş veri). */
+    lastScanAt: string | null;
 }
 
 /** Firestore Timestamp / ISO string / Date karışımını ISO string'e çevirir. */

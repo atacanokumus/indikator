@@ -49,8 +49,14 @@ export default async function HomePage() {
                         sayıyoruz. Yorum size ait.
                     </p>
 
-                    {snapshot.lastVideoAt && (
+                    {snapshot.lastScanAt && (
                         <p className="tiny row gap-6" style={{ marginTop: 14 }}>
+                            <span className="pulse-dot" style={{ color: "var(--al)" }} />
+                            Son tarama: <RelativeTime iso={snapshot.lastScanAt} /> · her 6 saatte bir otomatik kontrol ediliyor
+                        </p>
+                    )}
+                    {snapshot.lastVideoAt && (
+                        <p className="tiny row gap-6" style={{ marginTop: snapshot.lastScanAt ? 4 : 14 }}>
                             <span className="pulse-dot" style={{ color: "var(--al)" }} />
                             Son analiz edilen video: <RelativeTime iso={snapshot.lastVideoAt} />
                         </p>

@@ -27,6 +27,7 @@ import { toIso } from "@/lib/types";
 import {
     getAnalysesSince,
     getChannels,
+    getDocData,
     getStoredPrices,
     getSuppressedSignals,
     setDocData,
@@ -54,12 +55,13 @@ interface Entry {
 }
 
 export async function buildHomeSnapshot(): Promise<HomeSnapshot> {
-    const [recent, history, channels, prices, suppressed] = await Promise.all([
+    const [recent, history, channels, prices, suppressed, lastScan] = await Promise.all([
         getAnalysesSince(WINDOW_DAYS, 800),
         getAnalysesSince(HISTORY_DAYS, 3000),
         getChannels(),
         getStoredPrices(),
         getSuppressedSignals().catch(() => new Set<string>()),
+        getDocData<{ completedAt?: string }>("system_status", "last_scan").catch(() => null),
     ]);
 
     /* --- 1) 12 aylık geçmiş: (varlık, kanal) bazında tüm görüşler --- */
@@ -204,6 +206,7 @@ export async function buildHomeSnapshot(): Promise<HomeSnapshot> {
         windowDays: WINDOW_DAYS,
         consensus: cleaned,
         lastVideoAt,
+        lastScanAt: lastScan?.completedAt ?? null,
     };
 }
 

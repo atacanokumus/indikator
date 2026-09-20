@@ -13,6 +13,7 @@ const EMPTY: HomeSnapshot = {
     updateFrequency: "",
     consensus: [],
     lastVideoAt: null,
+    lastScanAt: null,
 };
 
 /**

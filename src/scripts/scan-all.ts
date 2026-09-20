@@ -4,7 +4,7 @@
  *   (varsayılan: kanal başına son 3 video, --deep: son 10 video)
  */
 import "./_env";
-import { getChannels } from "@/server/repo";
+import { getChannels, setDocData } from "@/server/repo";
 import { syncChannel } from "@/server/sync";
 import { evaluatePendingPredictions } from "@/server/evaluator";
 import { writeHomeSnapshot } from "@/server/snapshot";
@@ -69,6 +69,18 @@ async function main() {
     await writeHomeSnapshot();
     await writeScorecard();
     await writeAssetHistory();
+
+    // Ana sayfada "son tarama ne zaman yapıldı" bilgisini gösterebilmek için.
+    // Bilinçli olarak YENİ BULGU olsun olmasın her tur sonunda yazılır —
+    // amaç "sistem 6 saatte bir gerçekten çalışıyor" güvencesini vermek,
+    // sadece yeni video bulunduğunda değil.
+    await setDocData("system_status", "last_scan", {
+        completedAt: new Date().toISOString(),
+        deep,
+        channelsScanned: channels.length - skipped,
+        channelsSkipped: skipped,
+        videosFound: videos,
+    });
 
     console.log(
         `[SCAN] Tamamlandı. ${videos} yeni video, ${findings} sinyal` +
