@@ -3,13 +3,19 @@ name: Yedek Tarama ve Bakım
 # Anlık bildirim (push) birincil yöntemdir; bu iş akışı güvenlik ağıdır:
 # push kaçarsa veya abonelik düşerse videoları yine de yakalar.
 #
-# NOT: Depo GİZLİ ise GitHub Actions ayda 2000 dakika ücretsizdir; 3 saatlik
-# aralık bu limitin çok altında kalır. Depoyu HERKESE AÇIK yaparsanız dakika
-# sınırı kalkar ve aralığı "*/15 * * * *" yapabilirsiniz.
+# NOT: Depo GİZLİ ise GitHub Actions ayda 2000 dakika ücretsizdir. Bu yüzden
+# tarama sıklığı bilinçli olarak düşük tutuluyor (12 saatte bir + günlük
+# derin tarama). Depoyu HERKESE AÇIK yaparsanız dakika sınırı kalkar ve
+# aralığı daha sık yapabilirsiniz.
+#
+# Fiyat güncelleme burada DEĞİL — GitHub Actions dakikasından bağımsız,
+# ayrı bir Vercel Cron ile /api/sync/prices üzerinden yapılıyor (bkz.
+# vercel.json + src/server/price-sync.ts). Böylece Actions dakikası
+# tükense bile site fiyatları güncel kalmaya devam ediyor.
 on:
   schedule:
-    - cron: "10 */6 * * *"  # 6 saatte bir: kaçan video kontrolü
-    - cron: "20 3 * * *"    # her gün 06:20 TR: derin tarama + abonelik yenileme
+    - cron: "15 */12 * * *"  # 12 saatte bir: kaçan video kontrolü
+    - cron: "20 3 * * *"     # her gün 06:20 TR: derin tarama + abonelik yenileme
   workflow_dispatch:
     inputs:
       deep:
@@ -54,8 +60,8 @@ jobs:
       #    abonelikler hiç yenilenmiyor, anlık güncelleme sessizce ölüyordu.
       #  - Eskiden yalnızca derin taramada (günde bir) çalışıyordu: Google'ın
       #    hub'ı saatlerce 503 döndürebiliyor ve o gün yenileme tamamen
-      #    kaçıyordu. Artık 6 saatte bir deneniyor; abonelikler ~5 gün
-      #    dayandığı için bu dört kat emniyet payı demek.
+      #    kaçıyordu. Artık 12 saatte bir deneniyor; abonelikler ~5 gün
+      #    dayandığı için bu hâlâ rahat bir emniyet payı.
       # Hata yenilemeyi durdurmasın; tarama yine de çalışsın.
       - name: Push aboneliklerini yenile
         continue-on-error: true
@@ -68,7 +74,3 @@ jobs:
           else
             npx tsx src/scripts/scan-all.ts
           fi
-
-      - name: Fiyatları güncelle
-        run: npx tsx src/scripts/sync-prices.ts
-
