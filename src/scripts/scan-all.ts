@@ -65,15 +65,11 @@ async function main() {
         }
     }
 
-    await evaluatePendingPredictions().catch((e) => console.error("[EVALUATOR]", e.message));
-    await writeHomeSnapshot();
-    await writeScorecard();
-    await writeAssetHistory();
-
-    // Ana sayfada "son tarama ne zaman yapıldı" bilgisini gösterebilmek için.
+    // ÖNEMLİ: writeHomeSnapshot()'TAN ÖNCE yazılmalı — snapshot, bu dokümanı
+    // okuyup "Son tarama" olarak gösteriyor. Sona konursa snapshot hep BİR
+    // ÖNCEKİ taramanın zamanını gösterir (ilk çalıştırmada da hiç göstermez).
     // Bilinçli olarak YENİ BULGU olsun olmasın her tur sonunda yazılır —
-    // amaç "sistem 6 saatte bir gerçekten çalışıyor" güvencesini vermek,
-    // sadece yeni video bulunduğunda değil.
+    // amaç "sistem 6 saatte bir gerçekten çalışıyor" güvencesini vermek.
     await setDocData("system_status", "last_scan", {
         completedAt: new Date().toISOString(),
         deep,
@@ -81,6 +77,11 @@ async function main() {
         channelsSkipped: skipped,
         videosFound: videos,
     });
+
+    await evaluatePendingPredictions().catch((e) => console.error("[EVALUATOR]", e.message));
+    await writeHomeSnapshot();
+    await writeScorecard();
+    await writeAssetHistory();
 
     console.log(
         `[SCAN] Tamamlandı. ${videos} yeni video, ${findings} sinyal` +
