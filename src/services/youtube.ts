@@ -177,33 +177,48 @@ async function transcriptViaYtDlp(
     const bin = await getYtDlp();
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), `sub_${videoId}_`));
     const other = preferred === "tr" ? "en" : "tr";
-    // Önce kanalın dili, sonra diğeri, sonra elde ne varsa.
-    const langs = `${preferred}.*,${other}.*`;
     let ytDlpError = "";
 
     try {
-        await execFileAsync(
-            bin,
-            [
-                `https://www.youtube.com/watch?v=${videoId}`,
-                "--skip-download",
-                "--write-subs",
-                "--write-auto-subs",
-                "--sub-langs", langs,
-                "--sub-format", "json3/vtt/best",
-                "--retries", "3",
-                "--ignore-errors",
-                "--no-warnings",
-                "--no-progress",
-                "-o", path.join(dir, "%(id)s"),
-            ],
-            { maxBuffer: 64 * 1024 * 1024, timeout: 120_000 }
-        ).catch((err: Error) => {
-            // yt-dlp bir dilde 429 alıp çıkış kodu 1 dönebilir; ama daha önce
-            // indirdiği dosyalar işimizi görür. Bu yüzden hatayı burada
-            // yutuyoruz, kararı aşağıda klasörün içeriğine bakarak veriyoruz.
-            ytDlpError = err.message.slice(0, 160);
-        });
+        /**
+         * DİL KODLARI TAM YAZILMALI — "tr.*" / "en.*" gibi regex KULLANMAYIN.
+         * "en.*" YouTube'un otomatik çevirdiği tüm dilleri (en-de-DE, en-tr, …)
+         * yakalar; yt-dlp onlarca altyazı isteği atar, YouTube HTTP 429 verir
+         * ve ilk dosya bile inmez. Sonuç: videolar "geçici hata" sayılıp
+         * denemeleri tüketir ve kara listeye düşer (20 Eylül'den beri
+         * sitenin güncellenmemesinin nedeni buydu).
+         * "-orig" = konuşulan dilin özgün otomatik altyazısı.
+         * Önce kanalın dili denenir; hiç dosya gelmezse diğer dil.
+         */
+        for (const lang of [preferred, other]) {
+            await execFileAsync(
+                bin,
+                [
+                    `https://www.youtube.com/watch?v=${videoId}`,
+                    "--skip-download",
+                    "--write-subs",
+                    "--write-auto-subs",
+                    "--sub-langs", `${lang},${lang}-orig`,
+                    "--sub-format", "json3/vtt/best",
+                    "--sleep-subtitles", "1",
+                    "--retries", "3",
+                    "--ignore-errors",
+                    "--no-warnings",
+                    "--no-progress",
+                    "-o", path.join(dir, "%(id)s"),
+                ],
+                { maxBuffer: 64 * 1024 * 1024, timeout: 120_000 }
+            ).catch((err: Error & { stderr?: string }) => {
+                // yt-dlp bir dilde 429 alıp çıkış kodu 1 dönebilir; ama daha önce
+                // indirdiği dosyalar işimizi görür. Bu yüzden hatayı burada
+                // yutuyoruz, kararı aşağıda klasörün içeriğine bakarak veriyoruz.
+                // stderr'i tutuyoruz: eskiden yalnızca komut satırı görünüyor,
+                // gerçek neden (429, bot doğrulaması vb.) log'a hiç düşmüyordu.
+                const detail = (err.stderr || err.message).trim().split("\n").slice(-3).join(" ");
+                ytDlpError = detail.slice(0, 300);
+            });
+            if (fs.readdirSync(dir).length > 0) break;
+        }
 
         const files = fs.readdirSync(dir);
         if (files.length === 0) {
@@ -338,7 +353,19 @@ export async function getChannelVideos(
 ): Promise<VideoInfo[]> {
     const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
     try {
-        const feed = await parser.parseURL(rssUrl);
+        // YouTube RSS, veri merkezi IP'lerinden (GitHub Actions) aralıklı olarak
+        // 404/500 dönüyor; bir tur 28 kanalı birden kaçırabiliyordu. Kısa
+        // aralıklarla yeniden dene.
+        let feed: Awaited<ReturnType<typeof parser.parseURL>> | undefined;
+        for (let attempt = 1; ; attempt++) {
+            try {
+                feed = await parser.parseURL(rssUrl);
+                break;
+            } catch (e) {
+                if (attempt >= 3) throw e;
+                await new Promise((r) => setTimeout(r, 1500 * attempt));
+            }
+        }
         log?.(`[RSS] ${feed.title ?? channelId}: ${feed.items.length} video`);
 
         return feed.items
