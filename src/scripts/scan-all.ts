@@ -42,27 +42,42 @@ async function main() {
     // dolduğunda hep aynı kanallar dışarıda kalmaz.
     const queue = [...channels].sort(() => Math.random() - 0.5);
 
-    for (const channel of queue) {
-        const remaining = TOTAL_BUDGET_MS - (Date.now() - startedAt);
-        if (remaining <= 30_000) {
-            skipped = queue.length - queue.indexOf(channel);
-            console.log(`[SCAN] Süre bütçesi doldu. ${skipped} kanal sonraki tura kaldı.`);
-            break;
-        }
-        try {
-            const r = await syncChannel(channel.id, channel.title, channel.thumbnail, {
-                maxVideos: deep ? 10 : 3,
-                timeBudgetMs: Math.min(remaining, deep ? 5 * 60_000 : 3 * 60_000),
-                language: channel.language ?? "tr",
-            });
-            videos += r.videosProcessed;
-            findings += r.totalFindings;
-            if (r.videosProcessed > 0) {
-                console.log(`[SCAN] ✓ ${channel.title}: ${r.videosProcessed} video, ${r.totalFindings} sinyal`);
+    // Altyazısız videolar Gemini'ye URL ile veriliyor; her çağrı onlarca saniye
+    // sürüyor. Kanalları sırayla işlemek 18 dakikada ~8 video demekti ve 28
+    // kanal sonraki tura kalıyordu. Birkaç kanalı paralel işliyoruz.
+    const CONCURRENCY = Math.max(1, Number(process.env.SCAN_CONCURRENCY || 4));
+    let next = 0;
+    let budgetHit = false;
+
+    async function worker() {
+        while (next < queue.length) {
+            const remaining = TOTAL_BUDGET_MS - (Date.now() - startedAt);
+            if (remaining <= 30_000) {
+                budgetHit = true;
+                return;
             }
-        } catch (err) {
-            console.error(`[SCAN] ✗ ${channel.title}: ${(err as Error).message}`);
+            const channel = queue[next++];
+            try {
+                const r = await syncChannel(channel.id, channel.title, channel.thumbnail, {
+                    maxVideos: deep ? 10 : 3,
+                    timeBudgetMs: Math.min(remaining, deep ? 5 * 60_000 : 3 * 60_000),
+                    language: channel.language ?? "tr",
+                });
+                videos += r.videosProcessed;
+                findings += r.totalFindings;
+                if (r.videosProcessed > 0) {
+                    console.log(`[SCAN] ✓ ${channel.title}: ${r.videosProcessed} video, ${r.totalFindings} sinyal`);
+                }
+            } catch (err) {
+                console.error(`[SCAN] ✗ ${channel.title}: ${(err as Error).message}`);
+            }
         }
+    }
+
+    await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+    if (budgetHit) {
+        skipped = Math.max(0, queue.length - next);
+        console.log(`[SCAN] Süre bütçesi doldu. ${skipped} kanal sonraki tura kaldı.`);
     }
 
     // ÖNEMLİ: writeHomeSnapshot()'TAN ÖNCE yazılmalı — snapshot, bu dokümanı
