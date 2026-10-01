@@ -134,6 +134,9 @@ export class TransientTranscriptError extends Error {
     }
 }
 
+/** Bu süreçte YouTube "bot değil misiniz?" doğrulaması istedi mi (bulut IP engeli). */
+let ytBotBlocked = false;
+
 function vttToText(text: string): string {
     return text
         .split("\n")
@@ -224,6 +227,7 @@ async function transcriptViaYtDlp(
         if (files.length === 0) {
             // Hiç dosya yoksa ve yt-dlp hata verdiyse bu geçici bir ağ/hız
             // sınırı sorunudur; videoyu kalıcı kara listeye almayalım.
+            if (/not a bot/i.test(ytDlpError)) ytBotBlocked = true;
             if (ytDlpError) throw new TransientTranscriptError(`yt-dlp: ${ytDlpError}`);
             return null;
         }
@@ -284,7 +288,9 @@ export async function getVideoTranscript(videoId: string, preferred: "tr" | "en"
         }
     }
 
-    // 3) yt-dlp
+    // 3) yt-dlp — bu süreçte bot engeli görüldüyse boşuna tekrar denemeyelim
+    // (bulut IP'sinden hiçbir video için çalışmayacak); çağıran Gemini'ye düşer.
+    if (ytBotBlocked) throw new TransientTranscriptError("YouTube bu IP'yi bot saydı (daha önce görüldü)");
     const text = await transcriptViaYtDlp(videoId, preferred);
     if (text) return text;
 

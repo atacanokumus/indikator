@@ -163,6 +163,41 @@ export async function analyzeTranscript(transcript: string, videoTitle?: string)
     return parseResults(res.text);
 }
 
+/**
+ * Altyazı alınamadığında (YouTube, GitHub Actions gibi bulut IP'lerini bot
+ * sayıp altyazıyı vermiyor) videoyu URL olarak Gemini'ye veririz. Videoyu
+ * Google kendi tarafında okur: biz ses/video İNDİRMEYİZ ve saklamayız, IP
+ * engeline de takılmayız. Düşük çözünürlük + seyrek kare = çoğunlukla konuşma
+ * sesi faturalanır (~36 dk'lık video ≈ 72k token).
+ */
+export async function analyzeVideoUrl(videoId: string, videoTitle?: string): Promise<Analysis[]> {
+    const res = await withRetry("video", () =>
+        ai().models.generateContent({
+            model: MODEL,
+            contents: [
+                {
+                    role: "user",
+                    parts: [
+                        {
+                            fileData: { fileUri: `https://www.youtube.com/watch?v=${videoId}`, mimeType: "video/*" },
+                            videoMetadata: { fps: 0.2 },
+                        },
+                        { text: `Video başlığı: ${videoTitle || "bilinmiyor"}\n\nBu videodaki konuşmayı analiz et.` },
+                    ],
+                },
+            ],
+            config: {
+                systemInstruction: SYSTEM_PROMPT,
+                responseMimeType: "application/json",
+                responseSchema: ANALYSIS_SCHEMA as never,
+                temperature: 0.2,
+                mediaResolution: "MEDIA_RESOLUTION_LOW" as never,
+            },
+        })
+    );
+    return parseResults(res.text);
+}
+
 /* ------------------------------------------------------------------ */
 
 const NEWS_SCHEMA = {

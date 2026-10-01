@@ -9,7 +9,7 @@ import {
     getVideoTranscript,
     TransientTranscriptError,
 } from "@/services/youtube";
-import { analyzeTranscript } from "@/lib/gemini";
+import { analyzeTranscript, analyzeVideoUrl } from "@/lib/gemini";
 import { PriceService } from "@/services/price-service";
 import type { Analysis, VideoInfo } from "@/lib/types-video";
 import {
@@ -52,6 +52,9 @@ const makeLogger = () => {
  */
 const MIN_DURATION_SECONDS = Number(process.env.MIN_VIDEO_SECONDS || 100);
 
+/** Altyazısız videoyu Gemini'ye URL ile verirken üst süre sınırı (maliyet + bağlam). */
+const MAX_URL_VIDEO_SECONDS = Number(process.env.MAX_URL_VIDEO_SECONDS || 4 * 3600);
+
 export async function processVideo(
     video: VideoInfo,
     channelId: string,
@@ -87,22 +90,36 @@ export async function processVideo(
     // üç geçici hatadan sonra kalıcı olarak kara listeye düşüyor.
     let transient = false;
 
-    // Tek yol: altyazı. Ses indirme yolu, YouTube Kullanım Şartları nedeniyle
-    // kaldırıldı; altyazısı olmayan video analiz edilmeden atlanır.
+    // Önce altyazı. Ses indirme yolu YouTube Kullanım Şartları nedeniyle
+    // kaldırıldı. Altyazı alınamazsa (özellikle bulut IP'lerinde bot engeli)
+    // videoyu URL olarak Gemini'ye veriyoruz: Google okur, biz indirmeyiz.
     try {
         log(`[SYNC] Altyazı alınıyor...`);
-        const transcript = await getVideoTranscript(video.id, language);
+        let transcript: string | null = null;
+        try {
+            transcript = await getVideoTranscript(video.id, language);
+        } catch (e) {
+            log(`[SYNC] Altyazı alınamadı: ${(e as Error).message.slice(0, 200)}`);
+        }
+
         if (transcript && transcript.length > 200) {
             log(`[SYNC] Altyazı bulundu (${transcript.length} karakter).`);
             results = await analyzeTranscript(transcript, video.title);
-            log(`[AI] Analiz: ${results.length} sonuç`);
-        } else {
-            lastError = "Altyazı çok kısa veya boş";
+        } else if (duration !== null && duration > MAX_URL_VIDEO_SECONDS) {
+            lastError = `Altyazı yok ve video çok uzun (${duration} sn)`;
             log(`[SYNC] ${lastError} — video atlanıyor.`);
+        } else {
+            log(`[SYNC] Altyazı yok; video Gemini'ye URL olarak veriliyor...`);
+            results = await analyzeVideoUrl(video.id, video.title);
         }
+        if (results.length > 0 || !lastError) log(`[AI] Analiz: ${results.length} sonuç`);
     } catch (err) {
-        transient = err instanceof TransientTranscriptError;
-        lastError = `Altyazı alınamadı: ${(err as Error).message}`;
+        // Gemini'nin yoğunluk/kota hataları (503, 429) da geçicidir: videoda bir
+        // sorun yok, sayaç artarsa sağlam video kara listeye düşer.
+        transient =
+            err instanceof TransientTranscriptError ||
+            /\b(429|503)\b|UNAVAILABLE|RESOURCE_EXHAUSTED/.test((err as Error).message);
+        lastError = `Analiz başarısız: ${(err as Error).message}`;
         log(`[SYNC] ${lastError} — video atlanıyor.`);
     }
 
