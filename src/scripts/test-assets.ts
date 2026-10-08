@@ -23,6 +23,15 @@ const CASES: [string, string][] = [
     ["Magnificent 7", "ABD-HISSE"], ["ABD hisseleri", "ABD-HISSE"],
     ["Konut", "KONUT"], ["Mevduat", "MEVDUAT"], ["Eurobond", "EUROBOND"],
     ["Oracle", "ORCL"], ["Vakıf Bank", "VAKBN"], ["Curve", "CRV"], ["Zcash", "ZEC"],
+    // şirket adı + borsa kodu tek varlık olmalı
+    ["Chipotle", "CMG"], ["CMG", "CMG"], ["Chipotle (CMG)", "CMG"],
+    ["Starbucks", "SBUX"], ["SBUX", "SBUX"], ["Starbucks Coffee", "SBUX"], ["Coffee", "KC=F"],
+    ["Intel", "INTC"], ["INTC", "INTC"], ["Intel (NASDAQ: INTC)", "INTC"],
+    ["Broadcom", "AVGO"], ["AVGO", "AVGO"], ["Broadcom (AVGO)", "AVGO"],
+    ["Qualcomm", "QCOM"], ["QCOM", "QCOM"], ["Qualcomm (QCOM)", "QCOM"],
+    ["TSMC", "TSM"], ["TSM", "TSM"], ["Taiwan Semiconductor (TSM)", "TSM"],
+    ["Moderna", "MRNA"], ["MRNA", "MRNA"], ["Moderna (MRNA)", "MRNA"],
+    ["YKB", "YKBNK"], ["YKBNK", "YKBNK"], ["Yapı Kredi", "YKBNK"], ["YKB Bankası", "YKBNK"],
     // gürültü — normalizeAsset boş dize döndürür, sayıma girmez
     ["Piyasalar", ""], ["the market", ""], ["Enflasyon", ""],
     ["Federal Reserve", ""], ["DRAM", ""], ["interest rates", ""],

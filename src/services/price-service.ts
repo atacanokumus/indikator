@@ -60,6 +60,7 @@ export class PriceService {
         const US_TICKERS = new Set([
             'NVDA', 'TSLA', 'AAPL', 'AMZN', 'GOOGL', 'MSFT', 'META',
             'PFE', 'NVO', 'OXY', 'LMT', 'MOH', 'NKE', 'BABA', 'PSQ', 'URA',
+            'CMG', 'SBUX', 'INTC', 'AVGO', 'QCOM', 'TSM', 'MRNA',
         ]);
         if (US_TICKERS.has(normalized)) return this.getYahooFinancePrice(normalized);
 

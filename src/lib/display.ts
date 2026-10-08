@@ -109,6 +109,13 @@ export const ASSET_LABEL: Record<string, string> = {
     BABA: "Alibaba",
     SPACEX: "SpaceX",
     PSQ: "Nasdaq Short ETF",
+    CMG: "Chipotle",
+    SBUX: "Starbucks",
+    INTC: "Intel",
+    AVGO: "Broadcom",
+    QCOM: "Qualcomm",
+    TSM: "TSMC",
+    MRNA: "Moderna",
 
     THYAO: "Türk Hava Yolları",
     ASELS: "Aselsan",

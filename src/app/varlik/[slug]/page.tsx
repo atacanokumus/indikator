@@ -1,7 +1,7 @@
 import { RelativeTime } from "@/components/RelativeTime";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
 import { SignalRow } from "@/components/AssetCard";
 import { TallyBar, TallyHeadline, TallySentence } from "@/components/Tally";
@@ -9,6 +9,7 @@ import { RegionSplit } from "@/components/RegionSplit";
 import { LegalNotice } from "@/components/LegalNotice";
 import { DIRECTION, assetLabel, formatDateTr, formatPrice } from "@/lib/display";
 import { assetSlug, findAssetBySlug } from "@/lib/slug";
+import { redirectSlugFor } from "@/lib/slug-redirect";
 import { ConsensusHistory } from "@/components/ConsensusHistory";
 import { getAssetHistory, getHomeSnapshot } from "@/server/read";
 
@@ -43,7 +44,12 @@ export default async function VarlikPage({ params }: { params: Promise<{ slug: s
     const { slug } = await params;
     const snapshot = await getHomeSnapshot();
     const item = findAssetBySlug(snapshot.consensus, slug);
-    if (!item) notFound();
+    if (!item) {
+        // Eski yazımdan kalma adres ("/varlik/chipotle") -> kanonik adres ("/varlik/cmg")
+        const target = redirectSlugFor(snapshot.consensus, slug);
+        if (target) permanentRedirect(`/varlik/${target}`);
+        notFound();
+    }
 
     const name = assetLabel(item.asset);
     const history = (await getAssetHistory())[item.asset] ?? [];

@@ -62,6 +62,19 @@ const RULES: [RegExp, string][] = [
     [/^tubork$/, "TUBORG"],
     [/^curve( finance| dao)?$/, "CRV"],
     [/^zcash$/, "ZEC"],
+    // Şirket adı ile borsa kodu ayrı varlık sayılıyordu (Chipotle / CMG gibi).
+    // Yukarıdakilerin aksine bunlar serbest eşleşir: "Chipotle (CMG)" de tek
+    // koda inmeli, "Starbucks Coffee" aşağıdaki kahve (KC=F), "Intel (NASDAQ: INTC)"
+    // de nasdaq (endeks) kuralına düşmemeli. Bu yüzden kripto/emtia/endeks
+    // kurallarının ÜSTÜNDE durmak zorunda.
+    [/\bchipotle\b|\bcmg\b/, "CMG"],
+    [/\bstarbucks\b|\bsbux\b/, "SBUX"],
+    [/\bintel\b|\bintc\b/, "INTC"],
+    [/\bbroadcom\b|\bavgo\b/, "AVGO"],
+    [/\bqualcomm\b|\bqcom\b/, "QCOM"],
+    [/\btsmc\b|\btsm\b|taiwan[ -]semiconductor/, "TSM"],
+    // "mRNA" aşı teknolojisinin de adı; yalın kod olarak yalnızca tam eşleşir.
+    [/\bmoderna\b|^mrna$/, "MRNA"],
 
     // --- kıymetli madenler ---
     [/\balti?n\b|\bxau\b|\bgold\b|darphane|bullion/, "ALTIN"],
@@ -147,7 +160,7 @@ const RULES: [RegExp, string][] = [
     [/\btoaso\b|tofas/, "TOASO"],
     [/\barclk\b|arcelik/, "ARCLK"],
     [/\btcell\b|turkcell/, "TCELL"],
-    [/\bykbnk\b|yapi kredi/, "YKBNK"],
+    [/\bykbnk\b|\bykb\b|yapi kredi/, "YKBNK"],
     [/\bisctr\b|is bankasi/, "ISCTR"],
     [/\bhalkb\b|halk bankasi/, "HALKB"],
     [/\bvakbn\b|vakifbank/, "VAKBN"],
