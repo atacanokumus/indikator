@@ -6,6 +6,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CookieConsent } from "@/components/CookieConsent";
 import { AdsenseLoader } from "@/components/AdsenseLoader";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { ADSENSE_CLIENT, GA_MEASUREMENT_ID } from "@/lib/google";
 import "../styles/site.css";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-inter", display: "swap" });
@@ -58,6 +60,12 @@ export const metadata: Metadata = {
     verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
         ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
         : undefined,
+    /**
+     * AdSense site sahipliği: bu etiket çerez bırakmaz, onaydan bağımsız basılır.
+     * AdSense tarayıcı botu çerez onayı vermediği için reklam betiğini
+     * göremez; siteyi hesaba bağlamak için bu etiketi okur.
+     */
+    other: ADSENSE_CLIENT ? { "google-adsense-account": ADSENSE_CLIENT } : undefined,
 };
 
 export const viewport: Viewport = {
@@ -73,8 +81,6 @@ export const viewport: Viewport = {
 const THEME_SCRIPT = `try{var t=localStorage.getItem('and-theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-    const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
-
     return (
         <html lang="tr" className={`${inter.variable} ${mono.variable}`} suppressHydrationWarning>
             <head>
@@ -91,8 +97,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   Ziyaretci olcumu. Vercel Analytics CEREZ KULLANMAZ ve kisiyi
                   tanimlayan bir kimlik saklamaz; bu yuzden onay bandinin
                   arkasinda beklemesi gerekmiyor ve KVKK acisindan reklam
-                  betiginden farkli bir konumda. Google Analytics secseydik
-                  cerez koydugu icin onaydan once yuklenemezdi.
+                  betiginden farkli bir konumda. Google Analytics ise cerez koydugu
+                  icin asagida yalnizca onaydan sonra yuklenir.
                 */}
                 <Analytics />
                 <SpeedInsights />
@@ -102,7 +108,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   çerez onayı verdiyse yüklenir. Onay öncesi hiçbir reklam betiği
                   çalışmaz — KVKK ve AB kullanıcıları için gerekli sıra budur.
                 */}
-                {adsenseClient && <AdsenseLoader client={adsenseClient} />}
+                {ADSENSE_CLIENT && <AdsenseLoader client={ADSENSE_CLIENT} />}
+
+                {/* Google Analytics 4: ölçüm kimliği tanımlıysa ve onay verildiyse yüklenir. */}
+                {GA_MEASUREMENT_ID && <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />}
 
                 {/*
                   Yapılandırılmış veri. Arama motorları ve yapay zeka asistanları

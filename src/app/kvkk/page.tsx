@@ -61,8 +61,9 @@ export default function KvkkPage() {
             <ul className="small">
                 <li>Barındırma ve erişim kayıtları: bulut sağlayıcımız (yurt dışı)</li>
                 <li>Veri tabanı: Google Firebase (yurt dışı)</li>
-                <li>İçerik analizi: Google Gemini — yalnızca kamuya açık video altyazıları gönderilir, ziyaretçi verisi gönderilmez</li>
-                <li>Reklam: Google AdSense (etkinleştirildiğinde)</li>
+                <li>İçerik analizi: Google Gemini — yalnızca kamuya açık YouTube videolarının altyazısı ya da adresi gönderilir, ziyaretçi verisi gönderilmez</li>
+                <li>Reklam: Google AdSense (yalnızca çerez onayınızla)</li>
+                <li>Ziyaret ölçümü: Google Analytics (yalnızca çerez onayınızla) ve Vercel Analytics (çerezsiz, kişiyi tanımlamaz)</li>
             </ul>
 
             <h2 className="h2" style={{ marginTop: 30 }}>4. Saklama süresi</h2>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { ADSENSE_CLIENT } from "@/lib/google";
 
 /**
  * Google AdSense reklam yuvası.
@@ -23,7 +24,7 @@ export function AdSlot({
     minHeight?: number;
     label?: boolean;
 }) {
-    const client = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+    const client = ADSENSE_CLIENT;
     const ref = useRef<HTMLModElement>(null);
     const pushed = useRef(false);
 

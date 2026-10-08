@@ -2,23 +2,24 @@
 
 import { useSyncExternalStore, useState } from "react";
 import Link from "next/link";
+import { CONSENT_EVENT, CONSENT_KEY, CONSENT_REQUIRED, ADSENSE_CLIENT, GA_MEASUREMENT_ID } from "@/lib/google";
 
 /**
  * Çerez onay bandı.
  *
- * Yalnızca AdSense yapılandırılmışsa görünür — reklam yokken çerez onayı
- * istemek gereksiz sürtünmedir. Onay verilene kadar reklam betiği yüklenmez
- * (bkz. layout.tsx), böylece "önce onay, sonra çerez" sırası korunur.
+ * Yalnızca Google AdSense ya da Analytics yapılandırılmışsa görünür — hiçbiri
+ * yokken çerez onayı istemek gereksiz sürtünmedir. Onay verilene kadar Google
+ * betikleri yüklenmez (bkz. layout.tsx), böylece "önce onay, sonra çerez"
+ * sırası korunur.
  */
-const KEY = "and-cookie-consent";
 
 function subscribe(cb: () => void) {
-    window.addEventListener("and-consent", cb);
-    return () => window.removeEventListener("and-consent", cb);
+    window.addEventListener(CONSENT_EVENT, cb);
+    return () => window.removeEventListener(CONSENT_EVENT, cb);
 }
 
 function readStored(): string {
-    try { return localStorage.getItem(KEY) ?? ""; } catch { return "reddedildi"; }
+    try { return localStorage.getItem(CONSENT_KEY) ?? ""; } catch { return "reddedildi"; }
 }
 
 export function CookieConsent() {
@@ -28,13 +29,17 @@ export function CookieConsent() {
     const decision = useSyncExternalStore(subscribe, readStored, () => "pending");
 
     const choose = (value: "kabul" | "reddedildi") => {
-        try { localStorage.setItem(KEY, value); } catch { /* gizli sekme */ }
-        window.dispatchEvent(new CustomEvent("and-consent", { detail: value }));
+        try { localStorage.setItem(CONSENT_KEY, value); } catch { /* gizli sekme */ }
+        window.dispatchEvent(new CustomEvent(CONSENT_EVENT, { detail: value }));
         force((n) => n + 1);
     };
 
-    if (!process.env.NEXT_PUBLIC_ADSENSE_CLIENT) return null;
+    if (!CONSENT_REQUIRED) return null;
     if (decision !== "") return null; // karar verilmiş ya da henüz okunmamış
+
+    const purpose =
+        ADSENSE_CLIENT && GA_MEASUREMENT_ID ? "Reklamları göstermek ve ziyaretleri ölçmek" :
+        ADSENSE_CLIENT ? "Reklamları göstermek" : "Ziyaretleri ölçmek";
 
     return (
         <div
@@ -49,8 +54,8 @@ export function CookieConsent() {
             }}
         >
             <p className="small" style={{ margin: 0, color: "var(--text)" }}>
-                Reklamları göstermek için çerez kullanıyoruz. Kişiselleştirilmiş reklamları
-                reddederseniz site aynı şekilde çalışır, reklamlar ilgi alanınıza göre seçilmez.{" "}
+                {purpose} için Google çerezleri kullanıyoruz. Reddederseniz site aynı şekilde çalışır;
+                yalnızca zorunlu çerezler kullanılır.{" "}
                 <Link href="/gizlilik">Ayrıntı</Link>
             </p>
             <div className="row gap-8 wrapflex" style={{ marginTop: 12 }}>
@@ -62,5 +67,23 @@ export function CookieConsent() {
                 </button>
             </div>
         </div>
+    );
+}
+
+/** Altbilgideki "Çerez tercihleri" bağlantısı: kararı siler, sayfayı yeniler, bant yeniden çıkar. */
+export function CookieSettingsLink() {
+    if (!CONSENT_REQUIRED) return null;
+    return (
+        <button
+            type="button"
+            className="small"
+            style={{ background: "none", border: 0, padding: 0, cursor: "pointer", color: "inherit", textAlign: "left", font: "inherit" }}
+            onClick={() => {
+                try { localStorage.removeItem(CONSENT_KEY); } catch { /* yoksay */ }
+                window.location.reload();
+            }}
+        >
+            Çerez tercihleri
+        </button>
     );
 }

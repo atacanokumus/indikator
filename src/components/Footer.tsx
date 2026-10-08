@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoMark } from "./Logo";
+import { CookieSettingsLink } from "./CookieConsent";
 
 export function Footer() {
     return (
@@ -32,6 +33,7 @@ export function Footer() {
                             <Link className="small" href="/gizlilik">Gizlilik</Link>
                             <Link className="small" href="/kvkk">KVKK aydınlatma</Link>
                             <Link className="small" href="/kaldirma">İçerik kaldırma</Link>
+                            <CookieSettingsLink />
                         </div>
                         <div className="stack gap-8">
                             <span className="eyebrow">Kurumsal</span>

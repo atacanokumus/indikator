@@ -1,27 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Script from "next/script";
-
-const KEY = "and-cookie-consent";
+import { useConsentGranted } from "@/hooks/useConsent";
 
 /**
  * Reklam betiğini yalnızca ziyaretçi çerez onayı verdikten SONRA yükler.
  * Onay yoksa sayfada hiçbir Google betiği çalışmaz.
+ *
+ * Bu betik AdSense panelinde "Otomatik reklamlar" açıksa reklamları sayfaya
+ * kendisi yerleştirir (ayrıca slot kimliği gerekmez); AdSlot yuvaları ise
+ * elle yerleştirilen birimlerdir.
  */
 export function AdsenseLoader({ client }: { client: string }) {
-    const [allowed, setAllowed] = useState(false);
-
-    useEffect(() => {
-        const read = () => {
-            try { setAllowed(localStorage.getItem(KEY) === "kabul"); } catch { setAllowed(false); }
-        };
-        read();
-        const onConsent = (e: Event) => setAllowed((e as CustomEvent).detail === "kabul");
-        window.addEventListener("and-consent", onConsent);
-        return () => window.removeEventListener("and-consent", onConsent);
-    }, []);
-
+    const allowed = useConsentGranted();
     if (!allowed) return null;
 
     return (

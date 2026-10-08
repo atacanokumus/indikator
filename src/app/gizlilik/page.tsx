@@ -25,8 +25,12 @@ export default function GizlilikPage() {
             <h2 className="h2" style={{ marginTop: 30 }}>Çerezler</h2>
             <p className="small">
                 Tema tercihiniz (açık/koyu) yalnızca kendi tarayıcınızda saklanır, bize gönderilmez.
-                Bunun dışında reklam ortağımız Google AdSense, ilgi alanına dayalı reklam gösterimi için
-                çerez kullanabilir.
+                Reklam ortağımız Google AdSense (reklam gösterimi) ve Google Analytics (ziyaret ölçümü)
+                çerez kullanabilir. Bu çerezler yalnızca siz çerez bandında “Kabul et” dediğinizde
+                yüklenir; “Sadece zorunlu çerezler”i seçerseniz hiçbir Google betiği çalışmaz.
+                Tercihinizi sayfa altındaki “Çerez tercihleri” bağlantısından istediğiniz an değiştirebilirsiniz.
+                Ayrıca çerez kullanmayan, kişiyi tanımlamayan Vercel Analytics ile anonim ziyaret
+                sayısı ölçülür.
             </p>
             <ul className="small">
                 <li>
@@ -49,8 +53,9 @@ export default function GizlilikPage() {
             <ul className="small">
                 <li>Barındırma ve erişim kayıtları için bulut sağlayıcımız.</li>
                 <li>Veri tabanı için Google Firebase.</li>
-                <li>İçerik analizi için Google Gemini (yalnızca kamuya açık video metinleri gönderilir).</li>
+                <li>İçerik analizi için Google Gemini (yalnızca kamuya açık YouTube videolarının altyazısı ya da adresi gönderilir; ziyaretçi verisi gönderilmez).</li>
                 <li>Reklam gösterimi için Google AdSense.</li>
+                <li>Ziyaret ölçümü için Google Analytics (onayınızla) ve Vercel Analytics (çerezsiz).</li>
             </ul>
 
             <h2 className="h2" style={{ marginTop: 30 }}>KVKK haklarınız</h2>
