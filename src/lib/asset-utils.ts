@@ -72,7 +72,7 @@ const RULES: [RegExp, string][] = [
     [/\bintel\b|\bintc\b/, "INTC"],
     [/\bbroadcom\b|\bavgo\b/, "AVGO"],
     [/\bqualcomm\b|\bqcom\b/, "QCOM"],
-    [/\btsmc\b|\btsm\b|taiwan semiconductor/, "TSM"],
+    [/\btsmc\b|\btsm\b|taiwan[ -]semiconductor/, "TSM"],
     // "mRNA" aşı teknolojisinin de adı; yalın kod olarak yalnızca tam eşleşir.
     [/\bmoderna\b|^mrna$/, "MRNA"],
 
