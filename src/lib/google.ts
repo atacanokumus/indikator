@@ -17,10 +17,15 @@ const rawClient = (process.env.NEXT_PUBLIC_ADSENSE_CLIENT || DEFAULT_ADSENSE_CLI
 export const ADSENSE_CLIENT = rawClient === "off" ? "" : rawClient;
 
 /**
- * Google Analytics 4 ölçüm kimliği ("G-XXXXXXXXXX"). Tanımlı değilse GA
- * hiç yüklenmez. analytics.google.com → Yönetici → Veri akışları'ndan alınır.
+ * Google Analytics 4 ölçüm kimliği ("G-…"). Sayfa kaynağında herkese açık
+ * olduğu için varsayılan olarak gömülü; ortam değişkeni (boş değilse) ezer,
+ * kapatmak için NEXT_PUBLIC_GA_MEASUREMENT_ID=off yazın.
+ * analytics.google.com → Yönetici → Veri akışları'ndan alınır.
  */
-export const GA_MEASUREMENT_ID = (process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "").trim();
+const DEFAULT_GA_MEASUREMENT_ID = "G-GGQ3Q0K3P3";
+
+const rawGa = (process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || DEFAULT_GA_MEASUREMENT_ID).trim();
+export const GA_MEASUREMENT_ID = rawGa === "off" ? "" : rawGa;
 
 /** Çerez onayı gerektiren (reklam ya da analitik) bir Google hizmeti açık mı. */
 export const CONSENT_REQUIRED = Boolean(ADSENSE_CLIENT || GA_MEASUREMENT_ID);
