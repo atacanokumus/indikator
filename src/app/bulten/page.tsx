@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
 import { getBulletinIndex, getLatestBulletin } from "@/server/read";
 
 export const revalidate = 600;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
     title: "Haftalık konsensüs bülteni",
     description:
         "Her hafta: takip edilen ekonomi yorumcularının görüşlerinde ne değişti, hangi varlıkta yön döndü, kim fikir değiştirdi.",
-    alternates: { canonical: "/bulten" },
-};
+    path: "/bulten",
+});
 
 export default async function BultenListPage() {
     const [index, latest] = await Promise.all([getBulletinIndex(), getLatestBulletin()]);
@@ -19,6 +21,7 @@ export default async function BultenListPage() {
     return (
         <>
             <section className="wrap" style={{ paddingBlock: "40px 8px", maxWidth: 760 }}>
+                <Breadcrumbs items={[{ name: "Haftalık bülten", path: "/bulten" }]} />
                 <span className="eyebrow">Her pazartesi</span>
                 <h1 className="h1" style={{ fontSize: "clamp(1.7rem, 3.6vw, 2.4rem)", marginTop: 8 }}>
                     Haftalık bülten

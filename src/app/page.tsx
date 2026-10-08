@@ -1,4 +1,5 @@
 import { RelativeTime } from "@/components/RelativeTime";
+import { pageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
@@ -7,19 +8,28 @@ import { SignalExplorer } from "@/components/SignalExplorer";
 import { SpotlightCard } from "@/components/SpotlightCard";
 import { assetLabel, SPOTLIGHT_ASSETS } from "@/lib/display";
 import { LegalNotice } from "@/components/LegalNotice";
-import { getHomeSnapshot } from "@/server/read";
+import { JsonLd } from "@/components/JsonLd";
+import { PROFILED_ASSETS } from "@/content/assets";
+import { GUIDES } from "@/content/guides";
+import { assetSeoName, directionWord } from "@/lib/asset-seo";
+import { absoluteUrl, faqLd, webPageLd } from "@/lib/seo";
+import { assetSlug } from "@/lib/slug";
+import { getHomeSnapshot, getLatestBulletin } from "@/server/read";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-    title: "Altın, dolar, borsa ve kriptoda analistler ne diyor?",
+export const metadata: Metadata = pageMetadata({
+    title: "Analist Ne Diyor | Ekonomist Yorumları: Altın, Dolar, Borsa",
+    absoluteTitle: true,
+    ogTitle: "Analist Ne Diyor — altın, dolar, borsa ve kriptoda kim ne diyor",
     description:
-        "YouTube'daki ekonomi yorumcularının son videolarını yapay zeka ile analiz ediyoruz. Altın, dolar, BIST 100 ve Bitcoin için kimin ne dediğini tek ekranda görün.",
-    alternates: { canonical: "/" },
-};
+        "Altın, dolar, BIST 100 ve Bitcoin için YouTube ekonomistlerinin yorumları tek ekranda: " +
+        "kaç analist hangi yönde konuşuyor? Yatırım tavsiyesi değil, sayım.",
+    path: "/",
+});
 
 export default async function HomePage() {
-    const snapshot = await getHomeSnapshot();
+    const [snapshot, bulletin] = await Promise.all([getHomeSnapshot(), getLatestBulletin()]);
     const { consensus } = snapshot;
 
     const byAsset = new Map(consensus.map((c) => [c.asset, c]));
@@ -28,6 +38,11 @@ export default async function HomePage() {
     const hero = spotlight.length >= 3 ? spotlight : consensus.slice(0, 4);
 
     const hasData = consensus.length > 0;
+
+    // Yorum sayfalarına iç bağlantılar: elle profili yazılmış varlıklar (sayfaları her zaman açık).
+    const popular = [...PROFILED_ASSETS]
+        .filter((a) => !["DXY", "EUR/USD", "KRIPTO", "ABD-HISSE", "BANKA-HISSE", "NVDA", "US10Y", "TAHVIL", "KONUT", "MEVDUAT", "NG=F", "HG=F"].includes(a))
+        .slice(0, 12);
 
     return (
         <>
@@ -43,10 +58,10 @@ export default async function HomePage() {
                         Ekonomistler <span style={{ color: "var(--brand)" }}>ne diyor?</span>
                     </h1>
                     <p className="lead" style={{ marginTop: 14 }}>
-                        YouTube&apos;daki ekonomi yorumcularının son videolarını okuyup,
-                        hangi varlıkta kaç kişinin <strong>alım</strong>, <strong>satış</strong> ya da
-                        {" "}<strong>bekleme</strong> yönünde konuştuğunu sayıyoruz. Tavsiye vermiyoruz —
-                        sayıyoruz. Yorum size ait.
+                        YouTube&apos;daki ekonomi yorumcularının son videolarını okuyup altın, dolar,
+                        BIST 100, Bitcoin ve diğer varlıklarda kaç kişinin <strong>alım</strong>,
+                        {" "}<strong>satış</strong> ya da <strong>bekleme</strong> yönünde konuştuğunu
+                        sayıyoruz. Tavsiye vermiyoruz — sayıyoruz. Yorum size ait.
                     </p>
 
                     {snapshot.lastScanAt && (
@@ -99,6 +114,60 @@ export default async function HomePage() {
                         </span>
                     </div>
                 )}
+            </section>
+
+            {/* ---------------- Yorum sayfaları: iç bağlantı + arama niyeti ---------------- */}
+            <section className="wrap section" aria-labelledby="yorumlar">
+                <h2 id="yorumlar" className="h2" style={{ marginBottom: 6 }}>Varlık varlık ekonomist yorumları</h2>
+                <p className="small" style={{ margin: "0 0 16px", maxWidth: "62ch" }}>
+                    Her sayfada o varlık için kimin ne dediği, geçmiş görüşlerin seyri ve fiyatı neyin etkilediği var.
+                </p>
+                <div className="row gap-8 wrapflex">
+                    {popular.map((a) => {
+                        const c = byAsset.get(a);
+                        return (
+                            <Link key={a} href={`/varlik/${assetSlug(a)}`} className="chip">
+                                {assetSeoName(a)} yorumları
+                                {c && (
+                                    <strong className={`dir dir-${c.leading}`} style={{ fontSize: 12 }}>
+                                        {c.leadingCount}/{c.analystCount} {directionWord(c.leading)}
+                                    </strong>
+                                )}
+                            </Link>
+                        );
+                    })}
+                </div>
+            </section>
+
+            {/* ---------------- Haftalık bülten ve rehber ---------------- */}
+            <section className="wrap section" aria-labelledby="okumalar">
+                <h2 id="okumalar" className="h2" style={{ marginBottom: 18 }}>Okumalar</h2>
+                <div className="grid-spot" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
+                    {bulletin && (
+                        <Link href={`/bulten/${bulletin.id}`} className="card card-hover card-pad link-card">
+                            <span className="eyebrow">Haftalık bülten</span>
+                            <strong>{bulletin.weekLabel}</strong>
+                            <span className="small">
+                                {bulletin.channelCount} kanal, {bulletin.signalCount} görüş;{" "}
+                                {bulletin.flips.length > 0
+                                    ? `${bulletin.flips.length} varlıkta baskın yön değişti.`
+                                    : "baskın yön hiçbir varlıkta değişmedi."}
+                            </span>
+                        </Link>
+                    )}
+                    {GUIDES.slice(0, bulletin ? 3 : 4).map((g) => (
+                        <Link key={g.slug} href={`/rehber/${g.slug}`} className="card card-hover card-pad link-card">
+                            <span className="eyebrow">{g.category}</span>
+                            <strong>{g.title}</strong>
+                            <span className="small clamp-3">{g.description}</span>
+                        </Link>
+                    ))}
+                </div>
+                <p style={{ marginTop: 14 }}>
+                    <Link href="/rehber" className="small" style={{ color: "var(--brand)", fontWeight: 650 }}>
+                        Tüm rehber yazıları →
+                    </Link>
+                </p>
             </section>
 
             {/* ---------------- Nasıl çalışır (SEO + AdSense için gerçek içerik) ---------------- */}
@@ -154,8 +223,32 @@ export default async function HomePage() {
 
             <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />
 
-            <FaqJsonLd />
-            {hasData && <ItemListJsonLd items={hero.map((h) => assetLabel(h.asset))} />}
+            <JsonLd
+                data={[
+                    webPageLd({
+                        type: "CollectionPage",
+                        name: "Ekonomist yorumları: altın, dolar, borsa ve Bitcoin",
+                        description:
+                            "YouTube ekonomi yorumcularının varlık bazında yön sayımı ve geçmiş görüşlerin isabet karnesi.",
+                        path: "/",
+                        dateModified: hasData ? snapshot.generatedAt : undefined,
+                    }),
+                    faqLd(FAQ),
+                    ...(hasData
+                        ? [{
+                            "@context": "https://schema.org",
+                            "@type": "ItemList",
+                            name: "Öne çıkan varlıklar",
+                            itemListElement: hero.map((h, i) => ({
+                                "@type": "ListItem",
+                                position: i + 1,
+                                name: assetLabel(h.asset),
+                                url: absoluteUrl(`/varlik/${assetSlug(h.asset)}`),
+                            })),
+                        }]
+                        : []),
+                ]}
+            />
         </>
     );
 }
@@ -184,27 +277,3 @@ const FAQ = [
         a: "Hayır. Analist Ne Diyor size ne yapmanız gerektiğini söylemez, size başkalarının ne dediğini sayarak gösterir. Yatırım danışmanlığı, yetkili kuruluşların kişiye özel sunduğu bir hizmettir; buradaki içerik kişiye özel değildir ve genel niteliktedir.",
     },
 ];
-
-function FaqJsonLd() {
-    const json = {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: FAQ.map((f) => ({
-            "@type": "Question",
-            name: f.q,
-            acceptedAnswer: { "@type": "Answer", text: f.a },
-        })),
-    };
-    return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }} />;
-}
-
-function ItemListJsonLd({ items }: { items: string[] }) {
-    const json = {
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        name: "Öne çıkan varlıklar",
-        itemListElement: items.map((name, i) => ({ "@type": "ListItem", position: i + 1, name })),
-    };
-    return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }} />;
-}
-

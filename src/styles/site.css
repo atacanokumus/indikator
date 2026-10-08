@@ -536,3 +536,48 @@ html, body { overflow-x: clip; }
 .rs-flag { font-size: 13px; line-height: 1; }
 .rs-sep { opacity: .5; }
 .rs-badge { font-size: 12px; line-height: 1; opacity: .85; flex-shrink: 0; }
+
+/* =========================================================
+   REHBER / MAKALE TİPOGRAFİSİ ve ekmek kırıntısı
+   Uzun metinde satır uzunluğu ~70 karakteri geçmesin: okuma
+   süresi ve sayfada kalma süresi buna bağlı.
+   ========================================================= */
+.crumbs { margin-bottom: 12px; }
+.crumbs ol { list-style: none; display: flex; flex-wrap: wrap; gap: 0; margin: 0; padding: 0; }
+.crumbs li { display: inline-flex; align-items: center; }
+.crumbs li + li::before { content: "›"; margin-inline: 8px; color: var(--text-muted); }
+.crumbs a { color: var(--text-soft); text-decoration: none; }
+.crumbs a:hover { color: var(--brand); text-decoration: underline; }
+.crumbs [aria-current="page"] { color: var(--text-muted); }
+
+.prose { max-width: 70ch; font-size: 16.5px; line-height: 1.75; color: var(--text); }
+.prose p { margin: 0 0 1.05em; color: var(--text-soft); }
+.prose p strong, .prose li strong { color: var(--text); }
+.prose a { color: var(--brand); font-weight: 600; text-underline-offset: 3px; }
+.prose ul, .prose ol { margin: 0 0 1.2em; padding-left: 1.3em; color: var(--text-soft); }
+.prose li { margin-bottom: .45em; }
+.prose h2 { scroll-margin-top: 84px; margin: 2em 0 .6em; }
+.prose .formula {
+  margin: 1.2em 0; padding: 16px 18px; border-radius: var(--r);
+  background: var(--brand-soft); border: 1px solid var(--border);
+  font-family: var(--font-mono), ui-monospace, monospace; font-size: 15px; font-weight: 700; color: var(--brand-ink);
+}
+.prose .formula small { display: block; margin-top: 6px; font-family: inherit; font-weight: 500; color: var(--text-soft); font-size: 13px; }
+.prose .note {
+  margin: 1.2em 0; padding: 14px 16px; border-radius: var(--r);
+  background: var(--gold-soft); border: 1px solid var(--border); color: var(--text-soft); font-size: 15px;
+}
+
+.toc { max-width: 70ch; }
+.toc ol { margin: 8px 0 0; padding-left: 1.2em; }
+.toc li { margin-bottom: 4px; }
+.toc a { color: var(--brand); text-decoration: none; font-weight: 600; font-size: 14px; }
+.toc a:hover { text-decoration: underline; }
+
+/* Rehber ve bağlantı kartları */
+.link-card { display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: inherit; }
+.link-card strong { font-size: 15.5px; letter-spacing: -0.01em; line-height: 1.35; }
+.link-card:hover strong { color: var(--brand); }
+
+/* Haber şeridi yüklenirken yer ayır: sonradan eklenince sayfa aşağı kaymasın (CLS) */
+.ticker-reserve { min-height: 46px; }

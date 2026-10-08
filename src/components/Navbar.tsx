@@ -11,7 +11,13 @@ const LINKS = [
     { href: "/analistler", label: "Analistler" },
     { href: "/karne", label: "Karne" },
     { href: "/bulten", label: "Bülten" },
+    { href: "/rehber", label: "Rehber" },
 ];
+
+/** /rehber/gram-altin… açıkken "Rehber" sekmesi de seçili görünsün. */
+function isCurrent(pathname: string, href: string) {
+    return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function Navbar() {
     const pathname = usePathname();
@@ -28,7 +34,7 @@ export function Navbar() {
                                 key={l.href}
                                 href={l.href}
                                 className="nav-link"
-                                aria-current={pathname === l.href ? "page" : undefined}
+                                aria-current={isCurrent(pathname, l.href) ? "page" : undefined}
                             >
                                 {l.label}
                             </Link>

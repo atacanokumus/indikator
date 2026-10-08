@@ -7,59 +7,70 @@ import { Footer } from "@/components/Footer";
 import { CookieConsent } from "@/components/CookieConsent";
 import { AdsenseLoader } from "@/components/AdsenseLoader";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { JsonLd } from "@/components/JsonLd";
 import { ADSENSE_CLIENT, GA_MEASUREMENT_ID } from "@/lib/google";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, organizationLd, websiteLd } from "@/lib/seo";
 import "../styles/site.css";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-inter", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://analistnediyor.com";
-
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),
     title: {
-        default: "Analist Ne Diyor — altın, dolar, borsa ve kriptoda kim ne diyor",
+        default: "Analist Ne Diyor: Altın, Dolar, Borsa ve Bitcoin Yorumları",
         template: "%s | Analist Ne Diyor",
     },
     // NOT: Açıklamada emir kipi kullanılmıyor. Site tavsiye vermez, sayım yapar;
     // mağaza vitrinindeki cümlenin de sayfadaki duruşla aynı olması gerekiyor.
-    description:
-        "YouTube ekonomi yorumcularının son videolarındaki görüşleri derliyoruz. " +
-        "Altın, dolar, BIST 100 ve kripto için hangi yönde kaç analistin konuştuğunu " +
-        "tek ekranda görün; geçmiş görüşlerin tutup tutmadığını isabet karnesinden izleyin.",
-    applicationName: "Analist Ne Diyor",
+    description: SITE_DESCRIPTION,
+    applicationName: SITE_NAME,
     keywords: [
-        "ekonomist yorumları", "altın yorumu", "dolar yorumu", "analist ne diyor",
-        "bist 100", "bitcoin analiz", "youtube ekonomist", "piyasa konsensüsü",
+        "ekonomist yorumları", "altın yorumları", "dolar yorumları", "analist ne diyor",
+        "bist 100 yorumları", "bitcoin yorumları", "youtube ekonomist", "piyasa konsensüsü",
         "analist isabet oranı",
     ],
-    authors: [{ name: "Analist Ne Diyor" }],
+    authors: [{ name: SITE_NAME, url: SITE_URL }],
+    creator: SITE_NAME,
+    publisher: SITE_NAME,
+    category: "finance",
+    formatDetection: { telephone: false, email: false, address: false },
+    /**
+     * DİKKAT — burada `alternates.canonical` ve `openGraph.url` YOK.
+     * Next.js'te sayfanın kendi `alternates` / `openGraph` alanı bunları
+     * tamamen ezer; kökte bırakılan canonical, kendi canonical'ını tanımlamayı
+     * unutan her sayfayı ana sayfaya kanonikleştirir. Sayfalar bunları
+     * src/lib/seo.ts içindeki pageMetadata() ile alır.
+     */
     openGraph: {
         type: "website",
         locale: "tr_TR",
-        url: SITE_URL,
-        siteName: "Analist Ne Diyor",
-        title: "Analist Ne Diyor — altın, dolar, borsa ve kriptoda kim ne diyor",
-        description:
-            "Takip edilen ekonomi yorumcularının görüşlerinin varlık bazında sayımı ve " +
-            "geçmiş görüşlerin isabet karnesi.",
+        siteName: SITE_NAME,
+        title: "Analist Ne Diyor: Altın, Dolar, Borsa ve Bitcoin Yorumları",
+        description: SITE_DESCRIPTION,
     },
     twitter: {
         card: "summary_large_image",
-        title: "Analist Ne Diyor — kim ne diyor, sayımı burada",
-        description: "YouTube ekonomi yorumcularının görüşlerinin sayımı ve isabet karnesi.",
+        title: "Analist Ne Diyor: kim ne diyor, sayımı burada",
+        description: SITE_DESCRIPTION,
     },
-    robots: { index: true, follow: true },
-    alternates: { canonical: "/" },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+    },
     /**
-     * Google Search Console doğrulaması. Doğrulama kodu ortam değişkeninden
-     * geliyor; koda gömülmüyor ki farklı ortamlarda farklı mülkler
-     * doğrulanabilsin ve kod deposunda gereksiz bir kimlik durmasın.
-     * Değişken tanımlı değilse etiket hiç basılmaz.
+     * Arama konsolu doğrulamaları. Kodlar ortam değişkeninden gelir; koda
+     * gömülmez ki farklı ortamlarda farklı mülkler doğrulanabilsin.
+     * Tanımlı olmayan etiket hiç basılmaz.
      */
-    verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
-        ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
-        : undefined,
+    verification: {
+        google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+        yandex: process.env.NEXT_PUBLIC_YANDEX_SITE_VERIFICATION || undefined,
+        other: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+            ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION }
+            : undefined,
+    },
     /**
      * AdSense site sahipliği: bu etiket çerez bırakmaz, onaydan bağımsız basılır.
      * AdSense tarayıcı botu çerez onayı vermediği için reklam betiğini
@@ -120,38 +131,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   "yapay zeka ile çıkarılan yatırım sinyalleri" yazıyordu — sayfalardan
                   temizlediğimiz tavsiye dili en çok alıntılanan yerde kalmıştı.
                 */}
-                <script
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{
-                        __html: JSON.stringify([
-                            {
-                                "@context": "https://schema.org",
-                                "@type": "WebSite",
-                                "@id": `${SITE_URL}#website`,
-                                name: "Analist Ne Diyor",
-                                url: SITE_URL,
-                                inLanguage: "tr-TR",
-                                description:
-                                    "YouTube ekonomi yorumcularının videolarında hangi varlık için hangi yönde " +
-                                    "konuştuğunun sayımı ve geçmiş görüşlerin isabet karnesi. Yatırım tavsiyesi değildir.",
-                                publisher: { "@id": `${SITE_URL}#org` },
-                            },
-                            {
-                                "@context": "https://schema.org",
-                                "@type": "Organization",
-                                "@id": `${SITE_URL}#org`,
-                                name: "Analist Ne Diyor",
-                                url: SITE_URL,
-                                logo: `${SITE_URL}/logo.svg`,
-                                description:
-                                    "Takip edilen YouTube ekonomi yorumcularının görüşlerini varlık bazında sayan, " +
-                                    "geçmiş görüşlerin sonradan tutup tutmadığını fiyat verisiyle ölçen bağımsız bir yayın.",
-                                knowsLanguage: ["tr", "en"],
-                                areaServed: "TR",
-                            },
-                        ]),
-                    }}
-                />
+                <JsonLd data={[websiteLd(), organizationLd()]} />
             </body>
         </html>
     );

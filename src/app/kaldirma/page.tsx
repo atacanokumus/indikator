@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
     title: "İçerik kaldırma ve düzeltme talebi",
     description:
         "Analist Ne Diyor'da adı geçen yorumcular ve hak sahipleri için içerik kaldırma, düzeltme ve itiraz prosedürü.",
-    alternates: { canonical: "/kaldirma" },
-};
+    path: "/kaldirma",
+});
 
 const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@analistnediyor.com";
 
 export default function KaldirmaPage() {
     return (
         <article className="wrap section" style={{ maxWidth: 720 }}>
+            <Breadcrumbs items={[{ name: "İçerik kaldırma", path: "/kaldirma" }]} />
             <h1 className="h1" style={{ fontSize: "clamp(1.7rem, 3.6vw, 2.3rem)" }}>
                 İçerik kaldırma ve düzeltme
             </h1>

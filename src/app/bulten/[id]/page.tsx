@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { JsonLd } from "@/components/JsonLd";
 import { TallyBar, TallySentence } from "@/components/Tally";
 import { DIRECTION, assetLabel, formatDateTr } from "@/lib/display";
+import { articleLd, pageMetadata } from "@/lib/seo";
 import { assetSlug } from "@/lib/slug";
 import { getBulletin, getBulletinIndex } from "@/server/read";
 
@@ -17,14 +20,17 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
     const b = await getBulletin(id);
-    if (!b) return { title: "Bülten bulunamadı" };
-    return {
-        title: `${b.weekLabel} — haftalık konsensüs bülteni`,
+    if (!b) return { title: "Bülten bulunamadı", robots: { index: false } };
+    return pageMetadata({
+        title: `${b.weekLabel}: haftalık konsensüs bülteni`,
         description:
             `${b.weekLabel} haftasında ${b.channelCount} kanaldan ${b.signalCount} görüş: ` +
-            `${b.flips.length} varlıkta baskın yön değişti.`,
-        alternates: { canonical: `/bulten/${b.id}` },
-    };
+            `${b.flips.length} varlıkta baskın yön değişti, ${b.changes.length} fikir değişikliği. Yatırım tavsiyesi değil, sayım.`,
+        path: `/bulten/${b.id}`,
+        type: "article",
+        publishedTime: b.generatedAt,
+        modifiedTime: b.generatedAt,
+    });
 }
 
 export default async function BultenPage({ params }: { params: Promise<{ id: string }> }) {
@@ -32,10 +38,23 @@ export default async function BultenPage({ params }: { params: Promise<{ id: str
     const b = await getBulletin(id);
     if (!b) notFound();
 
+    // Önceki / sonraki bülten: arşivi gezilebilir kılar, sayfalar birbirine bağlanır.
+    const index = await getBulletinIndex();
+    const items = index?.items ?? [];
+    const at = items.findIndex((i) => i.id === b.id);
+    const newer = at > 0 ? items[at - 1] : undefined;
+    const older = at >= 0 ? items[at + 1] : undefined;
+    const path = `/bulten/${b.id}`;
+
     return (
         <>
             <section className="wrap" style={{ paddingBlock: "40px 8px", maxWidth: 760 }}>
-                <Link href="/bulten" className="tiny" style={{ color: "var(--brand)" }}>← Tüm bültenler</Link>
+                <Breadcrumbs
+                    items={[
+                        { name: "Haftalık bülten", path: "/bulten" },
+                        { name: b.weekLabel, path },
+                    ]}
+                />
                 <h1 className="h1" style={{ fontSize: "clamp(1.6rem, 3.4vw, 2.2rem)", marginTop: 10 }}>
                     {b.weekLabel}
                 </h1>
@@ -126,7 +145,30 @@ export default async function BultenPage({ params }: { params: Promise<{ id: str
                 </p>
             </section>
 
+            {(newer || older) && (
+                <nav className="wrap section-tight between wrapflex" aria-label="Bülten arşivi">
+                    {older ? (
+                        <Link href={`/bulten/${older.id}`} className="btn btn-ghost">← {older.weekLabel}</Link>
+                    ) : <span />}
+                    {newer ? (
+                        <Link href={`/bulten/${newer.id}`} className="btn btn-ghost">{newer.weekLabel} →</Link>
+                    ) : <span />}
+                </nav>
+            )}
+
             <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />
+
+            <JsonLd
+                data={articleLd({
+                    headline: `${b.weekLabel}: haftalık konsensüs bülteni`,
+                    description:
+                        `${b.weekLabel} haftasında ${b.channelCount} kanaldan ${b.signalCount} görüş sayıldı; ` +
+                        `${b.flips.length} varlıkta baskın yön değişti.`,
+                    path,
+                    datePublished: b.generatedAt,
+                    section: "Haftalık bülten",
+                })}
+            />
         </>
     );
 }

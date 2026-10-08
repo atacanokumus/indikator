@@ -10,17 +10,26 @@ const DOT: Record<string, string> = {
 };
 
 export function NewsTicker() {
-    const [news, setNews] = useState<NewsItem[]>([]);
+    // null = henüz yüklenmedi. Yüklenirken aynı yüksekte boş kutu gösteriyoruz; şerit sonradan
+    // eklenince alttaki içerik aşağı kaymasın (Core Web Vitals / CLS).
+    const [news, setNews] = useState<NewsItem[] | null>(null);
 
     useEffect(() => {
         let alive = true;
         fetch("/api/news")
             .then((r) => r.json())
-            .then((d) => alive && Array.isArray(d) && setNews(d))
-            .catch(() => { });
+            .then((d) => alive && setNews(Array.isArray(d) ? d : []))
+            .catch(() => { if (alive) setNews([]); });
         return () => { alive = false; };
     }, []);
 
+    if (news === null) {
+        return (
+            <section className="wrap section-tight" aria-hidden="true">
+                <div className="ticker-reserve skel" style={{ borderRadius: "var(--r)" }} />
+            </section>
+        );
+    }
     if (news.length === 0) return null;
     // Kesintisiz kayma için listeyi ikiye katlıyoruz
     const items = [...news, ...news];

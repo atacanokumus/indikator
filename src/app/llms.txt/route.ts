@@ -10,7 +10,11 @@
  * Burada asistana talimat verilmez, yalnızca olgular yazılır — sayfaya gömülü
  * yönlendirme, arama motorlarının manipülasyon saydığı bir şey.
  */
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://analistnediyor.com";
+import { GUIDES } from "@/content/guides";
+import { PROFILED_ASSETS } from "@/content/assets";
+import { assetSeoName } from "@/lib/asset-seo";
+import { SITE_URL } from "@/lib/seo";
+import { assetSlug } from "@/lib/slug";
 
 export const revalidate = 86400;
 
@@ -54,13 +58,22 @@ export function GET() {
 - [Ana sayfa](${SITE_URL}/): varlık bazında güncel sayım
 - [Konsensüs](${SITE_URL}/konsensus): tüm varlıkların tablosu
 - [İsabet karnesi](${SITE_URL}/karne): geçmiş görüşlerin ölçümü ve yöntemi
-- [Haftalık bülten](${SITE_URL}/bulten): haftanın konsensüs değişimi
+- [Haftalık bülten](${SITE_URL}/bulten): haftanın konsensüs değişimi ([RSS](${SITE_URL}/bulten/rss.xml))
+- [Ekonomi rehberi](${SITE_URL}/rehber): altın, döviz, borsa ve kripto için tavsiye içermeyen açıklayıcı yazılar
 - [Analistler](${SITE_URL}/analistler): takip edilen kanallar
 - [Metodoloji](${SITE_URL}/metodoloji): video seçiminden sayıma kadar tüm yöntem
 - [Sözlük](${SITE_URL}/sozluk): terimlerin karşılıkları
 - [Hakkımızda](${SITE_URL}/hakkimizda)
 - [İçerik kaldırma ve itiraz](${SITE_URL}/kaldirma)
 - [Gizlilik](${SITE_URL}/gizlilik) · [KVKK aydınlatma metni](${SITE_URL}/kvkk)
+
+## Rehber yazıları
+
+${GUIDES.map((g) => `- [${g.title}](${SITE_URL}/rehber/${g.slug}): ${g.description}`).join("\n")}
+
+## Varlık sayfaları (güncel analist sayımı)
+
+${PROFILED_ASSETS.map((a) => `- [${assetSeoName(a)}](${SITE_URL}/varlik/${assetSlug(a)})`).join("\n")}
 
 ## Künye
 

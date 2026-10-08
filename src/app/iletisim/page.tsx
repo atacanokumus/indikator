@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
     title: "İletişim",
     description: "Analist Ne Diyor ile iletişime geçin: öneri, hata bildirimi, içerik kaldırma talepleri.",
-    alternates: { canonical: "/iletisim" },
-};
+    path: "/iletisim",
+});
 
 const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@analistnediyor.com";
 
 export default function IletisimPage() {
     return (
         <article className="wrap section" style={{ maxWidth: 680 }}>
+            <Breadcrumbs items={[{ name: "İletişim", path: "/iletisim" }]} />
             <h1 className="h1" style={{ fontSize: "clamp(1.7rem, 3.6vw, 2.3rem)" }}>İletişim</h1>
             <p className="lead" style={{ marginTop: 16 }}>
                 Soru, öneri, hata bildirimi ya da içerik kaldırma talepleriniz için bize yazabilirsiniz.

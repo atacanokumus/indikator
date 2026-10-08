@@ -1,4 +1,6 @@
 import { RelativeTime } from "@/components/RelativeTime";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { pageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
@@ -10,12 +12,15 @@ import { getHomeSnapshot } from "@/server/read";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-    title: "Analist sayımı — hangi varlıkta kim ne diyor",
+export const metadata: Metadata = pageMetadata({
+    title: "Analist sayımı: altın, dolar, borsa ve kriptoda kim ne diyor?",
+    absoluteTitle: true,
+    ogTitle: "Analist sayımı — hangi varlıkta kim ne diyor",
     description:
-        "Takip edilen ekonomi yorumcularının son görüşlerinin varlık bazında sayımı: altın, dolar, BIST 100, kripto ve hisseler.",
-    alternates: { canonical: "/konsensus" },
-};
+        "Takip edilen ekonomi yorumcularının son görüşlerinin varlık bazında sayımı: altın, dolar, BIST 100, kripto ve hisseler. " +
+        "Hangi yönde kaç analist konuşuyor?",
+    path: "/konsensus",
+});
 
 export default async function KonsensusPage() {
     const { consensus, analystCount, windowDays, updateFrequency, generatedAt } = await getHomeSnapshot();
@@ -23,6 +28,7 @@ export default async function KonsensusPage() {
     return (
         <>
             <section className="wrap" style={{ paddingBlock: "40px 8px", maxWidth: 760 }}>
+                <Breadcrumbs items={[{ name: "Konsensüs", path: "/konsensus" }]} />
                 <h1 className="h1" style={{ fontSize: "clamp(1.7rem, 3.6vw, 2.4rem)" }}>Analist sayımı</h1>
                 <p className="lead" style={{ marginTop: 12 }}>
                     Her varlık için, takip edilen {analystCount || "—"} yorumcunun son {windowDays} gündeki

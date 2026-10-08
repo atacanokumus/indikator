@@ -47,6 +47,21 @@ Bunlar keyfi değil; bilerek böyle yapıldı, değiştirmeden önce nedenini ok
 
 Ayrıntılı gerekçe ve kalan riskler için oturumdaki **Hukuki Risk Dosyası**'na bakın.
 
+## SEO tasarım kararları
+
+Bunlar da bilerek böyle yapıldı; ayrıntı ve yayın sonrası liste için [docs/seo.md](docs/seo.md).
+
+| Karar | Nerede | Neden |
+|---|---|---|
+| Yalnızca ≥3 analistli ya da profili yazılı varlık sayfası dizine girer | `src/lib/seo.ts`, `src/lib/asset-seo.ts`, `src/app/sitemap.ts` | Tek analistli yüzlerce otomatik sayfa, para konularında tüm siteyi aşağı çeker |
+| Kök düzende canonical / og:url yok; sayfalar `pageMetadata()` kullanır | `src/lib/seo.ts`, `src/app/layout.tsx` | Sayfa `openGraph`/`alternates` alanı üsttekini tamamen ezer; unutulan sayfa ana sayfaya kanonikleşir |
+| Varlık adresi Türkçe etiketten türer; eski adresler 308 ile yönlenir | `src/lib/slug.ts` | `/varlik/dolar` aranan kelimeyi taşır; `usd-try` gibi eski adresler dizinde |
+| Bilinen varlığın sayfası veri yokken 404 olmaz | `src/server/known-assets.ts`, `src/app/varlik/[slug]/page.tsx` | 30 gün sessiz kalan varlığın sıralaması silinmesin |
+| Sitemap `lastmod` gerçek veri tarihi | `src/app/sitemap.ts` | Hep "şimdi" yazan tarih Google tarafından yok sayılır |
+| Rehber yazıları tavsiye ve güncel rakam içermez | `src/content/guides.ts`, `src/content/assets.ts` | Yukarıdaki hukuki tasarım kararlarıyla aynı çizgi; eskiyen rakam yalan söyler |
+| Paylaşım görselinde ayrı yazı ailesi adı ("Inter", "InterExt") | `src/lib/og.tsx` | satori aynı ad+ağırlıktaki ikinci dosyayı yok sayar; ş, ğ, İ ince harfle çıkıyordu |
+| JSON-LD'de `<` kaçırılır | `src/lib/seo.ts` `serializeJsonLd` | Veri tabanı metninde `</script>` olsa sayfa bozulmasın |
+
 ### Dizin yapısı
 
 | Yol | Ne işe yarar |

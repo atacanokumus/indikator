@@ -1,19 +1,24 @@
 import { formatDateTr } from "@/lib/display";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { LEGAL_PAGES_UPDATED, pageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
     title: "Gizlilik Politikası",
     description: "Analist Ne Diyor gizlilik politikası, çerez kullanımı ve KVKK bilgilendirmesi.",
-    alternates: { canonical: "/gizlilik" },
-};
+    path: "/gizlilik",
+});
 
 const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@analistnediyor.com";
 
 export default function GizlilikPage() {
     return (
         <article className="wrap section" style={{ maxWidth: 720 }}>
+            <Breadcrumbs items={[{ name: "Gizlilik", path: "/gizlilik" }]} />
             <h1 className="h1" style={{ fontSize: "clamp(1.7rem, 3.6vw, 2.3rem)" }}>Gizlilik Politikası</h1>
-            <p className="tiny" style={{ marginTop: 8 }}>Son güncelleme: {formatDateTr(new Date().toISOString())}</p>
+            <p className="tiny" style={{ marginTop: 8 }}>
+                Son güncelleme: <time dateTime={LEGAL_PAGES_UPDATED}>{formatDateTr(LEGAL_PAGES_UPDATED)}</time>
+            </p>
 
             <h2 className="h2" style={{ marginTop: 30 }}>Hangi verileri topluyoruz?</h2>
             <p className="small">

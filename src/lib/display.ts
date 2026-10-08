@@ -37,6 +37,26 @@ export function tallyParts(tally: Tally): { rec: Recommendation; count: number }
         .sort((a, b) => b.count - a.count);
 }
 
+/**
+ * Sayımı düz metin cümlesine çevirir (HTML yok): meta açıklaması, SSS cevabı
+ * ve paylaşım görseli aynı cümleyi kullansın diye tek yerde duruyor.
+ * "21 analistin 11'i gözlemle diyor, 7'si alım yönünde, 2'si satış yönlü"
+ */
+export function tallyText(tally: Tally, total: number): string {
+    const parts = tallyParts(tally).map(
+        (p) => `${p.count}${sayiEki(p.count)} ${DIRECTION[p.rec].toLocaleLowerCase("tr")} ${DIRECTION_SUFFIX[p.rec]}`
+    );
+    return parts.length ? `${total} analistin ${parts.join(", ")}` : "";
+}
+
+/** tallyText'in kısa hali: yalnızca en çok konuşulan `maxParts` yön. Meta açıklaması için. */
+export function tallyTextShort(tally: Tally, total: number, maxParts = 2): string {
+    const parts = tallyParts(tally)
+        .slice(0, maxParts)
+        .map((p) => `${p.count}${sayiEki(p.count)} ${DIRECTION[p.rec].toLocaleLowerCase("tr")} ${DIRECTION_SUFFIX[p.rec]}`);
+    return parts.length ? `${total} analistin ${parts.join(", ")}` : "";
+}
+
 export function signalClass(rec: Recommendation) {
     return `sig sig-${rec}`;
 }

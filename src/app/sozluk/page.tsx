@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
+import { JsonLd } from "@/components/JsonLd";
+import { absoluteUrl } from "@/lib/seo";
+import { slugify } from "@/lib/slug";
 
-export const metadata: Metadata = {
-    title: "Sözlük — ekonomi yorumlarında geçen terimler",
+export const metadata: Metadata = pageMetadata({
+    title: "Sözlük: ekonomi yorumlarında geçen terimler",
     description:
-        "Ons altın ile gram altın farkı, konsensüs nasıl okunur, vade ne demek, BIST 100 nedir? Analist Ne Diyor'da geçen terimlerin sade karşılıkları.",
-    alternates: { canonical: "/sozluk" },
-};
+        "Ons altın ile gram altın farkı, konsensüs nasıl okunur, vade ne demek, BIST 100 nedir? " +
+        "Analist Ne Diyor'da geçen terimlerin sade karşılıkları.",
+    path: "/sozluk",
+});
 
 interface Term {
     term: string;
@@ -183,6 +189,7 @@ export default function SozlukPage() {
     return (
         <>
             <section className="wrap" style={{ paddingBlock: "40px 8px", maxWidth: 760 }}>
+                <Breadcrumbs items={[{ name: "Sözlük", path: "/sozluk" }]} />
                 <span className="eyebrow">Okuma rehberi</span>
                 <h1 className="h1" style={{ fontSize: "clamp(1.7rem, 3.6vw, 2.4rem)", marginTop: 8 }}>
                     Sözlük
@@ -210,7 +217,7 @@ export default function SozlukPage() {
                                     padding: "16px 20px",
                                     borderTop: i === 0 ? "none" : "1px solid var(--border)",
                                 }}>
-                                    <dt style={{ fontWeight: 700, marginBottom: 6 }}>{t.term}</dt>
+                                    <dt id={slugify(t.term)} style={{ fontWeight: 700, marginBottom: 6, scrollMarginTop: 84 }}>{t.term}</dt>
                                     <dd style={{ margin: 0 }}>
                                         <p className="small" style={{ color: "var(--text-soft)", lineHeight: 1.65 }}>
                                             {t.body}
@@ -234,11 +241,30 @@ export default function SozlukPage() {
                         Sitedeki sayıların nasıl hesaplandığını{" "}
                         <Link href="/metodoloji">metodoloji</Link> ve{" "}
                         <Link href="/karne#yontem">isabet karnesi</Link> sayfalarında bulabilirsiniz.
+                        Daha uzun anlatımlar için <Link href="/rehber">ekonomi rehberine</Link> göz atın.
                     </p>
                 </div>
             </section>
 
             <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />
+
+            <JsonLd
+                data={{
+                    "@context": "https://schema.org",
+                    "@type": "DefinedTermSet",
+                    name: "Ekonomi yorumlarında geçen terimler sözlüğü",
+                    url: absoluteUrl("/sozluk"),
+                    inLanguage: "tr-TR",
+                    hasDefinedTerm: GROUPS.flatMap((g) =>
+                        g.terms.map((t) => ({
+                            "@type": "DefinedTerm",
+                            name: t.term,
+                            description: t.body,
+                            url: `${absoluteUrl("/sozluk")}#${slugify(t.term)}`,
+                        }))
+                    ),
+                }}
+            />
         </>
     );
 }

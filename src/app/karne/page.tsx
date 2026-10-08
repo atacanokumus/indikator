@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
 import { RegionBadge } from "@/components/RegionSplit";
@@ -9,12 +11,15 @@ import type { ScorecardRow } from "@/server/scorecard";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-    title: "İsabet karnesi — söylenenler sonradan tuttu mu?",
+export const metadata: Metadata = pageMetadata({
+    title: "İsabet karnesi: ekonomistlerin söyledikleri tuttu mu?",
+    absoluteTitle: true,
+    ogTitle: "İsabet karnesi — söylenenler sonradan tuttu mu?",
     description:
-        "Takip edilen YouTube ekonomi yorumcularının geçmiş görüşleri, vadesi dolduğunda fiyatın gerçekten o yönde hareket edip etmediğine göre ölçüldü. Yöntem ve örneklem sayıları açık.",
-    alternates: { canonical: "/karne" },
-};
+        "Takip edilen YouTube ekonomi yorumcularının geçmiş görüşleri, vadesi dolduğunda fiyatın o yönde hareket edip etmediğine göre ölçüldü. " +
+        "Yöntem ve örneklem sayıları açık.",
+    path: "/karne",
+});
 
 function pct(hit: number, measured: number) {
     return measured > 0 ? Math.round((hit / measured) * 100) : 0;
@@ -82,6 +87,7 @@ export default async function KarnePage() {
     return (
         <>
             <section className="wrap" style={{ paddingBlock: "40px 8px", maxWidth: 760 }}>
+                <Breadcrumbs items={[{ name: "İsabet karnesi", path: "/karne" }]} />
                 <span className="eyebrow">Özgün ölçüm</span>
                 <h1 className="h1" style={{ fontSize: "clamp(1.7rem, 3.6vw, 2.4rem)", marginTop: 8 }}>
                     İsabet karnesi

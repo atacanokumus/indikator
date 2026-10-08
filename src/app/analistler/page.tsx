@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { pageMetadata } from "@/lib/seo";
 import { AdSlot } from "@/components/AdSlot";
 import { getChannels } from "@/server/repo";
 import type { Channel } from "@/lib/types";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-    title: "Analistler",
+export const metadata: Metadata = pageMetadata({
+    title: "Ekonomi yorumcuları ve isabet oranları",
     description:
-        "Analist Ne Diyor'un takip ettiği YouTube ekonomi yorumcuları ve geçmiş sinyallerinin isabet performansı.",
-    alternates: { canonical: "/analistler" },
-};
+        "Analist Ne Diyor'un takip ettiği YouTube ekonomi yorumcuları ve geçmiş görüşlerinin isabet performansı. " +
+        "Oran yalnızca yeterli örneklemi olan kanallar için hesaplanır.",
+    path: "/analistler",
+});
 
 function successRate(c: Channel) {
     if (!c.predictionCount) return null;
@@ -32,6 +35,7 @@ export default async function AnalistlerPage() {
     return (
         <>
             <section className="wrap" style={{ paddingBlock: "40px 8px", maxWidth: 760 }}>
+                <Breadcrumbs items={[{ name: "Analistler", path: "/analistler" }]} />
                 <h1 className="h1" style={{ fontSize: "clamp(1.7rem, 3.6vw, 2.4rem)" }}>Analistler</h1>
                 <p className="lead" style={{ marginTop: 12 }}>
                     Takip ettiğimiz YouTube ekonomi kanalları. Puan, geçmiş sinyallerin vadesi dolduğunda

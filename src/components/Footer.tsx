@@ -1,6 +1,27 @@
 import Link from "next/link";
 import { LogoMark } from "./Logo";
 import { CookieSettingsLink } from "./CookieConsent";
+import { assetSeoName } from "@/lib/asset-seo";
+import { assetSlug } from "@/lib/slug";
+
+/**
+ * Sitenin her sayfasında görünen iç bağlantılar. Arama motoru bir sayfanın önemini
+ * kısmen ona kaç sayfadan, hangi yazıyla bağlandığına bakarak ölçer; ana sayfa
+ * dışında hiçbir yerden bağlanmayan varlık sayfaları bu yüzden zayıf kalıyordu.
+ * Liste sabit tutuldu (veriye bağlı değil): bu varlıkların sayfaları, o an kimse
+ * konuşmasa da açık kalır.
+ */
+const FOOTER_ASSETS = ["ALTIN", "USD/TRY", "EUR/TRY", "GÜMÜŞ", "XU100", "BTC", "ETH", "CL=F", "SP500", "NASDAQ"];
+const FOOTER_GUIDES: [string, string][] = [
+    ["gram-altin-nasil-hesaplanir", "Gram altın nasıl hesaplanır?"],
+    ["altin-fiyatini-ne-etkiler", "Altın fiyatını ne etkiler?"],
+    ["dolar-kuru-neye-gore-belirlenir", "Dolar kuru neye göre belirlenir?"],
+    ["bist-100-nedir", "BIST 100 nedir?"],
+    ["bitcoin-nedir-halving-nedir", "Bitcoin ve halving nedir?"],
+    ["faiz-karari-piyasalari-nasil-etkiler", "Faiz kararı piyasaları nasıl etkiler?"],
+    ["petrol-fiyatlari-neden-degisir-brent-wti", "Petrol fiyatları neden değişir?"],
+    ["youtube-ekonomist-yorumlari-nasil-okunur", "Ekonomist yorumları nasıl okunur?"],
+];
 
 export function Footer() {
     return (
@@ -26,7 +47,22 @@ export function Footer() {
                             <Link className="small" href="/analistler">Analistler</Link>
                             <Link className="small" href="/karne">İsabet karnesi</Link>
                             <Link className="small" href="/bulten">Haftalık bülten</Link>
+                            <Link className="small" href="/rehber">Ekonomi rehberi</Link>
                             <Link className="small" href="/sozluk">Sözlük</Link>
+                        </div>
+                        <div className="stack gap-8">
+                            <span className="eyebrow">Yorumlar</span>
+                            {FOOTER_ASSETS.map((a) => (
+                                <Link key={a} className="small" href={`/varlik/${assetSlug(a)}`}>
+                                    {assetSeoName(a)} yorumları
+                                </Link>
+                            ))}
+                        </div>
+                        <div className="stack gap-8">
+                            <span className="eyebrow">Rehber</span>
+                            {FOOTER_GUIDES.map(([slug, label]) => (
+                                <Link key={slug} className="small" href={`/rehber/${slug}`}>{label}</Link>
+                            ))}
                         </div>
                         <div className="stack gap-8">
                             <span className="eyebrow">Yasal</span>
