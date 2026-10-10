@@ -6,10 +6,7 @@
 import "./_env";
 import { getChannel, recordFailure } from "@/server/repo";
 import { syncVideo } from "@/server/sync";
-import { evaluatePendingPredictions } from "@/server/evaluator";
 import { writeHomeSnapshot } from "@/server/snapshot";
-import { writeScorecard } from "@/server/scorecard";
-import { writeAssetHistory } from "@/server/history";
 
 async function main() {
     const [videoId, channelId, title, publishedAt] = process.argv.slice(2);
@@ -61,11 +58,11 @@ async function main() {
         return r;
     }
 
+    // Yalnızca snapshot: yeni video siteye hemen yansısın. Değerlendirme, karne
+    // ve geçmiş koleksiyonu baştan sona okuyor (Firestore okuma faturası); bunlar
+    // günlük derin taramada (scan-all.ts --deep) güncelleniyor.
     if (result.totalFindings > 0) {
-        await evaluatePendingPredictions().catch((e) => console.error("[EVALUATOR]", e.message));
         await writeHomeSnapshot();
-        await writeScorecard();
-        await writeAssetHistory();
     }
 
     console.log(`[ANALYZE] Bitti. Bulgu: ${result.totalFindings}`);

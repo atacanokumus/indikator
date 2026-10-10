@@ -65,6 +65,23 @@ export async function getAnalysesSince(days: number, max = 500): Promise<VideoAn
     return snap.docs.map((d) => d.data() as VideoAnalysis);
 }
 
+/**
+ * `getAnalysesSince` ile AYNI sonucu, daha önce çekilmiş (yayın tarihine göre
+ * yeni→eski sıralı) listeden bellekte üretir.
+ *
+ * NEDEN: Snapshot, karne ve geçmiş aynı `analyses` koleksiyonunu ayrı ayrı
+ * baştan sona okuyordu; her çalıştırmada koleksiyon ~3 kez faturalanıyordu
+ * (Firestore'da her okunan doküman 1 okuma). Tek sorgu çekip dilimliyoruz.
+ */
+export function sliceAnalysesSince(all: VideoAnalysis[], days: number, max: number): VideoAnalysis[] {
+    const cutoff = new Date(Date.now() - days * 864e5).toISOString();
+    // Firestore aralık sorgusu yalnızca string publishedAt'leri eşleştirir;
+    // bellekteki dilim de aynı davranışı korusun.
+    return all
+        .filter((v) => typeof v.publishedAt === "string" && v.publishedAt >= cutoff)
+        .slice(0, max);
+}
+
 export async function getPendingAnalyses(max = 300) {
     const snap = await adminDb()
         .collection("analyses")

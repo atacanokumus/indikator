@@ -4,10 +4,10 @@
  *   (varsayılan: kanal başına son 3 video, --deep: son 10 video)
  */
 import "./_env";
-import { getChannels, setDocData } from "@/server/repo";
+import { getAnalysesSince, getChannels, setDocData } from "@/server/repo";
 import { syncChannel } from "@/server/sync";
 import { evaluatePendingPredictions } from "@/server/evaluator";
-import { writeHomeSnapshot } from "@/server/snapshot";
+import { touchSnapshotScanTime, writeHomeSnapshot } from "@/server/snapshot";
 import { writeScorecard } from "@/server/scorecard";
 import { writeAssetHistory } from "@/server/history";
 
@@ -85,8 +85,9 @@ async function main() {
     // ÖNCEKİ taramanın zamanını gösterir (ilk çalıştırmada da hiç göstermez).
     // Bilinçli olarak YENİ BULGU olsun olmasın her tur sonunda yazılır —
     // amaç "sistem 6 saatte bir gerçekten çalışıyor" güvencesini vermek.
+    const completedAt = new Date().toISOString();
     await setDocData("system_status", "last_scan", {
-        completedAt: new Date().toISOString(),
+        completedAt,
         deep,
         channelsScanned: channels.length - skipped,
         channelsSkipped: skipped,
@@ -94,9 +95,29 @@ async function main() {
     });
 
     await evaluatePendingPredictions().catch((e) => console.error("[EVALUATOR]", e.message));
-    await writeHomeSnapshot();
-    await writeScorecard();
-    await writeAssetHistory();
+
+    /**
+     * FIRESTORE OKUMA MALİYETİ — neden üç dallı?
+     * Snapshot, karne ve geçmiş her biri `analyses` koleksiyonunu baştan sona
+     * okuyor. Eskiden her turda (günde 5 kez) ve her yeni videoda üçü birden
+     * koşuyordu: koleksiyon ~3 kez faturalanıyordu ve koleksiyon büyüdükçe
+     * günlük okuma sayısı artıyordu.
+     *  - Derin tarama (günde 1): koleksiyonu TEK sorguyla çek, üçünü de oradan üret.
+     *  - Yeni bulgu varsa: yalnızca snapshot (siteyi güncel tutmak için gerekli).
+     *  - Bulgu yoksa: snapshot'ı baştan üretme, sadece "Son tarama" saatini yaz.
+     * Karne ve geçmiş bu yüzden günde bir kez güncellenir.
+     */
+    if (deep) {
+        const all = await getAnalysesSince(3650, 4000);
+        await writeHomeSnapshot(all);
+        await writeScorecard(all);
+        await writeAssetHistory(new Date(), all);
+    } else if (videos > 0) {
+        await writeHomeSnapshot();
+    } else if (!(await touchSnapshotScanTime(completedAt))) {
+        // Snapshot dokümanı henüz yoksa (ilk kurulum) tam yaz.
+        await writeHomeSnapshot();
+    }
 
     console.log(
         `[SCAN] Tamamlandı. ${videos} yeni video, ${findings} sinyal` +

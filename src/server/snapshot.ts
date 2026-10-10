@@ -24,6 +24,7 @@ import type {
     VideoAnalysis,
 } from "@/lib/types";
 import { toIso } from "@/lib/types";
+import { adminDb } from "./db";
 import {
     getAnalysesSince,
     getChannels,
@@ -31,6 +32,7 @@ import {
     getStoredPrices,
     getSuppressedSignals,
     setDocData,
+    sliceAnalysesSince,
 } from "./repo";
 
 const WINDOW_DAYS = Number(process.env.SNAPSHOT_WINDOW_DAYS || 30);
@@ -54,15 +56,24 @@ interface Entry {
     timeframe: Timeframe;
 }
 
-export async function buildHomeSnapshot(): Promise<HomeSnapshot> {
-    const [recent, history, channels, prices, suppressed, lastScan] = await Promise.all([
-        getAnalysesSince(WINDOW_DAYS, 800),
-        getAnalysesSince(HISTORY_DAYS, 3000),
+/**
+ * @param preloaded Aynı çalıştırmada zaten çekilmiş analiz listesi (yeni→eski).
+ *   Verilirse Firestore'a hiç analiz sorgusu atılmaz.
+ */
+export async function buildHomeSnapshot(preloaded?: VideoAnalysis[]): Promise<HomeSnapshot> {
+    const [history, channels, prices, suppressed, lastScan] = await Promise.all([
+        preloaded
+            ? Promise.resolve(sliceAnalysesSince(preloaded, HISTORY_DAYS, 3000))
+            : getAnalysesSince(HISTORY_DAYS, 3000),
         getChannels(),
         getStoredPrices(),
         getSuppressedSignals().catch(() => new Set<string>()),
         getDocData<{ completedAt?: string }>("system_status", "last_scan").catch(() => null),
     ]);
+
+    // 30 günlük pencere 12 aylık geçmişin alt kümesi: ayrı sorgu atmak aynı
+    // dokümanları ikinci kez faturalıyordu.
+    const recent = sliceAnalysesSince(history, WINDOW_DAYS, 800);
 
     /* --- 1) 12 aylık geçmiş: (varlık, kanal) bazında tüm görüşler --- */
     const byAssetChannel = new Map<string, Entry[]>();
@@ -210,11 +221,28 @@ export async function buildHomeSnapshot(): Promise<HomeSnapshot> {
     };
 }
 
-export async function writeHomeSnapshot(): Promise<HomeSnapshot> {
-    const snapshot = await buildHomeSnapshot();
+export async function writeHomeSnapshot(preloaded?: VideoAnalysis[]): Promise<HomeSnapshot> {
+    const snapshot = await buildHomeSnapshot(preloaded);
     await setDocData("snapshots", "home", snapshot as unknown as Record<string, unknown>);
     console.log(
         `[SNAPSHOT] Güncellendi: ${snapshot.consensus.length} varlık, ${snapshot.videoCount} video, ${snapshot.analystCount} analist`
     );
     return snapshot;
+}
+
+/**
+ * Yeni bulgu yokken snapshot'ı baştan üretmeden yalnızca "Son tarama" saatini
+ * günceller (1 yazma, 0 okuma). Tam yeniden üretim binlerce doküman okur ve
+ * sonuç bulgu olmadığı için zaten aynı çıkar.
+ *
+ * `update()` doküman yoksa hata verir (kısmi doküman oluşturmaz); false döner,
+ * çağıran tam snapshot yazar.
+ */
+export async function touchSnapshotScanTime(completedAt: string): Promise<boolean> {
+    try {
+        await adminDb().collection("snapshots").doc("home").update({ lastScanAt: completedAt });
+        return true;
+    } catch {
+        return false;
+    }
 }

@@ -23,7 +23,7 @@
 import type { Analysis, Recommendation, Timeframe, VideoAnalysis } from "@/lib/types";
 import { toIso } from "@/lib/types";
 import { normalizeAsset } from "@/lib/asset-utils";
-import { getAnalysesSince, getChannels, setDocData } from "./repo";
+import { getAnalysesSince, getChannels, setDocData, sliceAnalysesSince } from "./repo";
 
 /** Bu sayının altında örneklemi olan kanal için oran gösterilmez. */
 export const MIN_SAMPLE = 20;
@@ -98,10 +98,10 @@ function tally(c: ScoreCounts, a: Analysis) {
     }
 }
 
-export async function buildScorecard(): Promise<Scorecard> {
+export async function buildScorecard(preloaded?: VideoAnalysis[]): Promise<Scorecard> {
     // Karne tüm geçmişe bakar; ana sayfadaki 30 günlük pencere burada geçerli değil.
     const [videos, channels] = await Promise.all([
-        getAnalysesSince(3650, 4000),
+        preloaded ? Promise.resolve(sliceAnalysesSince(preloaded, 3650, 4000)) : getAnalysesSince(3650, 4000),
         getChannels(),
     ]);
     const meta = new Map(channels.map((c) => [c.id, c]));
@@ -202,8 +202,8 @@ export async function buildScorecard(): Promise<Scorecard> {
     };
 }
 
-export async function writeScorecard(): Promise<Scorecard> {
-    const card = await buildScorecard();
+export async function writeScorecard(preloaded?: VideoAnalysis[]): Promise<Scorecard> {
+    const card = await buildScorecard(preloaded);
     await setDocData("snapshots", "scorecard", card as unknown as Record<string, unknown>);
     console.log(
         `[KARNE] ${card.rows.length} kanal, ${card.totals.measured} ölçülmüş görüş, ` +

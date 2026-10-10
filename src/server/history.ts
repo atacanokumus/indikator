@@ -12,7 +12,7 @@
 import { normalizeAsset } from "@/lib/asset-utils";
 import type { Recommendation, Tally, VideoAnalysis } from "@/lib/types";
 import { toIso } from "@/lib/types";
-import { getAnalysesSince, setDocData } from "./repo";
+import { getAnalysesSince, setDocData, sliceAnalysesSince } from "./repo";
 
 export const HISTORY_MONTHS = 12;
 
@@ -35,8 +35,13 @@ export function monthKeys(now = new Date()): string[] {
     return out;
 }
 
-export async function buildAssetHistory(now = new Date()): Promise<AssetHistory> {
-    const videos = (await getAnalysesSince(400, 4000)) as VideoAnalysis[];
+export async function buildAssetHistory(
+    now = new Date(),
+    preloaded?: VideoAnalysis[]
+): Promise<AssetHistory> {
+    const videos = (
+        preloaded ? sliceAnalysesSince(preloaded, 400, 4000) : await getAnalysesSince(400, 4000)
+    ) as VideoAnalysis[];
     const months = monthKeys(now);
     const monthIndex = new Map(months.map((m, i) => [m, i]));
 
@@ -81,8 +86,11 @@ export async function buildAssetHistory(now = new Date()): Promise<AssetHistory>
     return history;
 }
 
-export async function writeAssetHistory(now = new Date()): Promise<AssetHistory> {
-    const history = await buildAssetHistory(now);
+export async function writeAssetHistory(
+    now = new Date(),
+    preloaded?: VideoAnalysis[]
+): Promise<AssetHistory> {
+    const history = await buildAssetHistory(now, preloaded);
     await setDocData("snapshots", "history", {
         generatedAt: new Date().toISOString(),
         months: monthKeys(now),
