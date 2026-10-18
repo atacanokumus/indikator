@@ -53,7 +53,7 @@ Bunlar da bilerek böyle yapıldı; ayrıntı ve yayın sonrası liste için [do
 
 | Karar | Nerede | Neden |
 |---|---|---|
-| Yalnızca ≥3 analistli ya da profili yazılı varlık sayfası dizine girer | `src/lib/seo.ts`, `src/lib/asset-seo.ts`, `src/app/sitemap.ts` | Tek analistli yüzlerce otomatik sayfa, para konularında tüm siteyi aşağı çeker |
+| Yalnızca profili elle yazılmış varlık sayfası dizine girer; profilsiz sayfada reklam yuvası yok | `src/lib/asset-seo.ts`, `src/app/sitemap.ts`, `src/app/varlik/[slug]/page.tsx` | AdSense "düşük değerli içerik" reddi (Ekim 2026): yapay zeka özeti + kalıp metinden oluşan otomatik sayfalar siteyi aşağı çeker |
 | Kök düzende canonical / og:url yok; sayfalar `pageMetadata()` kullanır | `src/lib/seo.ts`, `src/app/layout.tsx` | Sayfa `openGraph`/`alternates` alanı üsttekini tamamen ezer; unutulan sayfa ana sayfaya kanonikleşir |
 | Varlık adresi Türkçe etiketten türer; eski adresler 308 ile yönlenir | `src/lib/slug.ts` | `/varlik/dolar` aranan kelimeyi taşır; `usd-try` gibi eski adresler dizinde |
 | Bilinen varlığın sayfası veri yokken 404 olmaz | `src/server/known-assets.ts`, `src/app/varlik/[slug]/page.tsx` | 30 gün sessiz kalan varlığın sıralaması silinmesin |

@@ -85,7 +85,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     /**
-     * Varlık sayfaları — yalnızca dizine girmeye değer olanlar (bkz. MIN_ANALYSTS_FOR_INDEX).
+     * Varlık sayfaları — yalnızca dizine girmeye değer olanlar (bkz. isIndexableAsset).
      * Tek analistin konuştuğu yüzlerce sayfayı sitemap'e koymak, Google'a "bunlar sitenin
      * en önemli sayfaları" demek olur.
      */
@@ -93,12 +93,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const withData = new Set(consensus.map((c) => c.asset));
     const assets: MetadataRoute.Sitemap = [
         ...consensus
-            .filter((c) => isIndexableAsset(c.asset, c.analystCount))
+            .filter((c) => isIndexableAsset(c.asset))
             .map((c) => ({
                 url: `${SITE_URL}/varlik/${assetSlug(c.asset)}`,
                 lastModified: validDate(c.latestSignalAt) ?? snapshotDate,
                 changeFrequency: "daily" as const,
-                priority: PROFILED_ASSETS.includes(c.asset) ? 0.9 : 0.6,
+                priority: 0.9,
             })),
         // Profili yazılı ama şu an kimsenin değinmediği varlıklar da dizinde kalır.
         ...PROFILED_ASSETS.filter((a) => !withData.has(a)).map((a) => ({

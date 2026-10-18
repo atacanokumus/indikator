@@ -18,6 +18,8 @@
  *    her dönemde geçerli olmadığı söylenir.
  *  - Satır içi biçim: [metin](/adres) bağlantı, **kalın**. Başka biçim yok.
  */
+import { MACRO_GUIDES } from "@/content/guides-macro";
+import { MARKET_GUIDES } from "@/content/guides-markets";
 import { assetSlug } from "@/lib/slug";
 
 export type Block =
@@ -55,7 +57,7 @@ export interface Guide {
 /** Varlık sayfasına bağlantı: adres kurallarından bağımsız kalsın diye koddan üretilir. */
 const A = (asset: string, label: string) => `[${label}](/varlik/${assetSlug(asset)})`;
 
-export const GUIDES: Guide[] = [
+const BASE_GUIDES: Guide[] = [
     /* ------------------------------------------------------------------ */
     {
         slug: "gram-altin-nasil-hesaplanir",
@@ -209,7 +211,7 @@ export const GUIDES: Guide[] = [
             },
         ],
         assets: ["ALTIN", "USD/TRY", "GÜMÜŞ"],
-        related: ["altin-fiyatini-ne-etkiler", "dolar-kuru-neye-gore-belirlenir"],
+        related: ["altin-fiyatini-ne-etkiler", "ceyrek-yarim-tam-altin-farki", "dolar-kuru-neye-gore-belirlenir"],
     },
 
     /* ------------------------------------------------------------------ */
@@ -353,7 +355,7 @@ export const GUIDES: Guide[] = [
             },
         ],
         assets: ["ALTIN", "GÜMÜŞ", "DXY", "USD/TRY"],
-        related: ["gram-altin-nasil-hesaplanir", "faiz-karari-piyasalari-nasil-etkiler", "youtube-ekonomist-yorumlari-nasil-okunur"],
+        related: ["gram-altin-nasil-hesaplanir", "altin-gumus-orani-nedir", "abd-10-yillik-tahvil-faizi-neden-onemli", "faiz-karari-piyasalari-nasil-etkiler"],
     },
 
     /* ------------------------------------------------------------------ */
@@ -503,7 +505,7 @@ export const GUIDES: Guide[] = [
             },
         ],
         assets: ["USD/TRY", "EUR/TRY", "DXY", "ALTIN"],
-        related: ["faiz-karari-piyasalari-nasil-etkiler", "gram-altin-nasil-hesaplanir", "youtube-ekonomist-yorumlari-nasil-okunur"],
+        related: ["cari-acik-nedir-kuru-nasil-etkiler", "dolar-endeksi-dxy-nedir", "faiz-karari-piyasalari-nasil-etkiler", "enflasyon-nedir-tufe-nasil-hesaplanir"],
     },
 
     /* ------------------------------------------------------------------ */
@@ -638,7 +640,7 @@ export const GUIDES: Guide[] = [
             },
         ],
         assets: ["XU100", "BANKA-HISSE", "USD/TRY"],
-        related: ["faiz-karari-piyasalari-nasil-etkiler", "dolar-kuru-neye-gore-belirlenir", "youtube-ekonomist-yorumlari-nasil-okunur"],
+        related: ["fk-orani-nedir-hisse-degerleme", "sp-500-nasdaq-dow-jones-farki", "cds-nedir-ulke-risk-primi", "faiz-karari-piyasalari-nasil-etkiler"],
     },
 
     /* ------------------------------------------------------------------ */
@@ -776,7 +778,7 @@ export const GUIDES: Guide[] = [
             },
         ],
         assets: ["BTC", "ETH", "KRIPTO"],
-        related: ["youtube-ekonomist-yorumlari-nasil-okunur", "faiz-karari-piyasalari-nasil-etkiler"],
+        related: ["ethereum-nedir-bitcoin-farki", "yatirim-dolandiriciligi-nasil-anlasilir", "youtube-ekonomist-yorumlari-nasil-okunur"],
     },
 
     /* ------------------------------------------------------------------ */
@@ -894,7 +896,7 @@ export const GUIDES: Guide[] = [
             },
         ],
         assets: ["USD/TRY", "ALTIN", "XU100", "TAHVIL", "US10Y"],
-        related: ["dolar-kuru-neye-gore-belirlenir", "altin-fiyatini-ne-etkiler", "bist-100-nedir"],
+        related: ["enflasyon-nedir-tufe-nasil-hesaplanir", "tahvil-nedir-faiz-fiyat-iliskisi", "mevduat-faizi-net-getiri-nasil-hesaplanir", "dolar-kuru-neye-gore-belirlenir"],
     },
 
     /* ------------------------------------------------------------------ */
@@ -1040,7 +1042,7 @@ export const GUIDES: Guide[] = [
             },
         ],
         assets: ["ALTIN", "USD/TRY", "XU100", "BTC"],
-        related: ["konsensus-nedir", "faiz-karari-piyasalari-nasil-etkiler", "altin-fiyatini-ne-etkiler"],
+        related: ["konsensus-nedir", "yatirim-dolandiriciligi-nasil-anlasilir", "faiz-karari-piyasalari-nasil-etkiler"],
     },
 
     /* ------------------------------------------------------------------ */
@@ -1271,9 +1273,12 @@ export const GUIDES: Guide[] = [
             },
         ],
         assets: ["BZ=F", "CL=F", "NG=F", "USD/TRY"],
-        related: ["dolar-kuru-neye-gore-belirlenir", "youtube-ekonomist-yorumlari-nasil-okunur"],
+        related: ["cari-acik-nedir-kuru-nasil-etkiler", "dolar-kuru-neye-gore-belirlenir", "youtube-ekonomist-yorumlari-nasil-okunur"],
     },
 ];
+
+/** Tüm rehber yazıları. Yeni yazılar boyut nedeniyle ayrı dosyalarda (guides-markets.ts, guides-macro.ts). */
+export const GUIDES: Guide[] = [...BASE_GUIDES, ...MARKET_GUIDES, ...MACRO_GUIDES];
 
 export function getGuide(slug: string): Guide | undefined {
     return GUIDES.find((g) => g.slug === slug);

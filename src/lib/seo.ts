@@ -23,18 +23,6 @@ export const SITE_DESCRIPTION =
     "Yatırım tavsiyesi değil, sayım.";
 
 /**
- * Bir varlık sayfasının arama dizinine girmesi için gereken en az analist sayısı.
- *
- * NEDEN: Sitemap'te 189 varlık sayfası vardı; çoğunda tek bir analist konuşmuş
- * ("Chipotle", "Tesco", "Near"). Tek cümlelik, otomatik üretilmiş yüzlerce sayfa
- * Google'ın kalite sistemlerinde TÜM siteyi aşağı çeker (özellikle para konularında).
- * Altı çizili ilke: az ama dolu sayfa. Eşiğin altındaki sayfa kullanıcıya açık kalır
- * (`noindex, follow`), sitemap'ten çıkar; analist sayısı eşiği aştığında kendiliğinden
- * dizine girer.
- */
-export const MIN_ANALYSTS_FOR_INDEX = 3;
-
-/**
  * Hukuki sayfaların (gizlilik, KVKK, kaldırma, iletişim) metni en son değiştiği tarih.
  * Gizlilik sayfasında "Son güncelleme" olarak görünür ve sitemap'in `lastmod` değeridir.
  * Bu sayfaların metnini GERÇEKTEN değiştirdiğinizde güncelleyin; her render'da

@@ -4,7 +4,7 @@
  */
 import { PROFILED_ASSETS, getAssetProfile } from "@/content/assets";
 import { DIRECTION, assetLabel, tallyTextShort } from "@/lib/display";
-import { MIN_ANALYSTS_FOR_INDEX, fitDescription, fitTitle, monthYearTr } from "@/lib/seo";
+import { fitDescription, fitTitle, monthYearTr } from "@/lib/seo";
 import type { AssetConsensus } from "@/lib/types";
 
 /** Başlık ve cümlelerde geçen ad: profilde özel bir ad varsa o, yoksa etiket. */
@@ -13,12 +13,18 @@ export function assetSeoName(asset: string): string {
 }
 
 /**
- * Sayfa arama dizinine girsin mi?
- *  - Elle yazılmış profili olan varlıklar: evet (yeterli özgün metin var).
- *  - Diğerleri: yalnızca yeterince analist konuşuyorsa (bkz. MIN_ANALYSTS_FOR_INDEX).
+ * Sayfa arama dizinine girsin mi? Yalnızca elle yazılmış profili olan varlıklar.
+ *
+ * NEDEN: Eskiden "≥3 analist konuşuyorsa" da dizine giriyordu. AdSense, siteyi
+ * "düşük değerli içerik" gerekçesiyle reddetti; örnek sayfa /varlik/t-mobile idi:
+ * üç yapay zeka özeti, kalıp SSS ve her sayfada aynı yasal metin. Sayfanın
+ * özgün kısmı birkaç cümleydi. Analist sayısı sayfayı dolu yapmıyor; elle
+ * yazılmış "nedir / neyi etkiler" metni yapıyor. Profilsiz sayfa kullanıcıya
+ * açık kalır (`noindex, follow`), sitemap'e girmez, üzerinde reklam yuvası
+ * gösterilmez. Bir varlığı dizine sokmak için src/content/assets.ts'e profil yazın.
  */
-export function isIndexableAsset(asset: string, analystCount: number): boolean {
-    return PROFILED_ASSETS.includes(asset) || analystCount >= MIN_ANALYSTS_FOR_INDEX;
+export function isIndexableAsset(asset: string): boolean {
+    return PROFILED_ASSETS.includes(asset);
 }
 
 export function assetMetaTitle(asset: string, generatedAt?: string, hasData = true): string {

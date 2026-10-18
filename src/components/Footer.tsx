@@ -21,6 +21,10 @@ const FOOTER_GUIDES: [string, string][] = [
     ["faiz-karari-piyasalari-nasil-etkiler", "Faiz kararı piyasaları nasıl etkiler?"],
     ["petrol-fiyatlari-neden-degisir-brent-wti", "Petrol fiyatları neden değişir?"],
     ["youtube-ekonomist-yorumlari-nasil-okunur", "Ekonomist yorumları nasıl okunur?"],
+    ["enflasyon-nedir-tufe-nasil-hesaplanir", "Enflasyon nedir?"],
+    ["ceyrek-yarim-tam-altin-farki", "Çeyrek altın kaç gram?"],
+    ["tahvil-nedir-faiz-fiyat-iliskisi", "Tahvil nedir?"],
+    ["yatirim-dolandiriciligi-nasil-anlasilir", "Yatırım dolandırıcılığı"],
 ];
 
 export function Footer() {

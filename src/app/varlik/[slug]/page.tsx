@@ -49,7 +49,7 @@ export async function generateMetadata({
         absoluteTitle: true,
         description: assetMetaDescription(hit.asset, item, snapshot.windowDays),
         path: `/varlik/${hit.canonical}`,
-        noindex: !isIndexableAsset(hit.asset, item?.analystCount ?? 0),
+        noindex: !isIndexableAsset(hit.asset),
     });
 }
 
@@ -68,6 +68,8 @@ export default async function VarlikPage({ params }: { params: Promise<{ slug: s
     const hasSnapshot = new Date(snapshot.generatedAt).getFullYear() > 2020;
     const item = snapshot.consensus.find((c) => c.asset === asset);
     const profile = getAssetProfile(asset);
+    // Dizine girmeyen (profilsiz) sayfada reklam yuvası yok: bkz. isIndexableAsset.
+    const showAds = isIndexableAsset(asset);
     const name = assetSeoName(asset);
     const history = allHistory[asset] ?? [];
     const price = item ? formatPrice(item.price, item.currency) : null;
@@ -210,7 +212,7 @@ export default async function VarlikPage({ params }: { params: Promise<{ slug: s
                 </section>
             )}
 
-            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_TOP} />
+            {showAds && <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_TOP} />}
 
             {item && (
                 <section className="wrap section" aria-labelledby="gorusler">
@@ -297,7 +299,7 @@ export default async function VarlikPage({ params }: { params: Promise<{ slug: s
                 </section>
             )}
 
-            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />
+            {showAds && <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />}
 
             <JsonLd
                 data={[

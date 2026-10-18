@@ -16,7 +16,7 @@ export default function HakkimizdaPage() {
             <h1 className="h1" style={{ fontSize: "clamp(1.7rem, 3.6vw, 2.3rem)" }}>Hakkımızda</h1>
 
             <p className="lead" style={{ marginTop: 16 }}>
-                Analist Ne Diyor, Türkiye&apos;deki YouTube ekonomi yorumcularının ne dediğini takip etmeyi
+                Analist Ne Diyor, Türkiye&apos;den ve dünyadan YouTube ekonomi yorumcularının ne dediğini takip etmeyi
                 kolaylaştırmak için kurulmuş bağımsız bir araştırma aracıdır.
             </p>
 

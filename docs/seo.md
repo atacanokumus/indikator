@@ -22,7 +22,7 @@ Site teknik olarak sağlamdı (sitemap, robots, canonical, JSON-LD vardı). Eksi
 
 ## Değiştirmeden önce okuyun
 
-* **`MIN_ANALYSTS_FOR_INDEX`** (`src/lib/seo.ts`) düşürülürse ince sayfalar dizine geri girer. Eşiği düşürmek yerine içeriği artırın.
+* **`isIndexableAsset`** (`src/lib/asset-seo.ts`) yalnızca profili yazılı varlıkları dizine sokar. Eskiden "≥3 analist" de yetiyordu; AdSense siteyi "düşük değerli içerik" diye reddettiğinde dizindeki `/varlik/t-mobile` gibi sayfalar üç yapay zeka özeti ile kalıp metinden ibaretti. Bir varlığı dizine sokmak için eşik eklemeyin, `src/content/assets.ts`'e profil yazın.
 * Kök `layout.tsx`'e `alternates.canonical` ya da `openGraph.url` **eklemeyin**: kendi canonical'ını tanımlamayı unutan her sayfayı ana sayfaya kanonikleştirir.
 * `assetSlug()` kurallarını değiştirirseniz eski adres `legacyAssetSlug()` ile çözülmeye devam etmeli; yoksa sıralama birikimi kaybolur.
 * Rehber yazılarında **tavsiye ve güncel rakam yok** (README: hukuki tasarım kararları). Örnek rakam varsa "örnek" diye etiketlenir.
@@ -38,6 +38,19 @@ Site teknik olarak sağlamdı (sitemap, robots, canonical, JSON-LD vardı). Eksi
 6. **PageSpeed Insights** / Vercel Speed Insights: ana sayfa HTML'i ham ~390 KB (sıkıştırılmış ~59 KB). Büyüme yönü: `SignalExplorer`'a giden `signals` dizisini kısmak.
 7. **Bağlantı kazanımı** (en büyük etken, koddan çıkmaz): haftalık bülten ve isabet karnesi paylaşılmaya değer, özgün veridir. Her bülten çıktığında X/LinkedIn'de paylaşın; ekonomi gazetecilerine ve bloglarına bülten bağlantısını kaynak olarak önerin. RSS: `/bulten/rss.xml`.
 8. **Organization `sameAs`**: sosyal hesaplar açılınca `src/lib/seo.ts` `organizationLd()` içine ekleyin.
+
+## AdSense "düşük değerli içerik" reddi (Ekim 2026)
+
+Yapılanlar:
+
+* Dizin yalnızca profili yazılı varlıklarla sınırlandı; profilsiz sayfalar `noindex`, sitemap dışı ve reklamsız.
+* Rehber 9 yazıdan 22 yazıya çıktı (`src/content/guides-markets.ts`, `src/content/guides-macro.ts`); eski yazılar yenilerine bağlandı.
+
+Kodla yapılamayanlar, yeniden incelemeden önce:
+
+1. **Kim yapıyor?** Hakkımızda sayfasında sitenin arkasındaki kişi ya da şirket yazmıyor. Para konusundaki (YMYL) bir sitede anonimlik güveni en çok düşüren etkendir; gerçek ad, kısa özgeçmiş ve iletişim eklenmeli.
+2. **Zaman ve trafik.** Reddin üç koşulundan ikisi ("sürekli içerik", "gerçek kullanıcı ilgisi") birikimle oluşur. Yeni yazıları Search Console'da dizine ekletin, en az 2-4 hafta organik trafik oluşmasını bekleyin, sonra yeniden inceleme isteyin.
+3. **Düzenli yayın.** Haftada en az bir yeni ya da gerçekten güncellenmiş rehber yazısı, "sürekli içerik seçimi" koşulunu doğrudan karşılar.
 
 ## Ölçüm
 
