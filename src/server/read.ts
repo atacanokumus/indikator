@@ -3,7 +3,7 @@ import type { HomeSnapshot } from "@/lib/types";
 import type { Scorecard } from "./scorecard";
 import type { Bulletin } from "./bulletin";
 import type { HistoryPoint } from "./history";
-import { getDocData } from "./repo";
+import { getChannels, getDocData } from "./repo";
 
 const EMPTY: HomeSnapshot = {
     generatedAt: new Date(0).toISOString(),
@@ -108,4 +108,24 @@ export const getAssetHistory = unstable_cache(
     },
     ["asset-history"],
     { revalidate: 900, tags: ["history"] }
+);
+
+
+/**
+ * Takip edilen kanalların adı ve bölgesi (analist sayfaları için).
+ * Puan / isabet alanları BİLEREK alınmaz: bkz. src/lib/analyst.ts.
+ * Saatte bir okunur; hata olursa boş liste döner ve sayfalar anlık görüntüyle çalışır.
+ */
+export const getChannelDirectory = unstable_cache(
+    async (): Promise<{ id: string; title: string; region?: "TR" | "GLOBAL"; thumbnail?: string }[]> => {
+        try {
+            const channels = await getChannels();
+            return channels.map((c) => ({ id: c.id, title: c.title, region: c.region, thumbnail: c.thumbnail }));
+        } catch (err) {
+            console.error("[READ] kanal listesi okunamadı:", (err as Error).message);
+            return [];
+        }
+    },
+    ["channel-directory"],
+    { revalidate: 3600, tags: ["channels"] }
 );

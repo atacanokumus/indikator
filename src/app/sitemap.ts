@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { PROFILED_ASSETS } from "@/content/assets";
 import { GUIDES } from "@/content/guides";
 import { TOOLS } from "@/content/tools";
+import { analystsFromSnapshot, isIndexableAnalyst } from "@/lib/analyst";
 import { isIndexableAsset } from "@/lib/asset-seo";
 import { LEGAL_PAGES_UPDATED, SITE_URL } from "@/lib/seo";
 import { assetSlug } from "@/lib/slug";
@@ -127,5 +128,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
     }));
 
-    return [...statics, ...guides, ...tools, ...assets, ...bulletins];
+    /** Analist sayfaları: yalnızca yeterli görüşü olanlar (bkz. isIndexableAnalyst). */
+    const analysts: MetadataRoute.Sitemap = snapshot
+        ? analystsFromSnapshot(snapshot)
+              .filter(isIndexableAnalyst)
+              .map((p) => ({
+                  url: `${SITE_URL}/analist/${p.slug}`,
+                  lastModified: validDate(p.latestAt) ?? snapshotDate,
+                  changeFrequency: "daily" as const,
+                  priority: 0.8,
+              }))
+        : [];
+
+    return [...statics, ...guides, ...tools, ...assets, ...analysts, ...bulletins];
 }

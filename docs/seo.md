@@ -81,13 +81,30 @@ Araçlarda güncel fiyat / oran **ön tanımlı gelmez** (rehberle aynı kural);
 4. **Sayfa ağırlığı**: `/konsensus` ham HTML ≈795 KB, ana sayfa ≈439 KB. `SignalExplorer`'a giden `signals` dizisini kısmak Core Web Vitals'ı iyileştirir.
 5. **Yeniden başvuru zamanı**: yeni sayfalar Search Console'da dizine eklendikten ve birkaç hafta organik trafik oluştuktan sonra.
 
+## Analist sayfaları (`/analist/<kanal>`, Kasım 2026)
+
+Search Console (14 Eylül - 9 Kasım 2026): **21 gösterim, 0 tıklama**, gösterim alan 8 sayfa. Rehber yazılarının hiçbiri gösterim almamış.
+Tek iyi sıra marka sorgusunda ("analistler ne diyor", sıra 1,5); "euro yorumları" 39-76. sıralarda. Sonuç: site henüz Google'da yok sayılacak
+kadar az görünüyor; genel sorgularda (altın/dolar/euro yorumları) büyük sitelerle rekabet edemiyor. Rakipsiz alan kişi adlı sorgular:
+"<yorumcu> altın yorumu".
+
+| Karar | Nerede | Neden |
+|---|---|---|
+| Sayfa yalnızca anlık görüntüden beslenir (ek Firestore sorgusu yok); kanal listesi saatte bir okunur | `src/lib/analyst.ts`, `getChannelDirectory` | Okuma maliyeti; pencere içinde konuşmayan kanalın sayfası 404 olmasın |
+| **İsabet oranı, puan, sıralama gösterilmez** | `src/app/analist/[slug]/page.tsx` | Adı geçen kişi hakkında "başarılı/başarısız" hükmünü arama sonucuna taşımamak; oranlar yalnızca `/analistler` ve `/karne`'de |
+| Pencerede 5'ten az varlıkta görüşü olan kanal `noindex, follow`, sitemap dışı, reklamsız | `isIndexableAnalyst` | Bir iki özetten ibaret sayfa "düşük değerli içerik" |
+| Her sayfada "kanalın sahibiyseniz" kaldırma yolu ve her özette "Bu özet yanlış" | sayfa | 5651 / kaldırma akışı |
+| Adres kanal adından türer; kanal kimliğiyle gelen adres 308 ile kanonik adrese gider | `analystSlug`, `resolve` | Aranan kelime adreste olsun |
+
+Kanal adı değişirse adres de değişir ve eski adres 404 olur; ad değiştiren kanal olursa `resolve` içine eski ad eşlemesi eklenmeli.
+
 ## Ölçüm
 
 Search Console → Performans → sorgularda şu kalıpları izleyin: "`<varlık>` yorumları", "`<varlık>` ne diyor", "ekonomist yorumları", "gram altın nasıl hesaplanır". İlk 4-8 haftada gösterim sayısı, sonra tıklama oranı; sıralama 3 aydan önce oturmaz.
 
 ## Açık konular (karar sizin)
 
-* **Analist sayfaları** (`/analist/<kanal>`): "`<yorumcu>` altın yorumu" sorguları yüksek hacimli ve rakipsiz bir alan; ancak adı geçen kişiler için isabet oranını arama dizinine açmak hukuki risk. Yapılacaksa önce kaldırma talebi akışı ve oran gösterimi (en az 20 ölçüm) gözden geçirilmeli.
+* **Analist sayfaları** yapıldı (Kasım 2026); kurallar yukarıda.
 * **Yinelenen varlıklar**: `src/lib/asset-utils.ts` aynı şirketi ayrı sayfalara bölüyor (chipotle/cmg, starbucks/sbux, intel/intc, broadcom/avgo, qualcomm/qcom, tsmc/tsm, moderna/mrna, ykb/ykbnk). Bu kurallar veri hattını etkilediği için dokunmadım; birleştirmek hem sayımı hem SEO'yu düzeltir.
 * **Gizlilik sayfası** "Son güncelleme" olarak her zaman bugünün tarihini yazıyor; gerçek tarihle değiştirilmeli.
 * **Rehber yazıları ve Hakkımızda'daki yayın ilkeleri** yeni metindir; yayına almadan önce gözden geçirin (özellikle olgu cümleleri ve "bağımsızlık" beyanı).

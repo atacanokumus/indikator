@@ -12,6 +12,7 @@ import {
     formatPrice,
     relativeTime,
 } from "@/lib/display";
+import { analystPath } from "@/lib/analyst";
 import { assetSlug } from "@/lib/slug";
 import { TallyBar, TallyHeadline, TallySentence } from "./Tally";
 import { ReportButton } from "./ReportButton";
@@ -122,7 +123,9 @@ export function SignalRow({
                 <div className="between gap-8">
                     <span className="small truncate row gap-6" style={{ fontWeight: 700, color: "var(--text)" }}>
                         <RegionBadge region={s.region} />
-                        {s.channelTitle}
+                        <Link href={analystPath(s.channelTitle)} style={{ color: "inherit", textDecoration: "none" }}>
+                            {s.channelTitle}
+                        </Link>
                     </span>
                     <span className={`dir-chip chip-${s.recommendation}`}>{DIRECTION[s.recommendation]}</span>
                 </div>

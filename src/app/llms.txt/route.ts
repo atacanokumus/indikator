@@ -62,7 +62,7 @@ export function GET() {
 - [Haftalık bülten](${SITE_URL}/bulten): haftanın konsensüs değişimi ([RSS](${SITE_URL}/bulten/rss.xml))
 - [Ekonomi rehberi](${SITE_URL}/rehber): altın, döviz, borsa ve kripto için tavsiye içermeyen açıklayıcı yazılar
 - [Hesaplama araçları](${SITE_URL}/araclar): gram altın, mevduat faizi ve reel getiri hesaplayıcıları
-- [Analistler](${SITE_URL}/analistler): takip edilen kanallar
+- [Analistler](${SITE_URL}/analistler): takip edilen kanallar; her kanalın son görüşleri /analist/<kanal-adı> adresindedir
 - [Metodoloji](${SITE_URL}/metodoloji): video seçiminden sayıma kadar tüm yöntem
 - [Sözlük](${SITE_URL}/sozluk): terimlerin karşılıkları
 - [Hakkımızda](${SITE_URL}/hakkimizda)

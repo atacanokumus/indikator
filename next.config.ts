@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
             { source: "/economists", destination: "/analistler", permanent: true },
             { source: "/privacy", destination: "/gizlilik", permanent: true },
             // /varlik tek başına bir sayfa değil; adresi kısaltan kişi/tarayıcı 404 görmesin.
+            { source: "/analist", destination: "/analistler", permanent: true },
             { source: "/varlik", destination: "/konsensus", permanent: true },
             { source: "/varlik/", destination: "/konsensus", permanent: true },
         ];

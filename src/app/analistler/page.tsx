@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { pageMetadata } from "@/lib/seo";
 import { AdSlot } from "@/components/AdSlot";
+import Link from "next/link";
+import { analystPath } from "@/lib/analyst";
 import { getChannels } from "@/server/repo";
 import type { Channel } from "@/lib/types";
 
@@ -67,15 +69,9 @@ export default async function AnalistlerPage() {
                                             {i + 1}
                                         </span>
                                         <div className="stack" style={{ minWidth: 0 }}>
-                                            <a
-                                                className="h3 truncate"
-                                                href={`https://www.youtube.com/channel/${c.id}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                style={{ textDecoration: "none" }}
-                                            >
+                                            <Link className="h3 truncate" href={analystPath(c.title)} style={{ textDecoration: "none" }}>
                                                 {c.title}
-                                            </a>
+                                            </Link>
                                             <span className="tiny">
                                                 {c.predictionCount ? `${c.predictionCount} değerlendirilmiş sinyal` : "Henüz vadesi dolmuş sinyal yok"}
                                             </span>
@@ -85,6 +81,19 @@ export default async function AnalistlerPage() {
                                     <div className="between">
                                         <span className="small">Puan</span>
                                         <span className="mono" style={{ fontWeight: 750 }}>{c.totalScore ?? 100}</span>
+                                    </div>
+                                    <div className="row gap-12 wrapflex">
+                                        <Link className="tiny" href={analystPath(c.title)} style={{ color: "var(--brand)", fontWeight: 650 }}>
+                                            Son görüşleri →
+                                        </Link>
+                                        <a
+                                            className="tiny"
+                                            href={`https://www.youtube.com/channel/${c.id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            YouTube kanalı
+                                        </a>
                                     </div>
                                     {rate !== null && (
                                         <div className="between">
