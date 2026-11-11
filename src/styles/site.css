@@ -581,3 +581,50 @@ html, body { overflow-x: clip; }
 
 /* Haber şeridi yüklenirken yer ayır: sonradan eklenince sayfa aşağı kaymasın (CLS) */
 .ticker-reserve { min-height: 46px; }
+
+/* =========================================================
+   HESAPLAMA ARAÇLARI (/araclar)
+   ========================================================= */
+.calc-fields { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field label { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.field-box {
+  display: flex; align-items: center;
+  border: 1px solid var(--border-strong); border-radius: var(--r);
+  background: var(--bg-elevated);
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.field-box:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 16%, transparent); }
+.field-box input, .field-box select {
+  flex: 1; min-width: 0; width: 100%;
+  padding: 12px 14px; border: 0; outline: none; background: transparent;
+  color: var(--text); font: inherit; font-size: 16px; font-weight: 600;
+}
+.field-box input::placeholder { color: var(--text-muted); font-weight: 400; }
+.field-box input[aria-invalid="true"] { color: var(--sat); }
+.field-suffix { padding-right: 14px; color: var(--text-muted); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.field-hint { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
+.field-err { color: var(--sat); }
+.calc-result {
+  margin-top: 18px; padding: 16px 18px; border-radius: var(--r);
+  background: var(--bg-sunken); border: 1px solid var(--border);
+}
+.calc-result dl { margin: 0; display: grid; gap: 0; }
+.calc-result dl > div {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+  padding: 9px 0; border-top: 1px solid var(--border);
+}
+.calc-result dl > div:first-child { border-top: 0; padding-top: 0; }
+.calc-result dt { font-size: 14px; color: var(--text-soft); }
+.calc-result dd { margin: 0; font-size: 15px; font-weight: 700; color: var(--text); text-align: right; white-space: nowrap; }
+.calc-result .calc-main dt { font-weight: 700; color: var(--text); }
+.calc-result .calc-main dd { font-size: 21px; color: var(--brand); }
+@media (max-width: 520px) {
+  .calc-result dl > div { flex-direction: column; gap: 2px; }
+  .calc-result dd { text-align: left; white-space: normal; }
+}
+
+/* Rehber yazısı kaynakçası */
+.sources { margin: 0; padding-left: 1.2em; max-width: 70ch; }
+.sources li { margin-bottom: 8px; font-size: 14.5px; color: var(--text-soft); line-height: 1.55; }
+.sources a { color: var(--brand); font-weight: 600; text-underline-offset: 3px; }

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { PROFILED_ASSETS } from "@/content/assets";
 import { GUIDES } from "@/content/guides";
+import { TOOLS } from "@/content/tools";
 import { isIndexableAsset } from "@/lib/asset-seo";
 import { LEGAL_PAGES_UPDATED, SITE_URL } from "@/lib/seo";
 import { assetSlug } from "@/lib/slug";
@@ -17,7 +18,8 @@ export const revalidate = 3600;
  * Burada dinamik sayfalar kendi verisinin tarihini, sabit sayfalar elle tutulan
  * son-değişiklik tarihini kullanır.
  */
-const CONTENT_UPDATED = "2026-10-08"; // bu SEO çalışmasında içeriği değişen sayfalar
+const CONTENT_UPDATED = "2026-10-08"; // Ekim 2026 SEO çalışmasında içeriği değişen sayfalar
+const TRUST_PAGES_UPDATED = "2026-11-11"; // hakkımızda, iletişim, metodoloji: metin genişletildi
 
 type Freq = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
 
@@ -54,6 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .filter((d): d is Date => d !== null)
         .sort((a, b) => b.getTime() - a.getTime())[0];
     const newestGuide = GUIDES.reduce((m, g) => (g.updated > m ? g.updated : m), "2000-01-01");
+    const newestTool = TOOLS.reduce((m, t) => (t.updated > m ? t.updated : m), "2000-01-01");
 
     const pages: [string, Date, Freq, number][] = [
         ["", snapshotDate, "hourly", 1],
@@ -63,9 +66,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ["/analistler", scorecardDate, "daily", 0.7],
         ["/bulten", newestBulletin ?? new Date(CONTENT_UPDATED), "weekly", 0.7],
         ["/sozluk", new Date(CONTENT_UPDATED), "monthly", 0.5],
+        ["/araclar", new Date(newestTool), "monthly", 0.7],
         ["/metodoloji", new Date(CONTENT_UPDATED), "monthly", 0.6],
-        ["/hakkimizda", new Date(CONTENT_UPDATED), "monthly", 0.4],
-        ["/iletisim", new Date(LEGAL_PAGES_UPDATED), "yearly", 0.3],
+        ["/hakkimizda", new Date(TRUST_PAGES_UPDATED), "monthly", 0.4],
+        ["/iletisim", new Date(TRUST_PAGES_UPDATED), "yearly", 0.3],
         ["/kaldirma", new Date(LEGAL_PAGES_UPDATED), "yearly", 0.3],
         ["/kvkk", new Date(LEGAL_PAGES_UPDATED), "yearly", 0.2],
         ["/gizlilik", new Date(LEGAL_PAGES_UPDATED), "yearly", 0.2],
@@ -116,5 +120,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.5,
     }));
 
-    return [...statics, ...guides, ...assets, ...bulletins];
+    const tools: MetadataRoute.Sitemap = TOOLS.map((t) => ({
+        url: `${SITE_URL}/araclar/${t.slug}`,
+        lastModified: new Date(t.updated),
+        changeFrequency: "monthly",
+        priority: 0.7,
+    }));
+
+    return [...statics, ...guides, ...tools, ...assets, ...bulletins];
 }

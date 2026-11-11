@@ -55,6 +55,13 @@ export function Footer() {
                             <Link className="small" href="/sozluk">Sözlük</Link>
                         </div>
                         <div className="stack gap-8">
+                            <span className="eyebrow">Araçlar</span>
+                            <Link className="small" href="/araclar">Tüm araçlar</Link>
+                            <Link className="small" href="/araclar/gram-altin-hesaplama">Gram altın hesaplama</Link>
+                            <Link className="small" href="/araclar/mevduat-faizi-hesaplama">Mevduat faizi hesaplama</Link>
+                            <Link className="small" href="/araclar/reel-getiri-hesaplama">Reel getiri hesaplama</Link>
+                        </div>
+                        <div className="stack gap-8">
                             <span className="eyebrow">Yorumlar</span>
                             {FOOTER_ASSETS.map((a) => (
                                 <Link key={a} className="small" href={`/varlik/${assetSlug(a)}`}>

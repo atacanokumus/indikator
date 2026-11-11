@@ -57,6 +57,16 @@ export default function RehberPage() {
                     </div>
                 ))}
 
+                <div className="card card-pad stack gap-8" style={{ marginBottom: 16 }}>
+                    <strong>Formülü kendi rakamınızla deneyin</strong>
+                    <p className="small" style={{ margin: 0 }}>
+                        <Link href="/araclar/gram-altin-hesaplama">Gram altın</Link>,{" "}
+                        <Link href="/araclar/mevduat-faizi-hesaplama">mevduat faizi</Link> ve{" "}
+                        <Link href="/araclar/reel-getiri-hesaplama">reel getiri</Link> hesaplama araçları
+                        yazılardaki formülleri sizin girdiğiniz değerlerle çalıştırır.
+                    </p>
+                </div>
+
                 <div className="card card-pad stack gap-8">
                     <strong>Yorumlar yerine sayım mı arıyorsunuz?</strong>
                     <p className="small" style={{ margin: 0 }}>

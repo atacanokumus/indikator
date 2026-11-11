@@ -11,6 +11,7 @@
  * yönlendirme, arama motorlarının manipülasyon saydığı bir şey.
  */
 import { GUIDES } from "@/content/guides";
+import { TOOLS } from "@/content/tools";
 import { PROFILED_ASSETS } from "@/content/assets";
 import { assetSeoName } from "@/lib/asset-seo";
 import { SITE_URL } from "@/lib/seo";
@@ -60,6 +61,7 @@ export function GET() {
 - [İsabet karnesi](${SITE_URL}/karne): geçmiş görüşlerin ölçümü ve yöntemi
 - [Haftalık bülten](${SITE_URL}/bulten): haftanın konsensüs değişimi ([RSS](${SITE_URL}/bulten/rss.xml))
 - [Ekonomi rehberi](${SITE_URL}/rehber): altın, döviz, borsa ve kripto için tavsiye içermeyen açıklayıcı yazılar
+- [Hesaplama araçları](${SITE_URL}/araclar): gram altın, mevduat faizi ve reel getiri hesaplayıcıları
 - [Analistler](${SITE_URL}/analistler): takip edilen kanallar
 - [Metodoloji](${SITE_URL}/metodoloji): video seçiminden sayıma kadar tüm yöntem
 - [Sözlük](${SITE_URL}/sozluk): terimlerin karşılıkları
@@ -70,6 +72,10 @@ export function GET() {
 ## Rehber yazıları
 
 ${GUIDES.map((g) => `- [${g.title}](${SITE_URL}/rehber/${g.slug}): ${g.description}`).join("\n")}
+
+## Hesaplama araçları
+
+${TOOLS.map((t) => `- [${t.title}](${SITE_URL}/araclar/${t.slug}): ${t.description}`).join("\n")}
 
 ## Varlık sayfaları (güncel analist sayımı)
 

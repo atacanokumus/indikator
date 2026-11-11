@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = pageMetadata({
     title: "Gizlilik Politikası",
-    description: "Analist Ne Diyor gizlilik politikası, çerez kullanımı ve KVKK bilgilendirmesi.",
+    description: "Analist Ne Diyor hangi verileri toplar, hangi çerezleri kullanır, Google AdSense ve Analytics ne zaman yüklenir? Gizlilik politikası ve çerez tercihleri.",
     path: "/gizlilik",
 });
 

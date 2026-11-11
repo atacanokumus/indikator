@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
+import { renderBlock } from "@/components/Blocks";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
-import { Inline } from "@/components/RichText";
 import { SpotlightCard } from "@/components/SpotlightCard";
-import { GUIDES, getGuide, guideWordCount, readingMinutes, type Block } from "@/content/guides";
+import { sourcesForGuide } from "@/content/guide-sources";
+import { GUIDES, getGuide, guideWordCount, readingMinutes } from "@/content/guides";
+import { toolsForGuide } from "@/content/tools";
 import { assetLabel, formatDateTr } from "@/lib/display";
 import { articleLd, faqLd, pageMetadata } from "@/lib/seo";
 import { assetSlug } from "@/lib/slug";
@@ -33,26 +35,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     });
 }
 
-function renderBlock(b: Block, i: number) {
-    switch (b.t) {
-        case "p":
-            return <p key={i}><Inline text={b.text} /></p>;
-        case "ul":
-            return <ul key={i}>{b.items.map((it, j) => <li key={j}><Inline text={it} /></li>)}</ul>;
-        case "ol":
-            return <ol key={i}>{b.items.map((it, j) => <li key={j}><Inline text={it} /></li>)}</ol>;
-        case "formula":
-            return (
-                <div key={i} className="formula" role="note">
-                    {b.text}
-                    {b.caption && <small>{b.caption}</small>}
-                </div>
-            );
-        case "note":
-            return <div key={i} className="note" role="note"><Inline text={b.text} /></div>;
-    }
-}
-
 export default async function GuidePage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     const g = getGuide(slug);
@@ -65,6 +47,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
     const noData = g.assets.filter((a) => !snapshot.consensus.some((c) => c.asset === a));
     const related = g.related.map((s) => getGuide(s)).filter((x): x is NonNullable<typeof x> => Boolean(x));
     const minutes = readingMinutes(g);
+    const sources = sourcesForGuide(g.slug);
+    const tools = toolsForGuide(g.slug);
     const path = `/rehber/${g.slug}`;
 
     return (
@@ -79,7 +63,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                     <p className="lead" style={{ marginTop: 14, maxWidth: "62ch" }}>{g.intro}</p>
                     <p className="tiny" style={{ marginTop: 14 }}>
                         <time dateTime={g.updated}>Güncelleme: {formatDateTr(g.updated)}</time>
-                        {" · "}{minutes} dk okuma{" · "}Analist Ne Diyor editörlüğü
+                        {" · "}{minutes} dk okuma{" · "}<Link href="/hakkimizda#nasil-hazirlaniyor">Analist Ne Diyor editörlüğü</Link>
                     </p>
                 </div>
             </section>
@@ -92,6 +76,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                             <li key={s.id}><a href={`#${s.id}`}>{s.h2}</a></li>
                         ))}
                         {g.faq.length > 0 && <li><a href="#sss">Sık sorulan sorular</a></li>}
+                        {sources.length > 0 && <li><a href="#kaynaklar">Kaynaklar ve güncel veriler</a></li>}
                     </ol>
                 </nav>
 
@@ -104,6 +89,21 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                         </section>
                     ))}
                 </div>
+
+                {tools.length > 0 && (
+                    <section aria-labelledby="arac" style={{ marginTop: 40 }}>
+                        <h2 id="arac" className="h2" style={{ marginBottom: 14 }}>Kendi rakamınızla hesaplayın</h2>
+                        <div className="grid-cards">
+                            {tools.map((t) => (
+                                <Link key={t.slug} href={`/araclar/${t.slug}`} className="card card-hover card-pad link-card">
+                                    <span className="eyebrow">Hesaplama aracı</span>
+                                    <strong>{t.title}</strong>
+                                    <span className="small">{t.summary}</span>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 {/* Canlı veri: evergreen yazıya taze, sayfaya özgü içerik katar. */}
                 {(live.length > 0 || noData.length > 0) && (
@@ -142,6 +142,24 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                     </section>
                 )}
 
+                {sources.length > 0 && (
+                    <section aria-labelledby="kaynaklar" style={{ marginTop: 40 }}>
+                        <h2 id="kaynaklar" className="h2" style={{ marginBottom: 6 }}>Kaynaklar ve güncel veriler</h2>
+                        <p className="small" style={{ margin: "0 0 14px", maxWidth: "62ch" }}>
+                            Bu yazı bilerek güncel fiyat ve oran vermez. Tanımları ve güncel rakamları, veriyi üreten ya da
+                            kuralı koyan kurumdan teyit edebilirsiniz:
+                        </p>
+                        <ul className="sources">
+                            {sources.map((src) => (
+                                <li key={src.url}>
+                                    <a href={src.url} target="_blank" rel="noopener noreferrer">{src.name}</a>
+                                    {": "}{src.note}
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
+
                 {related.length > 0 && (
                     <section aria-labelledby="ilgili" style={{ marginTop: 40 }}>
                         <h2 id="ilgili" className="h2" style={{ marginBottom: 14 }}>İlgili yazılar</h2>
@@ -176,6 +194,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                         dateModified: g.updated,
                         section: g.category,
                         wordCount: guideWordCount(g),
+                        personAuthor: true,
                     }),
                     ...(g.faq.length ? [faqLd(g.faq)] : []),
                 ]}

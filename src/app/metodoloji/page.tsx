@@ -10,7 +10,8 @@ export const revalidate = 300;
 export const metadata: Metadata = pageMetadata({
     title: "Metodoloji: sayım nasıl yapılıyor?",
     description:
-        "Analist Ne Diyor'un video seçiminden yön etiketine, sayımdan isabet ölçümüne kadar tüm yöntemi.",
+        "Videolar nasıl seçiliyor, yön etiketi nasıl konuyor, sayım ve isabet ölçümü nasıl yapılıyor, yapay zeka nerede " +
+        "yanılabilir? Analist Ne Diyor'un tüm yöntemi.",
     path: "/metodoloji",
 });
 

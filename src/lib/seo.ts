@@ -12,6 +12,7 @@
  * unutan bir sayfa kendini ana sayfaya kanonikleştirir ve dizinden düşer.
  */
 import type { Metadata } from "next";
+import { HAS_PUBLISHER, PUBLISHER } from "@/content/publisher";
 
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://analistnediyor.com").replace(/\/+$/, "");
 export const SITE_NAME = "Analist Ne Diyor";
@@ -151,6 +152,12 @@ export function organizationLd() {
             email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "iletisim@analistnediyor.com",
             availableLanguage: ["tr"],
         },
+        ...(HAS_PUBLISHER && PUBLISHER.isPerson
+            ? { founder: { "@type": "Person", name: PUBLISHER.name, ...(PUBLISHER.links.length ? { sameAs: PUBLISHER.links.map((l) => l.url) } : {}) } }
+            : {}),
+        ...(HAS_PUBLISHER && !PUBLISHER.isPerson && PUBLISHER.links.length
+            ? { sameAs: PUBLISHER.links.map((l) => l.url) }
+            : {}),
         publishingPrinciples: absoluteUrl("/metodoloji"),
         ethicsPolicy: absoluteUrl("/hakkimizda#yayin-ilkeleri"),
         correctionsPolicy: absoluteUrl("/hakkimizda#duzeltme-politikasi"),
@@ -201,6 +208,8 @@ export function articleLd(a: {
     section?: string;
     keywords?: string[];
     wordCount?: number;
+    /** Elle yazılan içerik (rehber) için true; otomatik bültenlerde yazar kuruluştur. */
+    personAuthor?: boolean;
 }) {
     const url = absoluteUrl(a.path);
     return {
@@ -213,7 +222,10 @@ export function articleLd(a: {
         inLanguage: "tr-TR",
         datePublished: a.datePublished,
         dateModified: a.dateModified ?? a.datePublished,
-        author: { "@id": ORG_ID },
+        // Yazar: gerçek kişi tanımlıysa (src/content/publisher.ts) o, değilse yayın kuruluşu.
+        author: a.personAuthor && HAS_PUBLISHER && PUBLISHER.isPerson
+            ? { "@type": "Person", name: PUBLISHER.name, url: absoluteUrl("/hakkimizda#kim-yapiyor") }
+            : { "@id": ORG_ID },
         publisher: { "@id": ORG_ID },
         isPartOf: { "@id": WEBSITE_ID },
         image: [`${url}/opengraph-image`],

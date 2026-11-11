@@ -167,6 +167,10 @@ export default async function HomePage() {
                     <Link href="/rehber" className="small" style={{ color: "var(--brand)", fontWeight: 650 }}>
                         Tüm rehber yazıları →
                     </Link>
+                    {" · "}
+                    <Link href="/araclar" className="small" style={{ color: "var(--brand)", fontWeight: 650 }}>
+                        Hesaplama araçları →
+                    </Link>
                 </p>
             </section>
 

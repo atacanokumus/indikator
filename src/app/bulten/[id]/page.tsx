@@ -22,7 +22,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const b = await getBulletin(id);
     if (!b) return { title: "Bülten bulunamadı", robots: { index: false } };
     return pageMetadata({
-        title: `${b.weekLabel}: haftalık konsensüs bülteni`,
+        // Marka eki olmadan: "… | Analist Ne Diyor" ile başlık 64-66 karaktere çıkıp kesiliyordu.
+        title: `Haftalık bülten: ${b.weekLabel} analist görüşleri`,
+        absoluteTitle: true,
         description:
             `${b.weekLabel} haftasında ${b.channelCount} kanaldan ${b.signalCount} görüş: ` +
             `${b.flips.length} varlıkta baskın yön değişti, ${b.changes.length} fikir değişikliği. Yatırım tavsiyesi değil, sayım.`,
