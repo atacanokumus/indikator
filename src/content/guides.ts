@@ -790,7 +790,7 @@ const BASE_GUIDES: Guide[] = [
             "Politika faizi değişince dolar, altın, borsa, tahvil ve konut nasıl etkilenir? Faiz ile varlık fiyatları arasındaki ilişkiyi, ilişkinin ne zaman bozulduğunu ve beklentinin rolünü anlattık.",
         category: "Makro",
         published: "2026-10-08",
-        updated: "2026-10-08",
+        updated: "2026-11-13",
         intro:
             "Piyasa yorumlarının büyük kısmı bir faiz kararından önce ya da sonra yapılır. Bu yazı faizin hangi varlıklara hangi " +
             "kanaldan dokunduğunu, ilişkilerin hangi durumlarda tersine döndüğünü ve neden 'beklenti' kelimesinin kararın kendisinden " +
@@ -869,7 +869,7 @@ const BASE_GUIDES: Guide[] = [
                             "Yorumcu kararın **kendisini** mi yoksa kararın **beklentiye göre** farkını mı konuşuyor?",
                             "Hangi vadeyi kastediyor: karardan sonraki birkaç gün mü, birkaç ay mı?",
                             "İlişkiyi kesin mi sunuyor ('faiz düşerse altın çıkar') yoksa koşullu mu?",
-                            "Aynı yorumcu geçmişte benzer bir durumda ne demişti? [İsabet karnesinde](/karne) kimlerin görüşünün sonradan ne kadar tuttuğunu ölçüyoruz.",
+                            "Aynı yorumcu geçmişte benzer bir durumda ne demişti? Varlık sayfalarında her yorumcunun bir önceki görüşü ve tarihi de gösterilir.",
                         ],
                     },
                     {
@@ -905,10 +905,10 @@ const BASE_GUIDES: Guide[] = [
         title: "YouTube'daki ekonomist ve analist yorumları nasıl okunur?",
         metaTitle: "YouTube Ekonomist Yorumları Nasıl Okunur? 7 Maddelik Liste",
         description:
-            "YouTube'daki ekonomist ve piyasa yorumcularının görüşlerini değerlendirirken sorulacak yedi soru: vade, koşul, çıkar çatışması, geçmiş isabet ve sayım. Yorum tavsiye midir?",
+            "YouTube'daki ekonomist ve piyasa yorumcularının görüşlerini değerlendirirken sorulacak yedi soru: vade, koşul, çıkar çatışması, geçmiş görüşler ve sayım. Yorum tavsiye midir?",
         category: "Yöntem",
         published: "2026-10-08",
-        updated: "2026-10-08",
+        updated: "2026-11-13",
         intro:
             "Her gün onlarca kanalda altın, dolar ve borsa hakkında kendinden emin yorumlar yayımlanıyor. Çoğu zaman bu yorumlar " +
             "birbiriyle çelişiyor ve izleyici, fikrine en yakın olanı seçmeye meyilli oluyor. Aşağıdaki yedi soru, bir yorumu " +
@@ -960,8 +960,9 @@ const BASE_GUIDES: Guide[] = [
                         t: "p",
                         text:
                             "Bir yorumcunun eski görüşlerinin sonradan ne kadar tuttuğuna bakmak, dikkate değer bir ölçüdür. Fakat az sayıda " +
-                            "görüş üzerinden çıkan oran yanıltıcıdır. [İsabet karnesinde](/karne) bu nedenle en az 20 ölçülmüş görüşü olmayan " +
-                            "kanal için oran hesaplamıyoruz, fiyatı yatay kalan görüşleri de kimsenin lehine ya da aleyhine saymıyoruz.",
+                            "görüş üzerinden çıkan oran yanıltıcıdır; bir görüşün 'tutması' da kastedilen vadeye ve koşula bağlıdır. " +
+                            "Kendi değerlendirmenizi yapabilmeniz için varlık ve yorumcu sayfalarında her görüşün tarihi, kaynak videosu ve " +
+                            "aynı yorumcunun bir önceki görüşü birlikte gösterilir.",
                     },
                 ],
             },

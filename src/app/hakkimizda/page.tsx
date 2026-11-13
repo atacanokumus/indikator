@@ -46,9 +46,9 @@ export default async function HakkimizdaPage() {
                 hepsini tek tabloda toplar.
             </p>
             <p className="small" style={{ marginTop: 10 }}>
-                İkinci soru daha az sorulur ama daha önemlidir: &ldquo;Geçen sefer söyledikleri tuttu mu?&rdquo;
-                Video platformlarında bir görüş yayımlandıktan sonra kimse dönüp sonucuna bakmaz. Biz her görüşü
-                tarihiyle ve o günkü fiyatla kaydediyor, vadesi dolduğunda fiyatı yeniden ölçüyoruz.
+                İkinci soru daha az sorulur: &ldquo;Geçen ay ne diyordu?&rdquo; Video platformlarında bir görüş
+                yayımlandıktan sonra kimse dönüp eskisiyle karşılaştırmaz. Biz her görüşü tarihiyle kaydediyor,
+                aynı yorumcu yön değiştirdiğinde önceki görüşünü de yanında gösteriyoruz.
             </p>
 
             <h2 id="ne-yayimliyoruz" className="h2" style={{ marginTop: 34 }}>Ne yayımlıyoruz?</h2>
@@ -58,8 +58,8 @@ export default async function HakkimizdaPage() {
                     bekle ya da gözlemle yönünde konuştuğu. Ortalama ya da puan değil, düz sayım.
                 </li>
                 <li>
-                    <strong><Link href="/karne">İsabet karnesi</Link>:</strong> geçmiş görüşlerin, vadesi dolduğunda fiyat
-                    verisiyle karşılaştırılması. Yöntemi ve sınırları aynı sayfada yazılıdır.
+                    <strong><Link href="/#yorumcular">Yorumcu sayfaları</Link>:</strong> her kanalın son videolarında hangi
+                    varlık için ne dediği, kaynak videolarıyla birlikte. Puan, sıralama ya da isabet oranı yayımlamıyoruz.
                 </li>
                 <li>
                     <strong><Link href="/bulten">Haftalık bülten</Link>:</strong> bir haftadan diğerine hangi varlıkta baskın
@@ -81,8 +81,7 @@ export default async function HakkimizdaPage() {
                 <p className="small" style={{ marginTop: 10 }}>
                     Şu an sayımda son {snapshot.windowDays} günde görüş bildiren {snapshot.analystCount} yorumcu
                     {snapshot.videoCount > 0 ? ` ve analiz edilen ${snapshot.videoCount} video` : ""} yer alıyor;{" "}
-                    {PROFILED_ASSETS.length} varlığın ayrı bir sayfası var. Takip edilen kanalların tamamı{" "}
-                    <Link href="/analistler">analistler sayfasında</Link> listelenir.
+                    {PROFILED_ASSETS.length} varlığın ayrı bir sayfası var.
                 </p>
             )}
 
@@ -124,7 +123,7 @@ export default async function HakkimizdaPage() {
                 </li>
             </ul>
             <p className="small" style={{ marginTop: 10 }}>
-                Sayımın adım adım nasıl yapıldığı, hangi durumlarda yanılabileceği ve isabetin nasıl ölçüldüğü{" "}
+                Sayımın adım adım nasıl yapıldığı, hangi durumlarda yanılabileceği ve neyi bilerek yapmadığımız{" "}
                 <Link href="/metodoloji">metodoloji</Link> sayfasında anlatılır.
             </p>
 

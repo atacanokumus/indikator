@@ -108,7 +108,7 @@ export default async function AnalystPage({ params }: { params: Promise<{ slug: 
         <>
             <section className="hero-band">
                 <div className="wrap" style={{ paddingBlock: "30px 26px", maxWidth: 860 }}>
-                    <Breadcrumbs items={[{ name: "Analistler", path: "/analistler" }, { name: p.title, path }]} />
+                    <Breadcrumbs items={[{ name: "Yorumcular", path: "/#yorumcular" }, { name: p.title, path }]} />
                     <div className="row gap-12" style={{ alignItems: "center", marginTop: 6 }}>
                         {p.thumbnail && (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -235,10 +235,9 @@ export default async function AnalystPage({ params }: { params: Promise<{ slug: 
                             </li>
                         </ul>
                         <p>
-                            Bu sayfada isabet oranı ya da puan gösterilmez. Geçmiş görüşlerin fiyat verisiyle nasıl
-                            karşılaştırıldığını ve bu ölçümün sınırlarını <Link href="/karne">isabet karnesi</Link> ve{" "}
-                            <Link href="/metodoloji">metodoloji</Link> sayfalarında okuyabilirsiniz. Takip edilen tüm kanallar{" "}
-                            <Link href="/analistler">analistler</Link> sayfasındadır.
+                            Analist Ne Diyor yorumcuları puanlamaz, sıralamaz ve isabet oranı yayımlamaz. Özetlerin nasıl
+                            çıkarıldığını ve nerede yanılabileceğini <Link href="/metodoloji">metodoloji</Link> sayfasında
+                            okuyabilirsiniz. Diğer yorumcular <Link href="/#yorumcular">ana sayfada</Link> listelenir.
                         </p>
                     </div>
                 </section>

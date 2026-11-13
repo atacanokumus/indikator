@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { pageMetadata } from "@/lib/seo";
-import Link from "next/link";
 import { LegalNotice } from "@/components/LegalNotice";
 import { getHomeSnapshot } from "@/server/read";
 
@@ -10,8 +9,8 @@ export const revalidate = 300;
 export const metadata: Metadata = pageMetadata({
     title: "Metodoloji: sayım nasıl yapılıyor?",
     description:
-        "Videolar nasıl seçiliyor, yön etiketi nasıl konuyor, sayım ve isabet ölçümü nasıl yapılıyor, yapay zeka nerede " +
-        "yanılabilir? Analist Ne Diyor'un tüm yöntemi.",
+        "Videolar nasıl seçiliyor, yön etiketi nasıl konuyor, sayım nasıl yapılıyor, görüş değişiklikleri nasıl gösteriliyor, " +
+        "yapay zeka nerede yanılabilir? Analist Ne Diyor'un yöntemi.",
     path: "/metodoloji",
 });
 
@@ -79,18 +78,13 @@ export default async function MetodolojiPage() {
                     olduğunu kendiniz değerlendirebilirsiniz.
                 </p>
 
-                <h2 className="h2" style={{ marginTop: 34 }}>İsabet ölçümü</h2>
+                <h2 className="h2" style={{ marginTop: 34 }}>Neyi yapmıyoruz?</h2>
                 <p className="small">
-                    Her yön etiketi kaydedilirken varlığın o anki fiyatı da saklanır. Etiketin vadesi
-                    dolduğunda (kısa 7 gün, orta 30 gün, uzun 180 gün) fiyat tekrar ölçülür ve
-                    yönün tutup tutmadığına bakılır. Eşik <strong>%1,5</strong>: bu bandın içinde kalan
-                    hareketler yatay sayılır. Sonuçlar <Link href="/analistler">analistler sayfasında</Link>{" "}
-                    görünür.
-                </p>
-                <p className="small" style={{ marginTop: 10 }}>
-                    Bu ölçüm kaba bir göstergedir: konuşmacının kastettiği vade, giriş seviyesi veya
-                    koşul bizim varsayımımızdan farklı olabilir. Bir yorumcunun başarısı hakkında
-                    kesin hüküm olarak okunmamalıdır.
+                    Analist Ne Diyor yorumcuları puanlamaz, sıralamaz ve görüşlerinin sonradan doğru çıkıp
+                    çıkmadığına dair bir oran yayımlamaz. Bir görüşün &ldquo;tutması&rdquo; konuşmacının
+                    kastettiği vadeye, giriş seviyesine ve koşula bağlıdır; bunlar videodan her zaman
+                    kesin olarak çıkarılamaz. Site yalnızca kimin, ne zaman, hangi yönde konuştuğunu ve
+                    görüşünü değiştirip değiştirmediğini gösterir.
                 </p>
 
                 <h2 className="h2" style={{ marginTop: 34 }}>Nerede hata yapabiliriz?</h2>

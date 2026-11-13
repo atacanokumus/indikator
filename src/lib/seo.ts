@@ -20,7 +20,7 @@ export const SITE_NAME = "Analist Ne Diyor";
 /** Sosyal ve arama sonucu önizlemelerinde kullanılan varsayılan cümle. */
 export const SITE_DESCRIPTION =
     "YouTube'daki ekonomi yorumcularının altın, dolar, BIST 100 ve Bitcoin için ne dediğini " +
-    "tek ekranda görün: kaç analist hangi yönde konuşuyor, geçmiş görüşler tuttu mu? " +
+    "tek ekranda görün: kaç analist hangi yönde konuşuyor, kim görüş değiştirdi? " +
     "Yatırım tavsiyesi değil, sayım.";
 
 /**
@@ -172,7 +172,7 @@ export function organizationLd() {
         logo: { "@type": "ImageObject", url: LOGO_URL, width: 512, height: 512 },
         description:
             "Takip edilen YouTube ekonomi yorumcularının görüşlerini varlık bazında sayan, " +
-            "geçmiş görüşlerin sonradan tutup tutmadığını fiyat verisiyle ölçen bağımsız bir yayın.",
+            "görüş değişikliklerini tarihleriyle birlikte gösteren bağımsız bir yayın.",
         knowsLanguage: ["tr", "en"],
         areaServed: "TR",
         contactPoint: {
@@ -204,7 +204,7 @@ export function websiteLd() {
         inLanguage: "tr-TR",
         description:
             "YouTube ekonomi yorumcularının videolarında hangi varlık için hangi yönde " +
-            "konuştuğunun sayımı ve geçmiş görüşlerin isabet karnesi. Yatırım tavsiyesi değildir.",
+            "konuştuğunun sayımı. Yatırım tavsiyesi değildir.",
         publisher: { "@id": ORG_ID },
     };
 }

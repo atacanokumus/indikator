@@ -11,6 +11,7 @@ import { LegalNotice } from "@/components/LegalNotice";
 import { JsonLd } from "@/components/JsonLd";
 import { PROFILED_ASSETS } from "@/content/assets";
 import { GUIDES } from "@/content/guides";
+import { analystsFromSnapshot, isIndexableAnalyst } from "@/lib/analyst";
 import { assetSeoName, directionWord } from "@/lib/asset-seo";
 import { absoluteUrl, faqLd, webPageLd } from "@/lib/seo";
 import { assetSlug } from "@/lib/slug";
@@ -39,6 +40,9 @@ export default async function HomePage() {
     const hero = spotlight.length >= 3 ? spotlight : consensus.slice(0, 4);
 
     const hasData = consensus.length > 0;
+
+    // Yorumcu sayfaları: yalnızca dizine giren (yeterli görüşü olan) kanallar, en çok konuşandan aza.
+    const analysts = analystsFromSnapshot(snapshot).filter(isIndexableAnalyst);
 
     // Yorum sayfalarına iç bağlantılar: elle profili yazılmış varlıklar (sayfaları her zaman açık).
     const popular = [...PROFILED_ASSETS]
@@ -140,6 +144,25 @@ export default async function HomePage() {
                 </div>
             </section>
 
+            {/* ---------------- Yorumcu sayfaları: kişi adlı aramaların giriş noktası ---------------- */}
+            {analysts.length > 0 && (
+                <section className="wrap section" aria-labelledby="yorumcular" style={{ scrollMarginTop: 80 }}>
+                    <h2 id="yorumcular" className="h2" style={{ marginBottom: 6 }}>Yorumcu yorumcu: kim ne diyor?</h2>
+                    <p className="small" style={{ margin: "0 0 16px", maxWidth: "62ch" }}>
+                        Her sayfada o kanalın son {snapshot.windowDays} günde hangi varlık için hangi yönde konuştuğu,
+                        kaynak videolarıyla birlikte yer alır. Sıralama, değinilen varlık sayısına göredir; bir değerlendirme değildir.
+                    </p>
+                    <div className="row gap-8 wrapflex">
+                        {analysts.map((p) => (
+                            <Link key={p.id} href={`/analist/${p.slug}`} className="chip">
+                                {p.title} yorumları
+                                <span className="mono" style={{ color: "var(--text-muted)", fontSize: 12 }}>{p.views.length} varlık</span>
+                            </Link>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             {/* ---------------- Haftalık bülten ve rehber ---------------- */}
             <section className="wrap section" aria-labelledby="okumalar">
                 <h2 id="okumalar" className="h2" style={{ marginBottom: 18 }}>Okumalar</h2>
@@ -234,7 +257,7 @@ export default async function HomePage() {
                         type: "CollectionPage",
                         name: "Ekonomist yorumları: altın, dolar, borsa ve Bitcoin",
                         description:
-                            "YouTube ekonomi yorumcularının varlık bazında yön sayımı ve geçmiş görüşlerin isabet karnesi.",
+                            "YouTube ekonomi yorumcularının videolarında altın, dolar, borsa ve kripto için hangi yönde konuştuğunun varlık bazında sayımı.",
                         path: "/",
                         dateModified: hasData ? snapshot.generatedAt : undefined,
                     }),
@@ -272,10 +295,6 @@ const FAQ = [
     {
         q: "Sayım nasıl yapılıyor?",
         a: "Bir varlık için her yorumcunun yalnızca en güncel görüşü sayılır; aynı kişi iki kez sayılmaz. Sonuç bir ortalama veya puan değil, düz bir sayımdır: kaç kişi hangi yönde konuşmuş. Analist Ne Diyor bu sayıya kendi görüşünü katmaz.",
-    },
-    {
-        q: "Analistlerin başarı oranı neye göre ölçülüyor?",
-        a: "Her sinyal kaydedilirken varlığın o anki fiyatı da saklanır. Sinyalin vadesi dolduğunda (kısa 7 gün, orta 30 gün, uzun 180 gün) fiyat tekrar ölçülür ve sinyalin yönü tutup tutmadığına bakılır.",
     },
     {
         q: "Bu bir yatırım tavsiyesi mi?",

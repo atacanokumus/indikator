@@ -53,13 +53,6 @@ const GROUPS: { title: string; intro: string; terms: Term[] }[] = [
                     "ne \"tuttu\" ne \"tutmadı\" sayılır; ayrı gösterilir. Ölçülen görüşlerin yaklaşık yarısı " +
                     "bu gruba düşüyor — piyasada çoğu zaman kayda değer bir şey olmadığının işareti.",
             },
-            {
-                term: "Ölçülemeyen görüş",
-                body:
-                    "Tek bir fiyatı olmayan başlıklar hakkındaki görüşler: \"konut\", \"mevduat\", " +
-                    "\"kripto paralar\", \"ABD hisseleri\" gibi. Bunlar isabet karnesinde paydaya girmez, " +
-                    "çünkü karşılaştırılacak bir fiyat serisi yoktur.",
-            },
         ],
     },
     {
@@ -239,8 +232,7 @@ export default function SozlukPage() {
                         Kanallarda duyup burada bulamadığınız bir kavram varsa{" "}
                         <Link href="/iletisim">iletişim sayfasından</Link> yazın, listeye ekleyelim.
                         Sitedeki sayıların nasıl hesaplandığını{" "}
-                        <Link href="/metodoloji">metodoloji</Link> ve{" "}
-                        <Link href="/karne#yontem">isabet karnesi</Link> sayfalarında bulabilirsiniz.
+                        <Link href="/metodoloji">metodoloji</Link> sayfasında bulabilirsiniz.
                         Daha uzun anlatımlar için <Link href="/rehber">ekonomi rehberine</Link> göz atın.
                     </p>
                 </div>

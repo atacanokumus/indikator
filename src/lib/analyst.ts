@@ -7,9 +7,9 @@
  * içinde hiç konuşmamış kanalın sayfası da 404 olmasın.
  *
  * HUKUKİ / EDİTORYAL SINIRLAR (değiştirmeden önce okuyun, bkz. docs/seo.md):
- *  - Bu sayfalarda İSABET ORANI, PUAN ya da SIRALAMA gösterilmez. Adı geçen kişi
- *    hakkında "başarılı / başarısız" hükmü arama sonucuna taşınmaz; oranlar
- *    yalnızca /analistler ve /karne sayfalarında, yöntem notuyla birlikte durur.
+ *  - İSABET ORANI, PUAN ya da SIRALAMA sitenin HİÇBİR sayfasında gösterilmez
+ *    (/karne ve /analistler Kasım 2026'da site sahibinin kararıyla kaldırıldı).
+ *    Adı geçen kişi hakkında "başarılı / başarısız" hükmü yayımlanmaz.
  *  - Sayfa kişiyi değil, kişinin VİDEODA SÖYLEDİĞİNİ anlatır; her özet kaynak
  *    videoya bağlıdır ve "Bu özet yanlış" düğmesi taşır.
  *  - Her sayfada kanal sahibine yönelik kaldırma yolu görünür.

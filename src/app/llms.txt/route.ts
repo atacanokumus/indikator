@@ -24,8 +24,8 @@ export function GET() {
 
 > Türkiye'deki ve dünyadaki YouTube ekonomi yorumcularının videolarında hangi
 > varlık için hangi yönde konuştuğunu sayan bağımsız bir yayın. Site kendi
-> yatırım tavsiyesini üretmez; başkalarının söylediklerini sayar ve geçmiş
-> görüşlerin sonradan tutup tutmadığını fiyat verisiyle ölçer.
+> yatırım tavsiyesini üretmez; başkalarının söylediklerini sayar ve
+> yorumcuların görüş değişikliklerini tarihleriyle birlikte gösterir.
 
 ## Ne yapar
 
@@ -34,8 +34,7 @@ export function GET() {
   görüş bildirdiği yerleri işaretler.
 - Aynı varlık için kaç yorumcunun hangi yönde konuştuğunu sayar
   (alım / satış / bekle / gözlemle).
-- Her görüşün vadesi dolduğunda fiyatı yeniden ölçer ve görüşün tutup
-  tutmadığını kaydeder.
+- Aynı yorumcu bir varlıkta yön değiştirdiğinde önceki görüşünü ve tarihini de gösterir.
 
 ## Ne yapmaz
 
@@ -43,26 +42,23 @@ export function GET() {
 - Kendi görüşünü sayıma katmaz, yorumcuları kendi kanaatine göre ağırlıklandırmaz.
 - Videoları yeniden yayınlamaz veya indirilebilir hale getirmez.
 - Yatırım danışmanlığı yetkisi yoktur; içerik kişiye özel değildir.
+- Yorumcuları puanlamaz, sıralamaz, isabet ya da başarı oranı yayımlamaz.
 
-## Ölçüm yöntemi
+## Sayım yöntemi
 
-- Giriş fiyatı: videonun yayımlandığı günün kapanışı.
-- Çıkış fiyatı: yayın tarihi + görüşün vadesi (kısa 7 gün, orta 30 gün, uzun 180 gün).
-- Eşik: yüzde 1,5. Bu bandın içinde kalan hareket "yatay" sayılır, kimsenin
-  lehine ya da aleyhine yazılmaz.
-- Tek fiyatı olmayan başlıklar (konut, mevduat, "kripto paralar" gibi) hiç
-  ölçülmez ve isabet oranının paydasına girmez.
-- En az 20 ölçülmüş görüşü olmayan kanal için isabet oranı hesaplanmaz.
+- Bir varlık için her yorumcunun yalnızca en güncel görüşü sayılır; aynı kişi iki kez sayılmaz.
+- Sonuç ortalama, puan ya da ağırlıklı skor değildir; düz sayımdır.
+- Sayım penceresi son 30 gündür; daha eski görüşler sayıma girmez.
+- Her özet kaynak videoya bağlıdır ve yapay zeka ile çıkarılmıştır; hata içerebilir.
 
 ## Sayfalar
 
 - [Ana sayfa](${SITE_URL}/): varlık bazında güncel sayım
 - [Konsensüs](${SITE_URL}/konsensus): tüm varlıkların tablosu
-- [İsabet karnesi](${SITE_URL}/karne): geçmiş görüşlerin ölçümü ve yöntemi
 - [Haftalık bülten](${SITE_URL}/bulten): haftanın konsensüs değişimi ([RSS](${SITE_URL}/bulten/rss.xml))
 - [Ekonomi rehberi](${SITE_URL}/rehber): altın, döviz, borsa ve kripto için tavsiye içermeyen açıklayıcı yazılar
 - [Hesaplama araçları](${SITE_URL}/araclar): gram altın, mevduat faizi ve reel getiri hesaplayıcıları
-- [Analistler](${SITE_URL}/analistler): takip edilen kanallar; her kanalın son görüşleri /analist/<kanal-adı> adresindedir
+- Yorumcu sayfaları: her kanalın son görüşleri ${SITE_URL}/analist/<kanal-adı> adresindedir (ana sayfada listelenir)
 - [Metodoloji](${SITE_URL}/metodoloji): video seçiminden sayıma kadar tüm yöntem
 - [Sözlük](${SITE_URL}/sozluk): terimlerin karşılıkları
 - [Hakkımızda](${SITE_URL}/hakkimizda)

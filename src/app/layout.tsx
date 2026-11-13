@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     keywords: [
         "ekonomist yorumları", "altın yorumları", "dolar yorumları", "analist ne diyor",
         "bist 100 yorumları", "bitcoin yorumları", "youtube ekonomist", "piyasa konsensüsü",
-        "analist isabet oranı",
+        "ekonomist ne diyor",
     ],
     authors: [{ name: SITE_NAME, url: SITE_URL }],
     creator: SITE_NAME,

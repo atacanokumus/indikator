@@ -8,10 +8,9 @@ import { ThemeToggle } from "./ThemeToggle";
 const LINKS = [
     { href: "/", label: "Görüşler" },
     { href: "/konsensus", label: "Konsensüs" },
-    { href: "/analistler", label: "Analistler" },
-    { href: "/karne", label: "Karne" },
     { href: "/bulten", label: "Bülten" },
     { href: "/rehber", label: "Rehber" },
+    { href: "/araclar", label: "Araçlar" },
 ];
 
 /** /rehber/gram-altin… açıkken "Rehber" sekmesi de seçili görünsün. */

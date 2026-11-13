@@ -48,8 +48,7 @@ export function Footer() {
                             <span className="eyebrow">Sayfalar</span>
                             <Link className="small" href="/">Görüşler</Link>
                             <Link className="small" href="/konsensus">Konsensüs</Link>
-                            <Link className="small" href="/analistler">Analistler</Link>
-                            <Link className="small" href="/karne">İsabet karnesi</Link>
+                            <Link className="small" href="/#yorumcular">Yorumcular</Link>
                             <Link className="small" href="/bulten">Haftalık bülten</Link>
                             <Link className="small" href="/rehber">Ekonomi rehberi</Link>
                             <Link className="small" href="/sozluk">Sözlük</Link>

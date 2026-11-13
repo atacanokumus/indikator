@@ -127,6 +127,22 @@ Search Console: 25 sayfa dizinde, 49 dizin dışı; sitemap 12 Kasım'da okundu 
 | `publisher.ts` hâlâ boş | Sizde |
 | 404 sayfasında iki `robots` etiketi (noindex + index) | Zararsız: durum kodu 404, Google en kısıtlayıcıyı uygular |
 
+## Karne ve analistler sayfalarının kaldırılması (13 Kasım 2026)
+
+Site sahibinin kararı: adı geçen kişiler hakkında isabet oranı, puan ve sıralama yayımlamak hukuki risk olarak görüldü.
+
+* `/karne` silindi (404). `/analistler` silindi; `/analistler`, `/analist` ve `/economists` 308 ile ana sayfadaki "Yorumcular" bölümüne gider.
+* Yorumcu sayfaları (`/analist/<kanal>`) duruyor; ana sayfadaki `#yorumcular` bölümünden ve tüm görüş kartlarından bağlanır.
+* Metodoloji, hakkımızda, sözlük, rehber, llms.txt, yapılandırılmış veri ve site açıklamalarından isabet/karne ifadeleri çıkarıldı.
+* **Veri hattına dokunulmadı**: `src/server/evaluator.ts` ve `scorecard.ts` çalışmaya devam ediyor, yalnızca sonuç hiçbir sayfada gösterilmiyor.
+  Hesaplamayı da durdurmak isterseniz tarama betiklerinden çıkarılmalı.
+* İsabet oranını herhangi bir sayfaya geri eklemeyin; bkz. `src/lib/analyst.ts`.
+
+## IndexNow (Bing, Yandex)
+
+`npm run indexnow` sitemap'teki tüm adresleri bildirir; `npm run indexnow -- /rehber/x` tek adres. Anahtar `public/` altındaki
+`.txt` dosyasıdır (gizli değil). Google IndexNow kullanmaz. Yeni rehber, araç ya da bülten yayımlandıktan sonra çalıştırın.
+
 ## Ölçüm
 
 Search Console → Performans → sorgularda şu kalıpları izleyin: "`<varlık>` yorumları", "`<varlık>` ne diyor", "ekonomist yorumları", "gram altın nasıl hesaplanır". İlk 4-8 haftada gösterim sayısı, sonra tıklama oranı; sıralama 3 aydan önce oturmaz.

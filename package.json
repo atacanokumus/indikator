@@ -17,7 +17,8 @@
     "prices": "tsx src/scripts/sync-prices.ts",
     "channel:add": "tsx src/scripts/add-channel.ts",
     "websub:renew": "tsx src/scripts/resubscribe.ts",
-    "admin:password": "tsx src/scripts/set-admin-password.ts"
+    "admin:password": "tsx src/scripts/set-admin-password.ts",
+    "indexnow": "tsx src/scripts/indexnow.ts"
   },
   "dependencies": {
     "@google/genai": "^2.22.0",

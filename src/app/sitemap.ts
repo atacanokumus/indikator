@@ -6,7 +6,7 @@ import { analystsFromSnapshot, isIndexableAnalyst } from "@/lib/analyst";
 import { isIndexableAsset } from "@/lib/asset-seo";
 import { LEGAL_PAGES_UPDATED, MIN_INDEX_BULLETIN_SIGNALS, SITE_URL } from "@/lib/seo";
 import { assetSlug } from "@/lib/slug";
-import { getBulletinIndex, getHomeSnapshot, getScorecard } from "@/server/read";
+import { getBulletinIndex, getHomeSnapshot } from "@/server/read";
 
 export const revalidate = 3600;
 
@@ -20,7 +20,7 @@ export const revalidate = 3600;
  * son-değişiklik tarihini kullanır.
  */
 const CONTENT_UPDATED = "2026-10-08"; // Ekim 2026 SEO çalışmasında içeriği değişen sayfalar
-const TRUST_PAGES_UPDATED = "2026-11-11"; // hakkımızda, iletişim, metodoloji: metin genişletildi
+const TRUST_PAGES_UPDATED = "2026-11-13"; // hakkımızda, iletişim, metodoloji, sözlük: metin değişti
 
 type Freq = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
 
@@ -44,14 +44,12 @@ function validDate(iso: string | undefined | null): Date | null {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const [snapshot, scorecard, bulletinIndex] = await Promise.all([
+    const [snapshot, bulletinIndex] = await Promise.all([
         getHomeSnapshot().catch(() => null),
-        getScorecard().catch(() => null),
         getBulletinIndex().catch(() => null),
     ]);
 
     const snapshotDate = validDate(snapshot?.generatedAt) ?? new Date(CONTENT_UPDATED);
-    const scorecardDate = validDate(scorecard?.generatedAt) ?? new Date(CONTENT_UPDATED);
     const newestBulletin = (bulletinIndex?.items ?? [])
         .map((b) => isoWeekMonday(b.id))
         .filter((d): d is Date => d !== null)
@@ -63,12 +61,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ["", snapshotDate, "hourly", 1],
         ["/konsensus", snapshotDate, "hourly", 0.9],
         ["/rehber", new Date(newestGuide), "weekly", 0.8],
-        ["/karne", scorecardDate, "daily", 0.8],
-        ["/analistler", scorecardDate, "daily", 0.7],
         ["/bulten", newestBulletin ?? new Date(CONTENT_UPDATED), "weekly", 0.7],
-        ["/sozluk", new Date(CONTENT_UPDATED), "monthly", 0.5],
+        ["/sozluk", new Date(TRUST_PAGES_UPDATED), "monthly", 0.5],
         ["/araclar", new Date(newestTool), "monthly", 0.7],
-        ["/metodoloji", new Date(CONTENT_UPDATED), "monthly", 0.6],
+        ["/metodoloji", new Date(TRUST_PAGES_UPDATED), "monthly", 0.6],
         ["/hakkimizda", new Date(TRUST_PAGES_UPDATED), "monthly", 0.4],
         ["/iletisim", new Date(TRUST_PAGES_UPDATED), "yearly", 0.3],
         ["/kaldirma", new Date(LEGAL_PAGES_UPDATED), "yearly", 0.3],

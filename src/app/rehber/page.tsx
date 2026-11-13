@@ -71,7 +71,7 @@ export default function RehberPage() {
                     <strong>Yorumlar yerine sayım mı arıyorsunuz?</strong>
                     <p className="small" style={{ margin: 0 }}>
                         <Link href="/">Ana sayfada</Link> altın, dolar, borsa ve kripto için kaç analistin hangi yönde konuştuğunu,{" "}
-                        <Link href="/karne">isabet karnesinde</Link> geçmiş görüşlerin tutup tutmadığını görebilirsiniz.
+                        <Link href="/bulten">haftalık bültende</Link> bir haftadan diğerine neyin değiştiğini görebilirsiniz.
                     </p>
                 </div>
             </section>

@@ -330,7 +330,7 @@ export const ASSET_PROFILES: Record<string, AssetProfile> = {
         also: ["kripto para", "altcoin"],
         summary:
             "Bu başlık tek bir varlık değil, kripto para sınıfı hakkında genel konuşulan görüşleri toplar. " +
-            "Tek bir fiyatı olmadığı için fiyat gösterilmez ve isabet ölçümüne girmez.",
+            "Tek bir fiyatı olmadığı için fiyat gösterilmez.",
         drivers: [
             {
                 t: "Bitcoin'in yönü",
@@ -714,7 +714,7 @@ export const ASSET_PROFILES: Record<string, AssetProfile> = {
         also: ["konut fiyatları", "gayrimenkul", "emlak"],
         summary:
             "Bu başlık tek bir varlık değil, konut ve gayrimenkul piyasası hakkında konuşulan görüşleri toplar. " +
-            "Tek bir canlı fiyatı olmadığı için fiyat gösterilmez ve isabet ölçümüne girmez.",
+            "Tek bir canlı fiyatı olmadığı için fiyat gösterilmez.",
         drivers: [
             {
                 t: "Konut kredisi faizleri",
@@ -745,7 +745,7 @@ export const ASSET_PROFILES: Record<string, AssetProfile> = {
         also: ["mevduat faizi", "para piyasası fonu"],
         summary:
             "Bu başlık bankalardaki mevduat ve para piyasası fonları gibi düşük riskli, faiz getiren araçlar hakkında konuşulan görüşleri toplar. " +
-            "Tek bir canlı fiyatı olmadığı için fiyat gösterilmez ve isabet ölçümüne girmez.",
+            "Tek bir canlı fiyatı olmadığı için fiyat gösterilmez.",
         drivers: [
             {
                 t: "Politika faizi",
