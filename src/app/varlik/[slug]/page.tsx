@@ -45,6 +45,7 @@ export async function generateMetadata({
 
     const item = snapshot.consensus.find((c) => c.asset === hit.asset);
     return pageMetadata({
+        ownImage: true,
         title: assetMetaTitle(hit.asset, snapshot.generatedAt, Boolean(item)),
         absoluteTitle: true,
         description: assetMetaDescription(hit.asset, item, snapshot.windowDays),

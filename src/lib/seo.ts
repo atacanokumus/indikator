@@ -31,6 +31,14 @@ export const SITE_DESCRIPTION =
  */
 export const LEGAL_PAGES_UPDATED = "2026-09-14";
 
+/**
+ * Haftalık bülten bu sayıdan az görüş içeriyorsa dizine girmez (`noindex, follow`,
+ * sitemap dışı). Tarama aksadığı haftalarda bülten neredeyse boş çıkıyor
+ * (2026-W40: 0 görüş, 69 kelime); boş sayfa dizinde durdukça siteyi aşağı çeker.
+ * Sayfa okuyucuya açık kalır ve arşivde listelenir.
+ */
+export const MIN_INDEX_BULLETIN_SIGNALS = 10;
+
 export function absoluteUrl(path = "/"): string {
     if (!path || path === "/") return SITE_URL;
     return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
@@ -73,7 +81,26 @@ export interface PageMeta {
     noindex?: boolean;
     /** Paylaşım başlığı farklıysa (örn. marka eki olmadan). */
     ogTitle?: string;
+    /** Sayfanın klasöründe opengraph-image dosyası var; varsayılan görsel basılmasın. */
+    ownImage?: boolean;
 }
+
+/**
+ * Varsayılan paylaşım görseli. Sayfa `openGraph` tanımladığında kökteki
+ * opengraph-image dosyası miras ALINMIYOR (alan tamamen eziliyor): kendi
+ * opengraph-image dosyası olmayan 32 sayfada og:image hiç yoktu ve paylaşım
+ * kartı görselsiz çıkıyordu.
+ *
+ * DİKKAT: burada verilen `images`, klasördeki opengraph-image dosyasını da EZER
+ * (denendi: varlık ve rehber sayfaları genel görsele döndü). Bu yüzden kendi
+ * opengraph-image dosyası olan sayfalar `ownImage: true` geçirir.
+ */
+const DEFAULT_OG_IMAGE = {
+    url: "/opengraph-image",
+    width: 1200,
+    height: 630,
+    alt: "Analist Ne Diyor — altın, dolar, borsa ve kriptoda kim ne diyor",
+};
 
 export function pageMetadata(p: PageMeta): Metadata {
     const url = absoluteUrl(p.path);
@@ -98,6 +125,7 @@ export function pageMetadata(p: PageMeta): Metadata {
             url,
             title: ogTitle,
             description,
+            ...(p.ownImage ? {} : { images: [DEFAULT_OG_IMAGE] }),
             ...(p.type === "article"
                 ? { publishedTime: p.publishedTime, modifiedTime: p.modifiedTime ?? p.publishedTime }
                 : {}),
@@ -106,6 +134,7 @@ export function pageMetadata(p: PageMeta): Metadata {
             card: "summary_large_image",
             title: ogTitle,
             description,
+            ...(p.ownImage ? {} : { images: [DEFAULT_OG_IMAGE.url] }),
         },
     };
 }

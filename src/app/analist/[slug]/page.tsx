@@ -54,6 +54,12 @@ async function resolve(slug: string): Promise<{ profile: AnalystProfile; redirec
 
     const byId = profiles.find((p) => p.id === slug) ?? directory.map(empty).find((p) => p.id === slug);
     if (byId && byId.slug) return { profile: byId, redirect: `/analist/${byId.slug}`, ...meta };
+
+    // Veri hiç okunamadıysa "böyle bir yorumcu yok" diyemeyiz: 404 önbelleğe girer ve
+    // var olan sayfa arama motoruna "silindi" görünür. Hata fırlatmak önceki sağlam hali korur.
+    if (!meta.snapshotOk && directory.length === 0) {
+        throw new Error("Analist verisi okunamadı (anlık görüntü ve kanal listesi boş).");
+    }
     return null;
 }
 
@@ -75,6 +81,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         : `${p.title} kanalının videolarında altın, dolar, borsa ve kripto için bildirdiği görüşlerin özeti. ` +
           `Her özet kaynak videoya bağlıdır. Yatırım tavsiyesi değildir.`;
     return pageMetadata({
+        ownImage: true,
         title,
         absoluteTitle: true,
         description,

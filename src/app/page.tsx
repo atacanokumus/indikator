@@ -19,6 +19,7 @@ import { getHomeSnapshot, getLatestBulletin } from "@/server/read";
 export const revalidate = 60;
 
 export const metadata: Metadata = pageMetadata({
+        ownImage: true,
     title: "Analist Ne Diyor | Ekonomist Yorumları: Altın, Dolar, Borsa",
     absoluteTitle: true,
     ogTitle: "Analist Ne Diyor — altın, dolar, borsa ve kriptoda kim ne diyor",

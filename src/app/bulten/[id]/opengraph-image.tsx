@@ -8,7 +8,8 @@ export const revalidate = 3600;
 
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const b = await getBulletin(id);
+    // Okuma hatası görseli düşürmesin: genel bülten görseline düşer.
+    const b = await getBulletin(id).catch(() => null);
     return renderOg({
         eyebrow: "Haftalık bülten",
         title: b?.weekLabel ?? "Haftalık konsensüs bülteni",

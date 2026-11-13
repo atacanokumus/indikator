@@ -25,7 +25,13 @@ const AI_CRAWLERS = [
 ];
 
 export default function robots(): MetadataRoute.Robots {
-    const disallow = ["/admin", "/admin/", "/api/"];
+    /**
+     * `_rsc`: Next.js'in bağlantı ön yüklemesi için ürettiği teknik adresler
+     * (/karne?_rsc=zjblw). İçerik değil; ama Kasım 2026'da Googlebot'un 2.110 tarama
+     * isteğinin ≈1.010'u bunlara gitmişti ve aynı dönemde 36 gerçek sayfa hiç
+     * taranmamıştı. Sayfaların kendisini engellemez, yalnızca ön yükleme isteğini kapatır.
+     */
+    const disallow = ["/admin", "/admin/", "/api/", "/*?_rsc=", "/*&_rsc="];
     return {
         rules: [
             { userAgent: "*", allow: "/", disallow },

@@ -6,7 +6,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
 import { TallyBar, TallySentence } from "@/components/Tally";
 import { DIRECTION, assetLabel, formatDateTr } from "@/lib/display";
-import { articleLd, pageMetadata } from "@/lib/seo";
+import { MIN_INDEX_BULLETIN_SIGNALS, articleLd, pageMetadata } from "@/lib/seo";
 import { assetSlug } from "@/lib/slug";
 import { getBulletin, getBulletinIndex } from "@/server/read";
 
@@ -22,6 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const b = await getBulletin(id);
     if (!b) return { title: "Bülten bulunamadı", robots: { index: false } };
     return pageMetadata({
+        ownImage: true,
         // Marka eki olmadan: "… | Analist Ne Diyor" ile başlık 64-66 karaktere çıkıp kesiliyordu.
         title: `Haftalık bülten: ${b.weekLabel} analist görüşleri`,
         absoluteTitle: true,
@@ -32,6 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         type: "article",
         publishedTime: b.generatedAt,
         modifiedTime: b.generatedAt,
+        noindex: b.signalCount < MIN_INDEX_BULLETIN_SIGNALS,
     });
 }
 

@@ -4,7 +4,7 @@ import { GUIDES } from "@/content/guides";
 import { TOOLS } from "@/content/tools";
 import { analystsFromSnapshot, isIndexableAnalyst } from "@/lib/analyst";
 import { isIndexableAsset } from "@/lib/asset-seo";
-import { LEGAL_PAGES_UPDATED, SITE_URL } from "@/lib/seo";
+import { LEGAL_PAGES_UPDATED, MIN_INDEX_BULLETIN_SIGNALS, SITE_URL } from "@/lib/seo";
 import { assetSlug } from "@/lib/slug";
 import { getBulletinIndex, getHomeSnapshot, getScorecard } from "@/server/read";
 
@@ -114,7 +114,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         })),
     ];
 
-    const bulletins: MetadataRoute.Sitemap = (bulletinIndex?.items ?? []).map((b) => ({
+    const bulletins: MetadataRoute.Sitemap = (bulletinIndex?.items ?? [])
+        .filter((b) => b.signalCount >= MIN_INDEX_BULLETIN_SIGNALS)
+        .map((b) => ({
         url: `${SITE_URL}/bulten/${b.id}`,
         lastModified: isoWeekMonday(b.id) ?? new Date(CONTENT_UPDATED),
         changeFrequency: "yearly" as const,

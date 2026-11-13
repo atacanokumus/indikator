@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = pageMetadata({
     title: "KVKK Aydınlatma Metni",
-    description: "Analist Ne Diyor kişisel verilerin işlenmesine ilişkin aydınlatma metni.",
+    description: "Analist Ne Diyor hangi kişisel verileri, hangi amaçla ve hangi hukuki sebeple işler; KVKK kapsamındaki haklarınız ve başvuru yolu. Aydınlatma metni.",
     path: "/kvkk",
 });
 

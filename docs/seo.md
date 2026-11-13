@@ -98,6 +98,20 @@ kadar az görünüyor; genel sorgularda (altın/dolar/euro yorumları) büyük s
 
 Kanal adı değişirse adres de değişir ve eski adres 404 olur; ad değiştiren kanal olursa `resolve` içine eski ad eşlemesi eklenmeli.
 
+## 13 Kasım 2026 denetimi (canlı tarama + Search Console)
+
+Search Console: 25 sayfa dizinde, 49 dizin dışı; sitemap 12 Kasım'da okundu (88 adres); manuel işlem ve güvenlik sorunu yok;
+**dış bağlantı sayısı 0**; Core Web Vitals için yeterli ziyaretçi verisi yok.
+
+| Bulgu | Durum |
+|---|---|
+| 32 sayfada `og:image` yoktu (sayfa `openGraph` tanımlayınca kökteki görsel miras alınmıyor) | Düzeltildi: `pageMetadata` varsayılan görsel basar; kendi `opengraph-image` dosyası olan sayfalar `ownImage: true` geçirir. Analist ve araç sayfalarına kendi görselleri eklendi |
+| Geçici Firestore hatası önbelleğe "yok" diye giriyordu; var olan bülten bir saat 404 sunulabiliyordu | Düzeltildi: `withRetry` (3 deneme); `getBulletin` hatayı fırlatır (önbelleğe girmez, önceki sağlam sayfa sunulur); analist sayfası veri okunamayınca 404 yerine hata verir |
+| Googlebot'un 2.110 tarama isteğinin ≈1.010'u (%48) `?_rsc=` adreslerine gitmiş (Next.js bağlantı ön yüklemesi); aynı dönemde 36 gerçek sayfa hiç taranmamış | Uygulandı (13 Kasım, onaylı): `robots.ts` içine `Disallow: /*?_rsc=` ve `/*&_rsc=` |
+| `/bulten/2026-W40` sıfır sinyalli (69 kelime) ve dizinde | Uygulandı (13 Kasım, onaylı): 10'dan az görüşlü bülten `noindex, follow` + sitemap dışı (`MIN_INDEX_BULLETIN_SIGNALS`) |
+| `/kvkk` açıklaması 72 karakter | Düzeltildi |
+| Ana sayfa ve `/konsensus` yüzlerce `noindex` varlık sayfasına bağlanıyor | Not: Google henüz bunların yalnızca 2'sini keşfetmiş; `_rsc` engelinden sonra tarama dağılımı yeniden değerlendirilmeli |
+
 ## Ölçüm
 
 Search Console → Performans → sorgularda şu kalıpları izleyin: "`<varlık>` yorumları", "`<varlık>` ne diyor", "ekonomist yorumları", "gram altın nasıl hesaplanır". İlk 4-8 haftada gösterim sayısı, sonra tıklama oranı; sıralama 3 aydan önce oturmaz.
