@@ -3,6 +3,7 @@ import { pageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
+import { HeroSearch } from "@/components/HeroSearch";
 import { NewsTicker } from "@/components/NewsTicker";
 import { SignalExplorer } from "@/components/SignalExplorer";
 import { SpotlightCard } from "@/components/SpotlightCard";
@@ -69,16 +70,27 @@ export default async function HomePage() {
                         sayıyoruz. Tavsiye vermiyoruz — sayıyoruz. Yorum size ait.
                     </p>
 
-                    {snapshot.lastScanAt && (
-                        <p className="tiny row gap-6" style={{ marginTop: 14 }}>
-                            <span className="pulse-dot" style={{ color: "var(--al)" }} />
-                            Son tarama: <RelativeTime iso={snapshot.lastScanAt} /> · her 6 saatte bir otomatik kontrol ediliyor
-                        </p>
+                    {hasData && (
+                        <>
+                            <HeroSearch
+                                options={consensus.map((c) => ({ label: assetLabel(c.asset), slug: assetSlug(c.asset) }))}
+                            />
+                            <div className="hero-quick">
+                                {hero.map((c) => (
+                                    <Link key={c.asset} href={`/varlik/${assetSlug(c.asset)}`} className="chip">
+                                        {assetLabel(c.asset)}
+                                    </Link>
+                                ))}
+                            </div>
+                        </>
                     )}
-                    {snapshot.lastVideoAt && (
-                        <p className="tiny row gap-6" style={{ marginTop: snapshot.lastScanAt ? 4 : 14 }}>
-                            <span className="pulse-dot" style={{ color: "var(--al)" }} />
-                            Son analiz edilen video: <RelativeTime iso={snapshot.lastVideoAt} />
+
+                    {/* Tek satır durum bilgisi: telefonda üç sütuna dağılıp kırılıyordu. */}
+                    {(snapshot.lastVideoAt || snapshot.lastScanAt) && (
+                        <p className="tiny" style={{ marginTop: 16 }}>
+                            <span className="pulse-dot" style={{ color: "var(--al)", marginRight: 8, display: "inline-block", verticalAlign: "middle" }} />
+                            Son güncelleme: <RelativeTime iso={(snapshot.lastVideoAt ?? snapshot.lastScanAt)!} />
+                            {snapshot.lastScanAt && " · 6 saatte bir otomatik tarama"}
                         </p>
                     )}
                 </div>

@@ -143,6 +143,20 @@ Site sahibinin kararı: adı geçen kişiler hakkında isabet oranı, puan ve s�
 `npm run indexnow` sitemap'teki tüm adresleri bildirir; `npm run indexnow -- /rehber/x` tek adres. Anahtar `public/` altındaki
 `.txt` dosyasıdır (gizli değil). Google IndexNow kullanmaz. Yeni rehber, araç ya da bülten yayımlandıktan sonra çalıştırın.
 
+## Tasarım turu (14 Kasım 2026)
+
+Arama motoru için değil okuyucu için yapıldı; ama sayfada kalma ve mobil kullanılabilirlik dolaylı etkiler.
+
+* Mobil menü iki satır (logo + tema düğmesi üstte, bağlantılar altta); çerez bandı telefonda ince şerit.
+* Giriş bölümünde arama (`HeroSearch`): ad varlıkla eşleşirse sayfasına gider, eşleşmezse listeyi süzer.
+* Kartlarda sayım cümlesi yerine `TallyLegend`; görüş satırında kanal adı tekrar etmez, yapay zeka uyarısı
+  listenin başında bir kez (`AiNote`). **Uyarıyı kaldırmayın**: her listenin başında görünür kalmalı.
+* İlk açılışta 12 kart (telefonda 6; ikinci altılı HTML'de durur, CSS ile gizlenir).
+* En küçük yazı 12,5 px, gövde 14 px; soluk gri tonu koyulaştırıldı / açıldı (kontrast).
+* Konsensüs tablosunda Sayım + Dağılım tek sütun; telefonda fiyat, kaynak ve son görüş sütunları gizli.
+* Kanal görseli veri tabanında yok; baş harf + kanala özgü renk (`ChannelAvatar`). Gerçek görsel için tarama
+  betiğinin `thumbnail` kaydetmesi gerekir.
+
 ## Ölçüm
 
 Search Console → Performans → sorgularda şu kalıpları izleyin: "`<varlık>` yorumları", "`<varlık>` ne diyor", "ekonomist yorumları", "gram altın nasıl hesaplanır". İlk 4-8 haftada gösterim sayısı, sonra tıklama oranı; sıralama 3 aydan önce oturmaz.

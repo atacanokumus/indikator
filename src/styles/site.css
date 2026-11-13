@@ -16,7 +16,7 @@
 
   --text: #0f172a;
   --text-soft: #475569;
-  --text-muted: #7b8794;
+  --text-muted: #667383;
 
   --border: #e3e8ef;
   --border-strong: #cbd5e1;
@@ -65,7 +65,7 @@
     --bg-hover: #1a2532;
     --text: #e9eef5;
     --text-soft: #9fb0c3;
-    --text-muted: #74869b;
+    --text-muted: #8b9cb1;
     --border: #1f2c3a;
     --border-strong: #2d3e50;
     --brand: #4db3c9;
@@ -99,7 +99,7 @@
   --bg-hover: #1a2532;
   --text: #e9eef5;
   --text-soft: #9fb0c3;
-  --text-muted: #74869b;
+  --text-muted: #8b9cb1;
   --border: #1f2c3a;
   --border-strong: #2d3e50;
   --brand: #4db3c9;
@@ -176,8 +176,8 @@ a { color: inherit; }
 }
 .h3 { font-size: 1.02rem; font-weight: 750; letter-spacing: -0.015em; margin: 0; }
 .lead { font-size: clamp(1rem, 1.6vw, 1.12rem); color: var(--text-soft); margin: 0; }
-.small { font-size: 13px; color: var(--text-soft); }
-.tiny { font-size: 11.5px; color: var(--text-muted); }
+.small { font-size: 14px; color: var(--text-soft); }
+.tiny { font-size: 12.5px; color: var(--text-muted); }
 .eyebrow {
   font-size: 11px; font-weight: 750; letter-spacing: .13em;
   text-transform: uppercase; color: var(--text-muted);
@@ -281,7 +281,7 @@ html, body { overflow-x: clip; }
   border-bottom: 1px solid var(--border);
 }
 .navbar-inner { height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 .nav-link {
   padding: 8px 12px; border-radius: var(--r-sm);
   font-size: 14px; font-weight: 650; color: var(--text-soft);
@@ -291,25 +291,26 @@ html, body { overflow-x: clip; }
 .nav-link:hover { background: var(--bg-hover); color: var(--text); }
 .nav-link[aria-current="page"] { color: var(--brand); background: var(--brand-soft); }
 /*
- * Dar ekranda menü YANA KAYDIRILIR, sayfa değil.
- * Menüye Karne ve Bülten eklenince 375 piksellik telefonda satır taşıyor ve
- * SAYFANIN TAMAMI yatay kayıyordu (scrollWidth 408 > 375). Kaydırmayı menünün
- * kendi kutusuna hapsediyoruz; tema düğmesi sabit kalıyor.
+ * Dar ekranda menü İKİ SATIR: üstte logo + marka adı + tema düğmesi, altta
+ * yana kaydırılan bağlantı şeridi. Eskiden hepsi tek satıra sıkışıyordu: marka adı
+ * gizleniyor, bağlantılar 12-13 px'e iniyor ve tema düğmesi ekranın dışına taşıyordu.
+ * Kaydırma menünün kendi kutusunda kalır; sayfanın kendisi yatay kaymaz.
  */
-@media (max-width: 640px) {
-  .navbar-inner { height: 56px; gap: 8px; }
-  .nav-link { padding: 7px 9px; font-size: 13px; }
+.nav-end { display: flex; align-items: center; gap: 8px; }
+@media (max-width: 720px) {
+  .navbar-inner { height: auto; flex-wrap: wrap; row-gap: 0; padding-top: 8px; }
+  .nav-logo { order: 1; }
+  .nav-end { order: 2; margin-left: auto; }
   .nav-links {
-    gap: 1px;
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
+    order: 3; flex: 0 0 100%; min-width: 0; margin-left: 0;
+    gap: 2px; margin-top: 6px; padding-block: 6px;
+    border-top: 1px solid var(--border);
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
   }
   .nav-links::-webkit-scrollbar { display: none; }
-  .navbar-inner > .row { flex: 0 0 auto; }
+  .nav-link { padding: 8px 7px; font-size: 13px; }
+  .nav-links { gap: 0; margin-inline: -7px; flex-basis: calc(100% + 14px); }
 }
 
 /* ------------------------------ Izgaralar ------------------------------ */
@@ -496,37 +497,25 @@ html, body { overflow-x: clip; }
 /* --- yapay zeka uyarısı ve bildir düğmesi --- */
 .ai-note {
   display: flex; align-items: center; gap: 6px;
-  font-size: 11.5px; color: var(--text-muted);
+  font-size: 12.5px; color: var(--text-muted);
 }
 .report-btn {
   background: none; border: 0; padding: 0; cursor: pointer;
-  font: inherit; font-size: 11.5px; color: var(--text-muted);
+  font: inherit; font-size: 12.5px; color: var(--text-muted);
   text-decoration: underline; text-underline-offset: 2px;
 }
 .report-btn:hover { color: var(--sat); }
 
 /* --- önceki görüş rozeti (Tebliğ m.78/2-c) --- */
-.prev-note {
-  font-size: 11.5px; color: var(--text-muted);
-  display: inline-flex; align-items: center; gap: 5px;
-}
+/* Düz metin akışı: inline-flex iken telefonda "Önceki görüşü:", yön ve tarih ayrı sütunlara bölünüyordu. */
+.prev-note { font-size: 12.5px; color: var(--text-muted); display: block; }
 .prev-note s { opacity: .75; }
 
 /* --- yasal şerit --- */
 .legal-strip {
-  font-size: 12px; color: var(--text-muted); line-height: 1.6;
+  font-size: 12.5px; color: var(--text-muted); line-height: 1.6;
   background: var(--bg-sunken); border: 1px solid var(--border);
   border-radius: var(--r); padding: 12px 16px;
-}
-
-/* Dar ekranda menü taşmasın: kelime markası gizlenir, ikon kalır */
-@media (max-width: 560px) {
-  .logo-word { display: none; }
-  .navbar-inner { gap: 8px; }
-  .nav-link { padding: 7px 8px; font-size: 12.5px; }
-}
-@media (max-width: 380px) {
-  .nav-link { padding: 6px 6px; font-size: 12px; }
 }
 
 /* Yerli / yabancı dağılımı */
@@ -543,8 +532,10 @@ html, body { overflow-x: clip; }
    süresi ve sayfada kalma süresi buna bağlı.
    ========================================================= */
 .crumbs { margin-bottom: 12px; }
-.crumbs ol { list-style: none; display: flex; flex-wrap: wrap; gap: 0; margin: 0; padding: 0; }
-.crumbs li { display: inline-flex; align-items: center; }
+.crumbs ol { list-style: none; display: flex; flex-wrap: nowrap; gap: 0; margin: 0; padding: 0; min-width: 0; }
+.crumbs li { display: inline-flex; align-items: center; flex: 0 0 auto; white-space: nowrap; }
+.crumbs li:last-child { flex: 0 1 auto; min-width: 0; }
+.crumbs li:last-child > span { overflow: hidden; text-overflow: ellipsis; }
 .crumbs li + li::before { content: "›"; margin-inline: 8px; color: var(--text-muted); }
 .crumbs a { color: var(--text-soft); text-decoration: none; }
 .crumbs a:hover { color: var(--brand); text-decoration: underline; }
@@ -628,3 +619,77 @@ html, body { overflow-x: clip; }
 .sources { margin: 0; padding-left: 1.2em; max-width: 70ch; }
 .sources li { margin-bottom: 8px; font-size: 14.5px; color: var(--text-soft); line-height: 1.55; }
 .sources a { color: var(--brand); font-weight: 600; text-underline-offset: 3px; }
+
+/* =========================================================
+   KASIM 2026 TASARIM TURU
+   ========================================================= */
+
+/* Sayım açıklaması: çubuğun altında "● 8 Alım  ● 5 Gözlemle". Aynı sayıları
+   cümleyle bir kez daha yazmak kartı üçte bir uzatıyordu. */
+.tally-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13.5px; color: var(--text-soft); }
+.tally-legend > span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.tally-legend i { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tally-legend b { color: var(--text); font-weight: 800; font-variant-numeric: tabular-nums; }
+.tally-legend .lg-AL { background: var(--al); }
+.tally-legend .lg-SAT { background: var(--sat); }
+.tally-legend .lg-TUT { background: var(--bekle); }
+.tally-legend .lg-GÖZLEMLE { background: var(--gozlemle); }
+
+/* Kanal baş harfleri: görsel yokken her kanala sabit bir renk. */
+.avatar-initials {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12.5px; font-weight: 800; letter-spacing: .01em; color: #fff;
+}
+
+/* Giriş bölümündeki arama */
+.hero-search { position: relative; margin-top: 20px; max-width: 520px; }
+.hero-search .input { padding-right: 96px; height: 52px; font-size: 16px; }
+.hero-search button {
+  position: absolute; right: 6px; top: 6px; bottom: 6px;
+  padding: 0 16px; border-radius: 9px; border: 0; cursor: pointer;
+  background: var(--brand); color: #fff; font: inherit; font-size: 14px; font-weight: 700;
+}
+[data-theme="dark"] .hero-search button { color: #04222a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero-search button { color: #04222a; } }
+.hero-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.hero-quick .chip { padding: 5px 12px; font-size: 13px; }
+
+/* Çerez bandı */
+.cookie {
+  position: fixed; inset-inline: 12px; bottom: 12px; z-index: 200;
+  max-width: 620px; margin-inline: auto;
+  background: var(--bg-elevated); border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-lg); padding: 16px 18px;
+}
+.cookie p { margin: 0; font-size: 14px; color: var(--text); }
+.cookie-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.cookie .btn { padding: 9px 18px; font-size: 14px; }
+/* Telefonda tek satır metin + iki düğme: ilk ziyarette ekranın dörtte birini kaplamasın. */
+@media (max-width: 560px) {
+  .cookie { inset-inline: 8px; bottom: 8px; padding: 10px 12px; border-radius: var(--r); }
+  .cookie p { font-size: 13px; line-height: 1.4; }
+  .cookie .cookie-long { display: none; }
+  .cookie-actions { margin-top: 8px; flex-wrap: nowrap; }
+  .cookie .btn { flex: 1 1 0; padding: 8px 10px; font-size: 13px; white-space: nowrap; }
+}
+
+/* Konsensüs tablosu: telefonda fiyat ve kaynak sütunları gizlenir, tablo ekrana sığar. */
+.kons-table { width: 100%; border-collapse: collapse; }
+.kons-table th, .kons-table td { padding: 13px 16px; text-align: left; vertical-align: middle; }
+.kons-count { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-bottom: 7px; }
+@media (max-width: 720px) {
+  .kons-table .col-wide { display: none; }
+  .kons-table th, .kons-table td { padding: 12px 12px; }
+}
+
+/* Alt bilgi: telefonda sütunlar alt alta dizilip 1.400 piksel tutuyordu; iki sütunlu ızgara. */
+.footer-nav { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+@media (max-width: 640px) {
+  .footer-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 16px; width: 100%; }
+}
+
+/* Ana sayfa kart listesi: telefonda ilk açılışta yalnızca ilk altı kart (bkz. SignalExplorer). */
+@media (max-width: 640px) { .cards-rest-initial { display: none; } }
+.kons-main { min-width: 170px; }
+@media (max-width: 720px) { .kons-main { min-width: 0; width: 68%; } }

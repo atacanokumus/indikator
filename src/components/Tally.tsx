@@ -40,6 +40,29 @@ export function TallySentence({
 }
 
 
+/**
+ * Çubuğun altındaki kısa açıklama: "● 8 Alım  ● 5 Gözlemle  ● 1 Satış".
+ * Kartlarda TallySentence yerine kullanılır; aynı sayılar başlıkta ve çubukta
+ * zaten var, cümleyle üçüncü kez yazmak kartı uzatıyordu. Yön kelimeleri
+ * (DIRECTION) aynı: emir kipi değil, konuşulan yönün adı.
+ */
+const LEGEND_WORD: Record<Recommendation, string> = { AL: "Alım", SAT: "Satış", TUT: "Bekle", "GÖZLEMLE": "Gözlemle" };
+
+export function TallyLegend({ tally }: { tally: TallyType }) {
+    const parts = tallyParts(tally);
+    if (parts.length === 0) return null;
+    return (
+        <div className="tally-legend">
+            {parts.map((p) => (
+                <span key={p.rec}>
+                    <i className={`lg-${p.rec}`} aria-hidden="true" />
+                    <b>{p.count}</b> {LEGEND_WORD[p.rec]}
+                </span>
+            ))}
+        </div>
+    );
+}
+
 /** Yönlere göre renkli, oranlı çubuk. */
 export function TallyBar({ tally, total }: { tally: TallyType; total: number }) {
     const parts = tallyParts(tally);

@@ -42,29 +42,18 @@ export function CookieConsent() {
         ADSENSE_CLIENT ? "Reklamları göstermek" : "Ziyaretleri ölçmek";
 
     return (
-        <div
-            role="dialog"
-            aria-label="Çerez tercihi"
-            style={{
-                position: "fixed", insetInline: 12, bottom: 12, zIndex: 200,
-                maxWidth: 620, marginInline: "auto",
-                background: "var(--bg-elevated)", border: "1px solid var(--border-strong)",
-                borderRadius: "var(--r-lg)", boxShadow: "var(--shadow-lg)",
-                padding: 18,
-            }}
-        >
-            <p className="small" style={{ margin: 0, color: "var(--text)" }}>
-                {purpose} için Google çerezleri kullanıyoruz. Reddederseniz site aynı şekilde çalışır;
-                yalnızca zorunlu çerezler kullanılır.{" "}
+        <div role="dialog" aria-label="Çerez tercihi" className="cookie">
+            {/* Telefonda yalnızca ilk cümle görünür (.cookie-long gizlenir); ayrıntı bağlantısı kalır. */}
+            <p>
+                {purpose} için Google çerezleri kullanıyoruz.{" "}
+                <span className="cookie-long">
+                    Reddederseniz site aynı şekilde çalışır; yalnızca zorunlu çerezler kullanılır.{" "}
+                </span>
                 <Link href="/gizlilik">Ayrıntı</Link>
             </p>
-            <div className="row gap-8 wrapflex" style={{ marginTop: 12 }}>
-                <button className="btn btn-primary" style={{ padding: "9px 18px", fontSize: 14 }} onClick={() => choose("kabul")}>
-                    Kabul et
-                </button>
-                <button className="btn btn-ghost" style={{ padding: "9px 18px", fontSize: 14 }} onClick={() => choose("reddedildi")}>
-                    Sadece zorunlu çerezler
-                </button>
+            <div className="cookie-actions">
+                <button className="btn btn-primary" onClick={() => choose("kabul")}>Kabul et</button>
+                <button className="btn btn-ghost" onClick={() => choose("reddedildi")}>Yalnızca zorunlu</button>
             </div>
         </div>
     );
@@ -77,7 +66,7 @@ export function CookieSettingsLink() {
         <button
             type="button"
             className="small"
-            style={{ background: "none", border: 0, padding: 0, cursor: "pointer", color: "inherit", textAlign: "left", font: "inherit" }}
+            style={{ background: "none", border: 0, padding: 0, cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}
             onClick={() => {
                 try { localStorage.removeItem(CONSENT_KEY); } catch { /* yoksay */ }
                 window.location.reload();

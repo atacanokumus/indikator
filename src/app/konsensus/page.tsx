@@ -43,53 +43,54 @@ export default async function KonsensusPage() {
                     </div>
                 ) : (
                     <div className="card scroll-x">
-                        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 680 }}>
+                        {/*
+                          "Sayım" (rakamlar) ve "Dağılım" (çubuk) aynı bilgiyi iki sütunda
+                          gösteriyordu; tek sütunda birleşti. Telefonda fiyat ve kaynak sütunları
+                          gizlenir (.col-wide), tablo yana kaydırmadan ekrana sığar.
+                        */}
+                        <table className="kons-table">
                             <caption className="sr-only">Varlık bazında analist sayımı</caption>
                             <thead>
                                 <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                                    {["Varlık", "Fiyat", "Sayım", "Dağılım", "Kaynak", "Son görüş"].map((h, i) => (
-                                        <th key={h} scope="col" className="eyebrow"
-                                            style={{ padding: "13px 16px", textAlign: i > 4 ? "right" : "left" }}>
-                                            {h}
-                                        </th>
-                                    ))}
+                                    <th scope="col" className="eyebrow">Varlık</th>
+                                    <th scope="col" className="eyebrow col-wide">Fiyat</th>
+                                    <th scope="col" className="eyebrow">Sayım</th>
+                                    <th scope="col" className="eyebrow col-wide">Kaynak</th>
+                                    <th scope="col" className="eyebrow col-wide" style={{ textAlign: "right" }}>Son görüş</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {consensus.map((c) => (
                                     <tr key={c.asset} style={{ borderBottom: "1px solid var(--border)" }}>
-                                        <th scope="row" style={{ padding: "13px 16px", textAlign: "left", fontWeight: 700 }}>
+                                        <th scope="row" style={{ fontWeight: 700 }}>
                                             <Link href={`/varlik/${assetSlug(c.asset)}`} style={{ textDecoration: "none" }}>
                                                 {assetLabel(c.asset)}
                                             </Link>
                                         </th>
-                                        <td className="mono small" style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>
+                                        <td className="mono small col-wide" style={{ whiteSpace: "nowrap" }}>
                                             {formatPrice(c.price, c.currency) ?? "—"}
                                             {c.priceAt && <div className="tiny"><RelativeTime iso={c.priceAt} /></div>}
                                         </td>
-                                        <td style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>
-                                            {tallyParts(c.tally).map((p, i) => (
-                                                <span key={p.rec} style={{ marginRight: 10 }}>
-                                                    <strong style={{ fontSize: 16 }}>{p.count}</strong>{" "}
-                                                    <strong className={`dir dir-${p.rec}`} style={{ fontSize: 13 }}>
-                                                        {DIRECTION[p.rec]}
-                                                    </strong>
-                                                    {i < tallyParts(c.tally).length - 1 && (
-                                                        <span style={{ color: "var(--text-muted)" }}> ·</span>
-                                                    )}
-                                                </span>
-                                            ))}
-                                        </td>
-                                        <td style={{ padding: "13px 16px", minWidth: 150 }}>
+                                        <td className="kons-main">
+                                            <div className="kons-count">
+                                                {tallyParts(c.tally).map((p) => (
+                                                    <span key={p.rec} style={{ whiteSpace: "nowrap" }}>
+                                                        <strong style={{ fontSize: 16 }}>{p.count}</strong>{" "}
+                                                        <strong className={`dir dir-${p.rec}`} style={{ fontSize: 13 }}>
+                                                            {DIRECTION[p.rec]}
+                                                        </strong>
+                                                    </span>
+                                                ))}
+                                            </div>
                                             <TallyBar tally={c.tally} total={c.analystCount} />
                                             {c.changedCount > 0 && (
-                                                <span className="tiny">{c.changedCount} analist görüş değiştirdi</span>
+                                                <div className="tiny" style={{ marginTop: 5 }}>{c.changedCount} analist görüş değiştirdi</div>
                                             )}
                                         </td>
-                                        <td style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>
+                                        <td className="col-wide" style={{ whiteSpace: "nowrap" }}>
                                             <RegionSplit split={c.regionSplit} />
                                         </td>
-                                        <td className="tiny" style={{ padding: "13px 16px", textAlign: "right", whiteSpace: "nowrap" }}>
+                                        <td className="tiny col-wide" style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                                             <RelativeTime iso={c.latestSignalAt} />
                                         </td>
                                     </tr>

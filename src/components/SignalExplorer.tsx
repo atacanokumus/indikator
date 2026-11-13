@@ -1,10 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { AssetConsensus } from "@/lib/types";
 import { assetLabel } from "@/lib/display";
 import { AssetCard } from "./AssetCard";
 import { AdSlot } from "./AdSlot";
+import { HERO_SEARCH_EVENT } from "./HeroSearch";
+
+/** İlk açılışta gösterilen kart sayısı. 18 iken telefonda sayfa 13.500 pikseldi. */
+const PAGE = 12;
 
 type Filter = "ALL" | "AL" | "SAT" | "BEKLE";
 type Sort = "POPULAR" | "RECENT" | "AZ";
@@ -20,7 +24,20 @@ export function SignalExplorer({ items }: { items: AssetConsensus[] }) {
     const [query, setQuery] = useState("");
     const [filter, setFilter] = useState<Filter>("ALL");
     const [sort, setSort] = useState<Sort>("POPULAR");
-    const [limit, setLimit] = useState(18);
+    const [limit, setLimit] = useState(PAGE);
+
+    // Telefonda ilk açılışta 6 kart görünür: 12 kart tek sütunda 4.400 piksel tutuyor ve
+    // altındaki bölümleri (yorumcular, rehber) görünmez kılıyordu. İkinci altılı HTML'de durur,
+    // yalnızca dar ekranda CSS ile gizlenir (.cards-rest-initial); ziyaretçi listeyle
+    // etkileşime girdiğinde (arama, süzgeç, "daha fazla") tamamı açılır.
+    const [touched, setTouched] = useState(false);
+
+    // Giriş bölümündeki arama kutusu bu listeyi süzer (bkz. HeroSearch).
+    useEffect(() => {
+        const onSearch = (e: Event) => { setTouched(true); setQuery(String((e as CustomEvent).detail ?? "")); setFilter("ALL"); setLimit(PAGE); };
+        window.addEventListener(HERO_SEARCH_EVENT, onSearch);
+        return () => window.removeEventListener(HERO_SEARCH_EVENT, onSearch);
+    }, []);
 
     const filtered = useMemo(() => {
         const q = query.trim().toLocaleLowerCase("tr");
@@ -58,7 +75,7 @@ export function SignalExplorer({ items }: { items: AssetConsensus[] }) {
                         className="input"
                         type="search"
                         value={query}
-                        onChange={(e) => { setQuery(e.target.value); setLimit(18); }}
+                        onChange={(e) => { setTouched(true); setQuery(e.target.value); setLimit(PAGE); }}
                         placeholder="Varlık ara: altın, dolar, bitcoin, THYAO…"
                         aria-label="Varlık ara"
                     />
@@ -70,7 +87,7 @@ export function SignalExplorer({ items }: { items: AssetConsensus[] }) {
                             key={f.key}
                             className="chip"
                             aria-pressed={filter === f.key}
-                            onClick={() => { setFilter(f.key); setLimit(18); }}
+                            onClick={() => { setTouched(true); setFilter(f.key); setLimit(PAGE); }}
                         >
                             {f.label}
                         </button>
@@ -103,15 +120,15 @@ export function SignalExplorer({ items }: { items: AssetConsensus[] }) {
                     {visible.length > 6 && (
                         <>
                             <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_INFEED} minHeight={120} />
-                            <div className="grid-cards">
+                            <div className={touched ? "grid-cards" : "grid-cards cards-rest-initial"}>
                                 {visible.slice(6).map((item) => <AssetCard key={item.asset} item={item} />)}
                             </div>
                         </>
                     )}
 
                     {filtered.length > visible.length && (
-                        <button className="btn btn-ghost" style={{ alignSelf: "center" }} onClick={() => setLimit((l) => l + 24)}>
-                            Daha fazla göster ({filtered.length - visible.length})
+                        <button className="btn btn-ghost" style={{ alignSelf: "center" }} onClick={() => { setLimit((l) => (touched ? l + PAGE * 2 : l + PAGE)); setTouched(true); }}>
+                            Daha fazla göster
                         </button>
                     )}
                 </>

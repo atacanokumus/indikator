@@ -23,11 +23,10 @@ export function Navbar() {
     return (
         <header className="navbar">
             <nav className="wrap navbar-inner" aria-label="Ana menü">
-                <Link href="/" aria-label="Analist Ne Diyor ana sayfa" style={{ textDecoration: "none" }}>
+                <Link href="/" className="nav-logo" aria-label="Analist Ne Diyor ana sayfa" style={{ textDecoration: "none" }}>
                     <Logo />
                 </Link>
-                <div className="row gap-8">
-                    <div className="nav-links">
+                <div className="nav-links">
                         {LINKS.map((l) => (
                             <Link
                                 key={l.href}
@@ -38,7 +37,8 @@ export function Navbar() {
                                 {l.label}
                             </Link>
                         ))}
-                    </div>
+                </div>
+                <div className="nav-end">
                     <ThemeToggle />
                 </div>
             </nav>

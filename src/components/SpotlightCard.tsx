@@ -1,9 +1,9 @@
 import { RelativeTime } from "@/components/RelativeTime";
 import Link from "next/link";
 import type { AssetConsensus } from "@/lib/types";
-import { assetLabel, formatPrice, relativeTime } from "@/lib/display";
+import { assetLabel, formatPrice } from "@/lib/display";
 import { assetSlug } from "@/lib/slug";
-import { TallyBar, TallyHeadline, TallySentence } from "./Tally";
+import { TallyBar, TallyHeadline, TallyLegend } from "./Tally";
 import { RegionSplit } from "./RegionSplit";
 
 /**
@@ -36,7 +36,7 @@ export function SpotlightCard({ item }: { item: AssetConsensus }) {
 
             <TallyBar tally={item.tally} total={item.analystCount} />
 
-            <TallySentence tally={item.tally} total={item.analystCount} size="sm" />
+            <TallyLegend tally={item.tally} />
 
             <div className="between">
                 <RegionSplit split={item.regionSplit} />

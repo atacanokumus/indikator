@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
-import { SignalRow } from "@/components/AssetCard";
+import { AiNote, SignalRow } from "@/components/AssetCard";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
 import { TallyBar, TallyHeadline, TallySentence } from "@/components/Tally";
@@ -217,9 +217,10 @@ export default async function VarlikPage({ params }: { params: Promise<{ slug: s
 
             {item && (
                 <section className="wrap section" aria-labelledby="gorusler">
-                    <h2 id="gorusler" className="h2" style={{ marginBottom: 16 }}>
+                    <h2 id="gorusler" className="h2" style={{ marginBottom: 6 }}>
                         {name} hakkında kim ne dedi?
                     </h2>
+                    <AiNote style={{ marginBottom: 14 }} />
                     <div className="card" style={{ overflow: "hidden" }}>
                         {item.signals.map((s, i) => (
                             <SignalRow key={`${s.videoId}-${i}`} signal={s} asset={item.asset} first={i === 0} />

@@ -21,10 +21,6 @@ const FOOTER_GUIDES: [string, string][] = [
     ["faiz-karari-piyasalari-nasil-etkiler", "Faiz kararı piyasaları nasıl etkiler?"],
     ["petrol-fiyatlari-neden-degisir-brent-wti", "Petrol fiyatları neden değişir?"],
     ["youtube-ekonomist-yorumlari-nasil-okunur", "Ekonomist yorumları nasıl okunur?"],
-    ["enflasyon-nedir-tufe-nasil-hesaplanir", "Enflasyon nedir?"],
-    ["ceyrek-yarim-tam-altin-farki", "Çeyrek altın kaç gram?"],
-    ["tahvil-nedir-faiz-fiyat-iliskisi", "Tahvil nedir?"],
-    ["yatirim-dolandiriciligi-nasil-anlasilir", "Yatırım dolandırıcılığı"],
 ];
 
 export function Footer() {
@@ -43,7 +39,7 @@ export function Footer() {
                         </p>
                     </div>
 
-                    <nav className="row gap-24 wrapflex" style={{ alignItems: "flex-start" }} aria-label="Alt menü">
+                    <nav className="footer-nav" aria-label="Alt menü">
                         <div className="stack gap-8">
                             <span className="eyebrow">Sayfalar</span>
                             <Link className="small" href="/">Görüşler</Link>
@@ -73,6 +69,7 @@ export function Footer() {
                             {FOOTER_GUIDES.map(([slug, label]) => (
                                 <Link key={slug} className="small" href={`/rehber/${slug}`}>{label}</Link>
                             ))}
+                            <Link className="small" href="/rehber" style={{ color: "var(--brand)", fontWeight: 650 }}>Tüm yazılar →</Link>
                         </div>
                         <div className="stack gap-8">
                             <span className="eyebrow">Yasal</span>

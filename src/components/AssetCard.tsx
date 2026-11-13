@@ -10,11 +10,10 @@ import {
     DIRECTION_PHRASE,
     formatDateTr,
     formatPrice,
-    relativeTime,
 } from "@/lib/display";
 import { analystPath } from "@/lib/analyst";
 import { assetSlug } from "@/lib/slug";
-import { TallyBar, TallyHeadline, TallySentence } from "./Tally";
+import { TallyBar, TallyHeadline, TallyLegend } from "./Tally";
 import { ReportButton } from "./ReportButton";
 import { RegionBadge, RegionSplit } from "./RegionSplit";
 
@@ -50,7 +49,7 @@ export function AssetCard({ item }: { item: AssetConsensus }) {
 
                 <TallyBar tally={item.tally} total={item.analystCount} />
 
-                <TallySentence tally={item.tally} total={item.analystCount} size="sm" />
+                <TallyLegend tally={item.tally} />
 
                 <RegionSplit split={item.regionSplit} />
 
@@ -81,6 +80,7 @@ export function AssetCard({ item }: { item: AssetConsensus }) {
 
             {open && (
                 <div style={{ borderTop: "1px solid var(--border)", maxHeight: 420, overflowY: "auto" }}>
+                    <AiNote style={{ padding: "10px 20px 0" }} />
                     {item.signals.map((s, i) => (
                         <SignalRow key={`${s.videoId}-${i}`} signal={s} asset={item.asset} first={i === 0} />
                     ))}
@@ -107,17 +107,7 @@ export function SignalRow({
                 borderTop: first ? "none" : "1px solid var(--border)",
             }}
         >
-            {s.channelThumbnail ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={s.channelThumbnail} alt="" width={32} height={32} className="avatar" loading="lazy" />
-            ) : (
-                <span
-                    className="avatar row"
-                    style={{ width: 32, height: 32, justifyContent: "center", color: "var(--brand)", fontWeight: 800, fontSize: 13 }}
-                >
-                    {s.channelTitle.charAt(0)}
-                </span>
-            )}
+            <ChannelAvatar title={s.channelTitle} src={s.channelThumbnail} />
 
             <div className="stack gap-6" style={{ flex: 1, minWidth: 0 }}>
                 <div className="between gap-8">
@@ -130,13 +120,12 @@ export function SignalRow({
                     <span className={`dir-chip chip-${s.recommendation}`}>{DIRECTION[s.recommendation]}</span>
                 </div>
 
-                {/* Emir kipi yok: analistin ne yaptığı anlatılıyor */}
-                <p className="small" style={{ margin: 0 }}>
-                    <strong style={{ color: "var(--text)" }}>{s.channelTitle}</strong>{" "}
-                    {DIRECTION_PHRASE[s.recommendation]}.
-                </p>
-
+                {/*
+                  Emir kipi yok: analistin ne yaptığı anlatılıyor. Kanal adı üst satırda
+                  zaten yazdığı için cümle özneyi tekrar etmez.
+                */}
                 <p className="small clamp-3" style={{ margin: 0, color: "var(--text-soft)" }}>
+                    <strong style={{ color: "var(--text)" }}>{capitalizeTr(DIRECTION_PHRASE[s.recommendation])}.</strong>{" "}
                     {s.reasoning}
                 </p>
 
@@ -161,13 +150,50 @@ export function SignalRow({
                     <ReportButton videoId={s.videoId} asset={asset} channelTitle={s.channelTitle} />
                 </div>
 
-                <span className="ai-note">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" />
-                    </svg>
-                    Yapay zeka özeti — hata içerebilir, videodan teyit edin
-                </span>
             </div>
         </div>
+    );
+}
+
+function capitalizeTr(text: string): string {
+    return text.charAt(0).toLocaleUpperCase("tr") + text.slice(1);
+}
+
+/**
+ * Yapay zeka uyarısı. Eskiden HER görüş satırının altında yazıyordu; on dört
+ * satırlık listede on dört kez. Artık listenin başında bir kez durur: uyarı
+ * görünür kalır, liste kısalır.
+ */
+export function AiNote({ style }: { style?: React.CSSProperties }) {
+    return (
+        <span className="ai-note" style={style}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" />
+            </svg>
+            Özetler yapay zeka ile çıkarılır, hata içerebilir; kaynağı videodan teyit edin.
+        </span>
+    );
+}
+
+/** Kanal görseli; yoksa baş harfler ve kanala özgü sabit bir renk. */
+const AVATAR_COLORS = ["#0d6b7f", "#7c5cc4", "#b4570f", "#2f7d4f", "#b03a5b", "#3b63c4", "#8a6d1f", "#5b6b7d"];
+
+export function ChannelAvatar({ title, src, size = 34 }: { title: string; src?: string; size?: number }) {
+    if (src) {
+        // eslint-disable-next-line @next/next/no-img-element
+        return <img src={src} alt="" width={size} height={size} className="avatar" loading="lazy" />;
+    }
+    const words = title.replace(/[^\p{L}\p{N} ]/gu, " ").split(/\s+/).filter(Boolean);
+    const initials = ((words[0]?.[0] ?? "") + (words[1]?.[0] ?? "")).toLocaleUpperCase("tr") || "?";
+    let hash = 0;
+    for (const ch of title) hash = (hash * 31 + ch.codePointAt(0)!) >>> 0;
+    return (
+        <span
+            className="avatar-initials"
+            style={{ width: size, height: size, background: AVATAR_COLORS[hash % AVATAR_COLORS.length] }}
+            aria-hidden="true"
+        >
+            {initials}
+        </span>
     );
 }
