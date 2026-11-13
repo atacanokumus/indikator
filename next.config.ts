@@ -16,6 +16,11 @@ const nextConfig: NextConfig = {
     // firebase-admin sunucu tarafı paketlerini bundle'a katma
     serverExternalPackages: ["firebase-admin"],
 
+    /** Tarayıcılar ve botlar /favicon.ico'yu körlemesine ister; simge /icon rotasında üretiliyor. */
+    async rewrites() {
+        return [{ source: "/favicon.ico", destination: "/icon" }];
+    },
+
     async redirects() {
         return [
             { source: "/forecasts", destination: "/konsensus", permanent: true },

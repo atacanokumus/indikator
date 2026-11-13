@@ -70,6 +70,17 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             </section>
 
             <article className="wrap section" style={{ maxWidth: 820 }}>
+                {/*
+                  Kısa cevap: sorunun yanıtı ilk ekranda, tek paragrafta. Arama motorları ve
+                  yapay zeka asistanları alıntıyı çoğunlukla sayfanın başındaki öz cümleden
+                  alır; giriş paragrafı ise konuyu açar, cevabı vermez.
+                */}
+                <div className="prose" style={{ marginBottom: 18 }}>
+                    <div className="note" role="note" style={{ marginTop: 0 }}>
+                        <strong>Kısa cevap:</strong> {g.description}
+                    </div>
+                </div>
+
                 <nav className="card card-pad toc" aria-label="Bu yazıda">
                     <strong className="small" style={{ color: "var(--text)" }}>Bu yazıda</strong>
                     <ol>

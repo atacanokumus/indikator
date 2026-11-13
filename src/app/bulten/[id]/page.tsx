@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
+import { AssetLink } from "@/components/AssetLink";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
 import { TallyBar, TallySentence } from "@/components/Tally";
 import { DIRECTION, assetLabel, formatDateTr } from "@/lib/display";
 import { MIN_INDEX_BULLETIN_SIGNALS, articleLd, pageMetadata } from "@/lib/seo";
-import { assetSlug } from "@/lib/slug";
+import { loadAssets } from "@/server/known-assets";
 import { getBulletin, getBulletinIndex } from "@/server/read";
 
 export const revalidate = 3600;
@@ -43,7 +44,7 @@ export default async function BultenPage({ params }: { params: Promise<{ id: str
     if (!b) notFound();
 
     // Önceki / sonraki bülten: arşivi gezilebilir kılar, sayfalar birbirine bağlanır.
-    const index = await getBulletinIndex();
+    const [index, { known }] = await Promise.all([getBulletinIndex(), loadAssets()]);
     const items = index?.items ?? [];
     const at = items.findIndex((i) => i.id === b.id);
     const newer = at > 0 ? items[at - 1] : undefined;
@@ -76,7 +77,7 @@ export default async function BultenPage({ params }: { params: Promise<{ id: str
                     <h2 className="h2" style={{ fontSize: 20, marginBottom: 12 }}>Yön değişen varlıklar</h2>
                     <div className="grid-cards">
                         {b.flips.map((a) => (
-                            <Link key={a.asset} href={`/varlik/${assetSlug(a.asset)}`}
+                            <AssetLink key={a.asset} asset={a.asset} known={known}
                                 className="card card-hover card-pad stack gap-12" style={{ textDecoration: "none" }}>
                                 <div className="between" style={{ alignItems: "baseline" }}>
                                     <strong style={{ fontSize: 16 }}>{assetLabel(a.asset)}</strong>
@@ -87,7 +88,7 @@ export default async function BultenPage({ params }: { params: Promise<{ id: str
                                 </div>
                                 <TallyBar tally={a.tally} total={a.total} />
                                 <TallySentence tally={a.tally} total={a.total} size="sm" />
-                            </Link>
+                            </AssetLink>
                         ))}
                     </div>
                 </section>
@@ -112,7 +113,7 @@ export default async function BultenPage({ params }: { params: Promise<{ id: str
                                 }}>
                                 <span className="small">
                                     <strong>{c.channelTitle}</strong>{" · "}
-                                    <Link href={`/varlik/${assetSlug(c.asset)}`}>{assetLabel(c.asset)}</Link>
+                                    <AssetLink asset={c.asset} known={known}>{assetLabel(c.asset)}</AssetLink>
                                 </span>
                                 <span className="tiny row gap-8">
                                     <s>{DIRECTION[c.from]}</s>
@@ -132,7 +133,7 @@ export default async function BultenPage({ params }: { params: Promise<{ id: str
                 <h2 className="h2" style={{ fontSize: 20, marginBottom: 12 }}>Haftanın en çok konuşulanları</h2>
                 <div className="grid-cards">
                     {b.busiest.map((a) => (
-                        <Link key={a.asset} href={`/varlik/${assetSlug(a.asset)}`}
+                        <AssetLink key={a.asset} asset={a.asset} known={known}
                             className="card card-hover card-pad stack gap-12" style={{ textDecoration: "none" }}>
                             <div className="between" style={{ alignItems: "baseline" }}>
                                 <strong style={{ fontSize: 16 }}>{assetLabel(a.asset)}</strong>
@@ -140,7 +141,7 @@ export default async function BultenPage({ params }: { params: Promise<{ id: str
                             </div>
                             <TallyBar tally={a.tally} total={a.total} />
                             <TallySentence tally={a.tally} total={a.total} size="sm" />
-                        </Link>
+                        </AssetLink>
                     ))}
                 </div>
                 <p className="tiny" style={{ marginTop: 16 }}>

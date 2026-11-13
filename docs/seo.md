@@ -112,6 +112,21 @@ Search Console: 25 sayfa dizinde, 49 dizin dışı; sitemap 12 Kasım'da okundu 
 | `/kvkk` açıklaması 72 karakter | Düzeltildi |
 | Ana sayfa ve `/konsensus` yüzlerce `noindex` varlık sayfasına bağlanıyor | Not: Google henüz bunların yalnızca 2'sini keşfetmiş; `_rsc` engelinden sonra tarama dağılımı yeniden değerlendirilmeli |
 
+### 13 Kasım, ikinci tur (SEO + GEO tam tarama)
+
+| Bulgu | Durum |
+|---|---|
+| Bülten ve karne sayfalarında 18 kırık iç bağlantı (sayfası artık olmayan varlıklara) | Düzeltildi: `AssetLink` yalnızca bilinen varlığa bağlantı verir, diğerini düz metin basar |
+| Rehber yazılarında cevap ilk paragrafta değildi (giriş konuyu açıyor, cevabı vermiyor) | Düzeltildi: sayfa başında "Kısa cevap" kutusu (`description`) |
+| `/favicon.ico` 404 | Düzeltildi: `/icon` rotasına yeniden yazım |
+| Yapay zeka ve arama botları (16 kullanıcı aracısı × 7 adres) | Hepsi 200; içerik ham HTML'de |
+| Canlıda tarayıcı konsol hatası | Yok (yerelde görülen React #418 canlıda tekrarlanmadı) |
+| Mobil: TTFB ≈55 ms, CLS 0, yatay taşma yok | Geçti |
+| `/konsensus`: 5.395 DOM düğümü, 818 KB ham HTML | Açık: sayfalama ya da "kim ne dedi" listesini istek üzerine yükleme gerekir |
+| Bing Webmaster doğrulaması yok (`msvalidate.01` etiketi basılmıyor) | Sizde: ChatGPT araması Bing dizinini kullanır |
+| `publisher.ts` hâlâ boş | Sizde |
+| 404 sayfasında iki `robots` etiketi (noindex + index) | Zararsız: durum kodu 404, Google en kısıtlayıcıyı uygular |
+
 ## Ölçüm
 
 Search Console → Performans → sorgularda şu kalıpları izleyin: "`<varlık>` yorumları", "`<varlık>` ne diyor", "ekonomist yorumları", "gram altın nasıl hesaplanır". İlk 4-8 haftada gösterim sayısı, sonra tıklama oranı; sıralama 3 aydan önce oturmaz.

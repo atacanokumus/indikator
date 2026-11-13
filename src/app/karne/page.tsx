@@ -3,9 +3,10 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
+import { AssetLink } from "@/components/AssetLink";
 import { RegionBadge } from "@/components/RegionSplit";
 import { assetLabel, formatDateTr } from "@/lib/display";
-import { assetSlug } from "@/lib/slug";
+import { loadAssets } from "@/server/known-assets";
 import { getScorecard } from "@/server/read";
 import type { ScorecardRow } from "@/server/scorecard";
 
@@ -64,7 +65,7 @@ function Bar({ hit, miss, flat }: { hit: number; miss: number; flat: number }) {
 }
 
 export default async function KarnePage() {
-    const card = await getScorecard();
+    const [card, { known }] = await Promise.all([getScorecard(), loadAssets()]);
 
     if (!card || card.rows.length === 0) {
         return (
@@ -226,12 +227,12 @@ export default async function KarnePage() {
                                 <div className="row gap-8 wrapflex">
                                     <span className="tiny">En çok konuştukları:</span>
                                     {row.topAssets.map((a) => (
-                                        <Link key={a.asset} href={`/varlik/${assetSlug(a.asset)}`} className="chip">
+                                        <AssetLink key={a.asset} asset={a.asset} known={known} className="chip">
                                             {assetLabel(a.asset)}{" "}
                                             <span className="mono" style={{ color: "var(--text-muted)" }}>
                                                 {a.measured}
                                             </span>
-                                        </Link>
+                                        </AssetLink>
                                     ))}
                                 </div>
                             )}
